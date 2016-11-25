@@ -8,10 +8,18 @@
 // Blocks
 #include "OscListener.h"
 #include "CinderImGui.h"
+#include "Watchdog.h"
+
+#include <ctime>
 
 using namespace ci;
 using namespace ci::app;
 using namespace std;
+
+typedef struct {
+  fs::path path;
+  time_t modified;
+} File;
 
 class FadingWavesApp : public App {
 public:
@@ -22,13 +30,32 @@ public:
 	void draw() override;
   
 private:
+  void initShaderFiles();
+  void loadShaders();
+  
   void updateOSC();
   void updateUI();
+  void updateShaders();
+  
+  void clearFBO( gl::FboRef fbo );
   
   osc::Listener           mOSCIn;
   
-  gl::FboRef              mFboPingPong;
-  gl::Texture2dRef        mTextureFboPingPong[ 2 ];
+  gl::FboRef              mSourceFbo;
+  
+  gl::FboRef              mFeedbackFboPingPong;
+  gl::Texture2dRef        mFeedbackTextureFboPingPong[ 2 ];
+  size_t                  mFeedbackPing = 0;
+  size_t                  mFeedbackPong = 1;
+  
+  gl::FboRef              mPostProcessingFboPingPong;
+  gl::Texture2dRef        mPostProcessingTextureFboPingPong[ 2 ];
+  
+  gl::GlslProgRef         mCellularShader;
+  gl::GlslProgRef         mFeedbackShader;
+  gl::GlslProgRef         mEdgeDetectionShader;
+  
+  std::vector<File>       mShaderFiles;
 };
 
 FadingWavesApp::FadingWavesApp()
@@ -42,15 +69,67 @@ void FadingWavesApp::setup()
 {
   auto w = getWindowWidth();
   auto h = getWindowHeight();
-  gl::Fbo::Format fboFormat;
-  fboFormat.disableDepth();
+  
+  // Set up the FBOs
+  gl::Fbo::Format feedbackFormat, postProcessingFormat;
+  feedbackFormat.disableDepth();
+  postProcessingFormat.disableDepth();
   for ( size_t i = 0; i < 2; ++i ) {
-    mTextureFboPingPong[ i ] = gl::Texture2d::create( w, h );
+    mFeedbackTextureFboPingPong[ i ] = gl::Texture2d::create( w, h );
+    feedbackFormat.attachment( GL_COLOR_ATTACHMENT0 + (GLenum)i, mFeedbackTextureFboPingPong[ i ] );
+    
+    mPostProcessingTextureFboPingPong[ i ] = gl::Texture2d::create( w, h );
+    postProcessingFormat.attachment( GL_COLOR_ATTACHMENT0 + (GLenum)i, mPostProcessingTextureFboPingPong[ i ] );
   }
-  mFboPingPong = gl::Fbo::create( w, h );
+  mFeedbackFboPingPong = gl::Fbo::create( w, h, feedbackFormat );
+  mPostProcessingFboPingPong = gl::Fbo::create( w, h, postProcessingFormat );
+  mSourceFbo = gl::Fbo::create( w, h );
+  
+  clearFBO( mFeedbackFboPingPong );
+  clearFBO( mPostProcessingFboPingPong );
+  clearFBO( mSourceFbo );
+  
+  // Shaders
+  initShaderFiles();
+  loadShaders();
   
   // UI
   ui::initialize();
+}
+
+// Shader paths
+static fs::path cellularPath      = "shaders/cellular.frag";
+static fs::path feedbackPath      = "shaders/feedback.frag";
+static fs::path edgeDetectionPath = "shaders/edge_detection.frag";
+
+void FadingWavesApp::initShaderFiles()
+{
+  time_t now = time( 0 );
+  mShaderFiles.push_back( { cellularPath, now } );
+  mShaderFiles.push_back( { edgeDetectionPath, now } );
+}
+
+void FadingWavesApp::loadShaders()
+{
+  DataSourceRef vert = app::loadAsset( "shaders/passthrough.vert" );
+  
+  DataSourceRef cellularFrag = app::loadAsset( cellularPath );
+  mCellularShader = gl::GlslProg::create( gl::GlslProg::Format()
+                                         .version( 330 )
+                                         .vertex( vert )
+                                         .fragment( cellularFrag ) );
+  
+  DataSourceRef feedbackFrag = app::loadAsset( feedbackPath );
+  mFeedbackShader = gl::GlslProg::create( gl::GlslProg::Format()
+                                         .version( 330 )
+                                         .vertex( vert )
+                                         .fragment( feedbackFrag ) );
+  
+  DataSourceRef edgeDetectionFrag = app::loadAsset( edgeDetectionPath );
+  mEdgeDetectionShader = gl::GlslProg::create( gl::GlslProg::Format()
+                                         .version( 330 )
+                                         .vertex( vert )
+                                         .fragment( edgeDetectionFrag ) );
 }
 
 void FadingWavesApp::mouseDown( MouseEvent event )
@@ -61,6 +140,7 @@ void FadingWavesApp::update()
 {
   updateOSC();
   updateUI();
+//  updateShaders();
 }
 
 void FadingWavesApp::updateOSC()
@@ -83,17 +163,74 @@ void FadingWavesApp::updateUI()
   ui::Text( "FPS: %d", (int)getAverageFps() );
 }
 
+void FadingWavesApp::updateShaders()
+{
+  bool shadersNeedReload = false;
+  for (size_t i = 0; i < mShaderFiles.size(); i++) {
+    auto file = mShaderFiles[i];
+    time_t lastUpdate = fs::last_write_time( file.path );
+    if ( difftime( lastUpdate, file.modified ) > 0 ) {
+      // Shader has changed: reload shader and update File
+      file.modified = lastUpdate;
+      mShaderFiles[i] = file;
+      shadersNeedReload = true;
+    }
+  }
+  
+  if ( shadersNeedReload ) loadShaders();
+}
+
 void FadingWavesApp::draw()
 {
-	gl::clear( Color( 0, 0, 0 ) );
+  gl::clear();
   
-  // Basic Drawing
+  {
+//    {
+//      // Clear FBOs
+//      const gl::ScopedFramebuffer scopedFrameBuffer( mFeedbackFboPingPong );
+//      const gl::ScopedViewport scopedViewport( ivec2( 0 ), mFeedbackFboPingPong->getSize() );
+//      {
+//        const static GLenum buffers[] = {
+//          GL_COLOR_ATTACHMENT0,
+//          GL_COLOR_ATTACHMENT1
+//        };
+//        gl::drawBuffers( 2, buffers );
+//        gl::clear();
+//      }
+//    }
+    
+    Rectf drawRect = Rectf( 0.f, 0.f, getWindowWidth(), getWindowHeight() );
+    
+    {
+      // Basic Drawing with File watcher
+      gl::ScopedFramebuffer scopedFBO( mSourceFbo );
+      gl::ScopedGlslProg shader( mCellularShader );
+      mCellularShader->uniform( "u_resolution", vec2( getWindowWidth(), getWindowHeight() ) );
+      mCellularShader->uniform( "u_time", (float)getElapsedSeconds() );
+      gl::drawSolidRect( drawRect );
+    }
+    
+    {
+      // Visual Feedback Loop
+        // Mix
+      gl::ScopedFramebuffer scopedFBO( mFeedbackFboPingPong );
+      gl::drawBuffer( GL_COLOR_ATTACHMENT0 + (GLenum)mFeedbackPing );
+      gl::ScopedGlslProg shader( mFeedbackShader );
+      gl::ScopedTextureBind sourceTexture( mSourceFbo->getColorTexture(), 0 );
+      gl::ScopedTextureBind feedbackTexture( mFeedbackTextureFboPingPong[ mFeedbackPong ], 1 );
+      gl::drawSolidRect( drawRect );
+      mFeedbackPing = mFeedbackPong;
+      mFeedbackPong = ( mFeedbackPing + 1 ) % 2;
+    }
   
-  // Visual Feedback Loop
-    // Mix
-  
-  // Edge Detection
-    // Mix
+    {
+      // Edge Detection
+        // Mix
+      gl::ScopedGlslProg shader( mEdgeDetectionShader );
+      gl::ScopedTextureBind inputTexture( mFeedbackTextureFboPingPong[ mFeedbackPong ], 0 );
+      gl::drawSolidRect( drawRect );
+    }
+    
   
   // Vignette
     // Radius
@@ -115,6 +252,15 @@ void FadingWavesApp::draw()
   
   // Visual Feedback Loop
     // Mix
+    
+  }
+}
+
+void FadingWavesApp::clearFBO( gl::FboRef fbo )
+{
+  gl::ScopedFramebuffer scopedFramebuffer( fbo );
+  gl::ScopedViewport scopedViewport( ivec2( 0 ), fbo->getSize() );
+  gl::clear();
 }
 
 CINDER_APP( FadingWavesApp, RendererGl )

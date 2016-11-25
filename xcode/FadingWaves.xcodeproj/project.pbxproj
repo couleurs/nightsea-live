@@ -33,6 +33,7 @@
 		5C4E7ACC1DDD318A00B78834 /* imgui_demo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C4E7A451DDD318A00B78834 /* imgui_demo.cpp */; };
 		5C4E7ACD1DDD318A00B78834 /* imgui_draw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C4E7A461DDD318A00B78834 /* imgui_draw.cpp */; };
 		5C4E7AE41DDD318A00B78834 /* CinderImGui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C4E7A761DDD318A00B78834 /* CinderImGui.cpp */; };
+		5C4E7AEC1DDD33F500B78834 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 5C4E7AEB1DDD33F500B78834 /* assets */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		AC54BA6EA8C54146AACBAC31 /* CinderApp.icns in Resources */ = {isa = PBXBuildFile; fileRef = 564FFEE539B64B9E97FC1770 /* CinderApp.icns */; };
 		F28FB318D4FB40A88DAAC40C /* FadingWavesApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EC2C06C06B8C4CAE85C4AD75 /* FadingWavesApp.cpp */; };
@@ -95,6 +96,8 @@
 		5C4E7A4B1DDD318A00B78834 /* stb_textedit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stb_textedit.h; sourceTree = "<group>"; };
 		5C4E7A4C1DDD318A00B78834 /* stb_truetype.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stb_truetype.h; sourceTree = "<group>"; };
 		5C4E7A761DDD318A00B78834 /* CinderImGui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CinderImGui.cpp; sourceTree = "<group>"; };
+		5C4E7AEB1DDD33F500B78834 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../assets; sourceTree = "<group>"; };
+		5CFA1E3B1DDE21D9009E4F69 /* Watchdog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Watchdog.h; sourceTree = "<group>"; };
 		5DC6B680118644329E7A0053 /* FadingWaves_Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = "\"\""; path = FadingWaves_Prefix.pch; sourceTree = "<group>"; };
 		6770A4F81E2C4B5EA193253D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		86E00851AB01436EA44144BF /* Resources.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Resources.h; path = ../include/Resources.h; sourceTree = "<group>"; };
@@ -128,6 +131,7 @@
 			isa = PBXGroup;
 			children = (
 				5C4E79B21DDD318A00B78834 /* Cinder-ImGui */,
+				5CFA1E381DDE21D9009E4F69 /* Watchdog */,
 				5C10B9A01DBD88180070123F /* OSC */,
 			);
 			name = Blocks;
@@ -182,6 +186,7 @@
 				01B97315FEAEA392516A2CEA /* Blocks */,
 				29B97315FDCFA39411CA2CEA /* Headers */,
 				080E96DDFE201D6D7F000001 /* Source */,
+				5C4E7AEB1DDD33F500B78834 /* assets */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
@@ -331,6 +336,23 @@
 			path = src;
 			sourceTree = "<group>";
 		};
+		5CFA1E381DDE21D9009E4F69 /* Watchdog */ = {
+			isa = PBXGroup;
+			children = (
+				5CFA1E3A1DDE21D9009E4F69 /* include */,
+			);
+			name = Watchdog;
+			path = ../../cinder_0.9.0_mac/blocks/Watchdog;
+			sourceTree = "<group>";
+		};
+		5CFA1E3A1DDE21D9009E4F69 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				5CFA1E3B1DDE21D9009E4F69 /* Watchdog.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -384,6 +406,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5C4E7AEC1DDD33F500B78834 /* assets in Resources */,
 				5C4E7A7B1DDD318A00B78834 /* imgui_user.inl in Resources */,
 				AC54BA6EA8C54146AACBAC31 /* CinderApp.icns in Resources */,
 			);
@@ -439,6 +462,7 @@
 					"\"$(CINDER_PATH)/blocks/OSC/src\"",
 					"\"$(CINDER_PATH)/blocks/Cinder-ImGui/include\"",
 					"\"$(CINDER_PATH)/blocks/Cinder-ImGui/lib/imgui\"",
+					"\"$(CINDER_PATH)/blocks/Watchdog/include\"",
 				);
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
@@ -472,6 +496,7 @@
 					"\"$(CINDER_PATH)/blocks/OSC/src\"",
 					"\"$(CINDER_PATH)/blocks/Cinder-ImGui/include\"",
 					"\"$(CINDER_PATH)/blocks/Cinder-ImGui/lib/imgui\"",
+					"\"$(CINDER_PATH)/blocks/Watchdog/include\"",
 				);
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
