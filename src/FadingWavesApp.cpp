@@ -50,6 +50,8 @@ private:
   
   gl::FboRef              mPostProcessingFboPingPong;
   gl::Texture2dRef        mPostProcessingTextureFboPingPong[ 2 ];
+  size_t                  mPostProcessingPing = 0;
+  size_t                  mPostProcessingPong = 1;
   
   gl::GlslProgRef         mCellularShader;
   
@@ -58,6 +60,11 @@ private:
   gl::GlslProgRef         mEdgeDetectionShader;
   float                   mEdgeDetectionMixAmount = .5f;
   float                   mEdgeDetectionThreshold = .05f;
+  
+  gl::GlslProgRef         mMaskShader;
+  float                   mMaskMixAmount = 1.f;
+  float                   mMaskSharpness = .05f;
+  float                   mMaskRadius    = .5f;
   
   std::vector<File>       mShaderFiles;
 };
@@ -105,6 +112,7 @@ void FadingWavesApp::setup()
 static fs::path cellularPath      = "shaders/cellular.frag";
 static fs::path feedbackPath      = "shaders/feedback.frag";
 static fs::path edgeDetectionPath = "shaders/edge_detection.frag";
+static fs::path maskPath          = "shaders/mask.frag";
 
 void FadingWavesApp::initShaderFiles()
 {
@@ -134,6 +142,12 @@ void FadingWavesApp::loadShaders()
                                          .version( 330 )
                                          .vertex( vert )
                                          .fragment( edgeDetectionFrag ) );
+  
+  DataSourceRef maskFrag = app::loadAsset( maskPath );
+  mMaskShader = gl::GlslProg::create( gl::GlslProg::Format()
+                                      .version( 330 )
+                                      .vertex( vert )
+                                      .fragment( maskFrag ) );
 }
 
 void FadingWavesApp::mouseDown( MouseEvent event )
@@ -231,19 +245,35 @@ void FadingWavesApp::draw()
     {
       // Edge Detection
         // Mix
+      gl::ScopedFramebuffer scopedFBO( mPostProcessingFboPingPong );
+      gl::drawBuffer( GL_COLOR_ATTACHMENT0 + (GLenum)mPostProcessingPing );
       gl::ScopedGlslProg shader( mEdgeDetectionShader );
       gl::ScopedTextureBind inputTexture( mFeedbackTextureFboPingPong[ mFeedbackPong ], 0 );
       mEdgeDetectionShader->uniform( "u_resolution", resolution );
       mEdgeDetectionShader->uniform( "u_mix_amount", mEdgeDetectionMixAmount );
       mEdgeDetectionShader->uniform( "u_threshold", mEdgeDetectionThreshold );
       gl::drawSolidRect( drawRect );
+      mPostProcessingPing = mPostProcessingPong;
+      mPostProcessingPong = ( mPostProcessingPing + 1 ) % 2;
     }
     
-  
-  // Vignette
-    // Radius
-    // Sharpness
-    // Mix
+    {
+      // Mask
+        // Radius
+        // Sharpness
+        // Mix
+//      gl::ScopedFramebuffer scopedFBO( mPostProcessingFboPingPong );
+//      gl::drawBuffer( GL_COLOR_ATTACHMENT0 + (GLenum)mPostProcessingPing );
+      gl::ScopedGlslProg shader( mMaskShader );
+      gl::ScopedTextureBind inputTexture( mPostProcessingTextureFboPingPong[ mPostProcessingPong ], 0 );
+      mMaskShader->uniform( "u_resolution", resolution );
+      mMaskShader->uniform( "u_mix_amount", mMaskMixAmount );
+      mMaskShader->uniform( "u_sharpness", mMaskSharpness );
+      mMaskShader->uniform( "u_radius", mMaskRadius );
+      gl::drawSolidRect( drawRect );
+      mPostProcessingPing = mPostProcessingPong;
+      mPostProcessingPong = ( mPostProcessingPing + 1 ) % 2;
+    }
   
   // Distorsion
     // Dist1 Intensity
