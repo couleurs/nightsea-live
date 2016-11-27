@@ -52,8 +52,12 @@ private:
   gl::Texture2dRef        mPostProcessingTextureFboPingPong[ 2 ];
   
   gl::GlslProgRef         mCellularShader;
+  
   gl::GlslProgRef         mFeedbackShader;
+  
   gl::GlslProgRef         mEdgeDetectionShader;
+  float                   mEdgeDetectionMixAmount = .5f;
+  float                   mEdgeDetectionThreshold = .05f;
   
   std::vector<File>       mShaderFiles;
 };
@@ -200,12 +204,13 @@ void FadingWavesApp::draw()
 //    }
     
     Rectf drawRect = Rectf( 0.f, 0.f, getWindowWidth(), getWindowHeight() );
+    vec2 resolution = getWindowSize();
     
     {
       // Basic Drawing with File watcher
       gl::ScopedFramebuffer scopedFBO( mSourceFbo );
       gl::ScopedGlslProg shader( mCellularShader );
-      mCellularShader->uniform( "u_resolution", vec2( getWindowWidth(), getWindowHeight() ) );
+      mCellularShader->uniform( "u_resolution", resolution );
       mCellularShader->uniform( "u_time", (float)getElapsedSeconds() );
       gl::drawSolidRect( drawRect );
     }
@@ -228,6 +233,9 @@ void FadingWavesApp::draw()
         // Mix
       gl::ScopedGlslProg shader( mEdgeDetectionShader );
       gl::ScopedTextureBind inputTexture( mFeedbackTextureFboPingPong[ mFeedbackPong ], 0 );
+      mEdgeDetectionShader->uniform( "u_resolution", resolution );
+      mEdgeDetectionShader->uniform( "u_mix_amount", mEdgeDetectionMixAmount );
+      mEdgeDetectionShader->uniform( "u_threshold", mEdgeDetectionThreshold );
       gl::drawSolidRect( drawRect );
     }
     
