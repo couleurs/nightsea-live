@@ -12,6 +12,17 @@
 
 #include <ctime>
 
+namespace cinder {
+  namespace gl {
+    void printError() {
+      GLenum errorFlag = getError();
+      if ( errorFlag != GL_NO_ERROR ) {
+        CI_LOG_E( "glGetError flag set: " << getErrorString( errorFlag ) );
+      }
+    }
+  }
+}
+
 using namespace ci;
 using namespace ci::app;
 using namespace std;
@@ -27,59 +38,109 @@ public:
 	void setup() override;
 	void mouseDown( MouseEvent event ) override;
 	void update() override;
-	void draw() override;
   
 private:
   void initShaderFiles();
   void loadShaders();
   
+  void setupUI();
+  void setupScene();
+  
   void updateOSC();
   void updateUI();
   void updateShaders();
+  
+  void drawUI();
+  void drawScene();
   
   void clearFBO( gl::FboRef fbo );
   
   osc::Listener           mOSCIn;
   
+  // Source
   gl::FboRef              mSourceFbo;
+  gl::GlslProgRef         mCellularShader;
   
+  // Feedback
   gl::FboRef              mFeedbackFboPingPong;
   gl::Texture2dRef        mFeedbackTextureFboPingPong[ 2 ];
   size_t                  mFeedbackPing = 0;
   size_t                  mFeedbackPong = 1;
+  gl::GlslProgRef         mFeedbackShader;
   
+  // Post-Processing
   gl::FboRef              mPostProcessingFboPingPong;
   gl::Texture2dRef        mPostProcessingTextureFboPingPong[ 2 ];
   size_t                  mPostProcessingPing = 0;
   size_t                  mPostProcessingPong = 1;
   
-  gl::GlslProgRef         mCellularShader;
-  
-  gl::GlslProgRef         mFeedbackShader;
-  
+  // Edge Detection
   gl::GlslProgRef         mEdgeDetectionShader;
   float                   mEdgeDetectionMixAmount = .5f;
   float                   mEdgeDetectionThreshold = .05f;
   
+  // Mask
   gl::GlslProgRef         mMaskShader;
   float                   mMaskMixAmount = 1.f;
   float                   mMaskSharpness = .05f;
   float                   mMaskRadius    = .5f;
+  
+  // LUT
+  gl::GlslProgRef         mLUTShader;
+  float                   mLUTMixAmount = 1.f;
+  
+  // Window Management
+  ci::app::WindowRef			mUIWindow, mSceneWindow;
+  
+  bool                    mSceneIsSetup = false;
   
   std::vector<File>       mShaderFiles;
 };
 
 FadingWavesApp::FadingWavesApp()
 {
-  ////////////////////////////////////////////////////////////////////////////
   // OSC
   mOSCIn.setup( 3000 );
+  
+  // Window Management
+  mUIWindow = getWindow();
+  mUIWindow->setTitle( "Night Sea: Parameters" );
+  mUIWindow->getSignalDraw().connect( bind( &FadingWavesApp::drawUI, this ) );
+  
+  mSceneWindow = createWindow( Window::Format().size( 1280, 720 ) );
+  mSceneWindow->setTitle( "Night Sea: Scene" );
+  mSceneWindow->getSignalDraw().connect( bind( &FadingWavesApp::drawScene, this ) );
 }
 
 void FadingWavesApp::setup()
 {
-  auto w = getWindowWidth();
-  auto h = getWindowHeight();
+  setupUI();
+  setupScene();
+}
+
+void FadingWavesApp::setupUI()
+{
+  mUIWindow->getRenderer()->makeCurrentContext();
+  
+  // UI
+  ui::initialize( ui::Options()
+                 .fonts( {
+                          { getAssetPath( "fonts/Roboto-Medium.ttf" ), 14.f },
+                          { getAssetPath( "fonts/Roboto-MediumItalic.ttf" ), 14.f },
+                          { getAssetPath( "fonts/Roboto-BoldItalic.ttf" ), 14.f },
+                          { getAssetPath( "fonts/fontawesome.ttf" ), 14.f }
+                         } )
+                 .window( mUIWindow )
+                 .frameRounding( 0.0f )
+                 );
+}
+
+void FadingWavesApp::setupScene()
+{
+  mSceneWindow->getRenderer()->makeCurrentContext();
+  
+  auto w = mSceneWindow->getWidth();
+  auto h = mSceneWindow->getHeight();
   
   // Set up the FBOs
   gl::Fbo::Format feedbackFormat, postProcessingFormat;
@@ -104,8 +165,7 @@ void FadingWavesApp::setup()
   initShaderFiles();
   loadShaders();
   
-  // UI
-  ui::initialize();
+  mSceneIsSetup = true;
 }
 
 // Shader paths
@@ -178,7 +238,50 @@ void FadingWavesApp::updateOSC()
 
 void FadingWavesApp::updateUI()
 {
-  ui::Text( "FPS: %d", (int)getAverageFps() );
+  // Draw UI ----------------------------------------------------------------
+  {
+    ui::ScopedMainMenuBar mainMenu;
+    ui::ScopedFont font( "Roboto-BoldItalic" );
+    
+    if ( ui::BeginMenu( "NightSea" ) ) {
+      if ( ui::MenuItem( "QUIT" ) ) {
+        quit();
+      }
+      ui::EndMenu();
+    }
+  }
+  
+  {
+    ui::ScopedWindow win( "Drawing" );
+    
+    if ( ui::CollapsingHeader( "Edge Detection" ) ) {
+      ui::SliderFloat( "ED Threshold", &mEdgeDetectionThreshold, 0.f, 1.f );
+      ui::SliderFloat( "ED Mix",       &mEdgeDetectionMixAmount, 0.f, 1.f );
+    }
+    
+    if ( ui::CollapsingHeader( "Vignette" ) ) {
+      ui::SliderFloat( "V Sharpness", &mMaskSharpness, 0.f, 1.f );
+      ui::SliderFloat( "V Radius",    &mMaskRadius,    0.f, 1.f );
+      ui::SliderFloat( "V Mix",       &mMaskMixAmount, 0.f, 1.f );
+    }
+    
+    if ( ui::CollapsingHeader( "Distorsion" ) ) {
+      
+    }
+    
+    if ( ui::CollapsingHeader( "Blur" ) ) {
+      
+    }
+    
+    if ( ui::CollapsingHeader( "LUT" ) ) {
+      ui::SliderFloat( "LUT Mix", &mLUTMixAmount, 0.f, 1.f );
+    }
+  }
+  
+  {
+    ui::ScopedWindow win( "Performance" );
+    ui::Text( "FPS: %d", (int)getAverageFps() );
+  }
 }
 
 void FadingWavesApp::updateShaders()
@@ -198,9 +301,18 @@ void FadingWavesApp::updateShaders()
   if ( shadersNeedReload ) loadShaders();
 }
 
-void FadingWavesApp::draw()
+void FadingWavesApp::drawUI()
+{
+  gl::clear( ColorA( 0.f, 0.f, 0.05f, 1.f ) );
+  gl::color( ColorAf::white() );
+  gl::printError();
+}
+
+void FadingWavesApp::drawScene()
 {
   gl::clear();
+  
+  if ( !mSceneIsSetup ) return;
   
   {
 //    {
@@ -217,8 +329,8 @@ void FadingWavesApp::draw()
 //      }
 //    }
     
-    Rectf drawRect = Rectf( 0.f, 0.f, getWindowWidth(), getWindowHeight() );
-    vec2 resolution = getWindowSize();
+    Rectf drawRect = Rectf( 0.f, 0.f, mSceneWindow->getWidth(), mSceneWindow->getHeight() );
+    vec2 resolution = mSceneWindow->getSize();
     
     {
       // Basic Drawing with File watcher
