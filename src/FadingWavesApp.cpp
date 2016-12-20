@@ -87,6 +87,10 @@ private:
   float                   mMaskSharpness = .05f;
   float                   mMaskRadius    = .5f;
   
+  // Blur
+  gl::GlslProgRef         mBlurShader;
+  float                   mBlurAmount = 1.f;
+  
   // LUT
   gl::GlslProgRef         mLUTShader;
   float                   mLUTMixAmount = 1.f;
@@ -182,6 +186,7 @@ static fs::path cellularPath      = "shaders/cellular.frag";
 static fs::path feedbackPath      = "shaders/feedback.frag";
 static fs::path edgeDetectionPath = "shaders/edge_detection.frag";
 static fs::path maskPath          = "shaders/mask.frag";
+static fs::path blurPath          = "shaders/blur.frag";
 
 void FadingWavesApp::initShaderFiles()
 {
@@ -208,15 +213,21 @@ void FadingWavesApp::loadShaders()
   
   DataSourceRef edgeDetectionFrag = app::loadAsset( edgeDetectionPath );
   mEdgeDetectionShader = gl::GlslProg::create( gl::GlslProg::Format()
-                                         .version( 330 )
-                                         .vertex( vert )
-                                         .fragment( edgeDetectionFrag ) );
+                                              .version( 330 )
+                                              .vertex( vert )
+                                              .fragment( edgeDetectionFrag ) );
   
   DataSourceRef maskFrag = app::loadAsset( maskPath );
   mMaskShader = gl::GlslProg::create( gl::GlslProg::Format()
                                       .version( 330 )
                                       .vertex( vert )
                                       .fragment( maskFrag ) );
+  
+  DataSourceRef blurFrag = app::loadAsset( blurPath );
+  mBlurShader = gl::GlslProg::create( gl::GlslProg::Format()
+                                     .version( 330 )
+                                     .vertex( vert )
+                                     .fragment( blurFrag ) );
 }
 
 void FadingWavesApp::mouseDown( MouseEvent event )
@@ -383,8 +394,8 @@ void FadingWavesApp::drawScene()
         // Radius
         // Sharpness
         // Mix
-//      gl::ScopedFramebuffer scopedFBO( mPostProcessingFboPingPong );
-//      gl::drawBuffer( GL_COLOR_ATTACHMENT0 + (GLenum)mPostProcessingPing );
+      gl::ScopedFramebuffer scopedFBO( mPostProcessingFboPingPong );
+      gl::drawBuffer( GL_COLOR_ATTACHMENT0 + (GLenum)mPostProcessingPing );
       gl::ScopedGlslProg shader( mMaskShader );
       gl::ScopedTextureBind inputTexture( mPostProcessingTextureFboPingPong[ mPostProcessingPong ], 0 );
       mMaskShader->uniform( "u_resolution", resolution );
@@ -402,8 +413,17 @@ void FadingWavesApp::drawScene()
     // Dist3 Intensity
     // Mix
   
-  // Blur
-    // Radius
+    {
+      // Blur
+        // Amount
+      gl::ScopedGlslProg shader( mBlurShader );
+      gl::ScopedTextureBind inputTexture( mPostProcessingTextureFboPingPong[ mPostProcessingPong ], 0 );
+      mBlurShader->uniform( "u_resolution", resolution );
+      mBlurShader->uniform( "u_blur_direction", vec2( 1.f, 0.f ) );
+      gl::drawSolidRect( drawRect );
+      mPostProcessingPing = mPostProcessingPong;
+      mPostProcessingPong = ( mPostProcessingPing + 1 ) % 2;
+    }
   
   // Color Post-Processing (Agnes Martin)
     // Palette
@@ -413,6 +433,8 @@ void FadingWavesApp::drawScene()
     // Mix
     
   }
+  
+  gl::printError();
 }
 
 void FadingWavesApp::clearFBO( gl::FboRef fbo )
