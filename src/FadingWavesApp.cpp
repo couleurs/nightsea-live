@@ -93,7 +93,8 @@ private:
   
   // LUT
   gl::GlslProgRef         mLUTShader;
-  float                   mLUTMixAmount = 1.f;
+  float                   mLUTMixAmount = 0.f;
+  ci::gl::Texture2dRef    mLUT;
   
   // Window Management
   ci::app::WindowRef			mUIWindow, mSceneWindow;
@@ -150,7 +151,7 @@ void FadingWavesApp::setupScene()
   initShaderFiles();
   loadShaders();
   
-  // FBOs
+  // FBOs & Textures
   resizeScene();
   
   mSceneIsSetup = true;
@@ -179,6 +180,9 @@ void FadingWavesApp::resizeScene()
   clearFBO( mFeedbackFboPingPong );
   clearFBO( mPostProcessingFboPingPong );
   clearFBO( mSourceFbo );
+  
+  auto lutData = app::loadAsset( "images/lookup_couleurs_bw.png" );
+  mLUT = gl::Texture2d::create( loadImage( lutData ) );
 }
 
 // Shader paths
@@ -187,6 +191,7 @@ static fs::path feedbackPath      = "shaders/feedback.frag";
 static fs::path edgeDetectionPath = "shaders/edge_detection.frag";
 static fs::path maskPath          = "shaders/mask.frag";
 static fs::path blurPath          = "shaders/blur.frag";
+static fs::path LUTPath           = "shaders/lut.frag";
 
 void FadingWavesApp::initShaderFiles()
 {
@@ -228,6 +233,13 @@ void FadingWavesApp::loadShaders()
                                      .version( 330 )
                                      .vertex( vert )
                                      .fragment( blurFrag ) );
+  
+  DataSourceRef LUTFrag = app::loadAsset( LUTPath );
+  mLUTShader = gl::GlslProg::create( gl::GlslProg::Format()
+                                     .version( 330 )
+                                     .vertex( vert )
+                                     .fragment( LUTFrag )
+                                     .define( "LUT_FLIP_Y" ) );
 }
 
 void FadingWavesApp::mouseDown( MouseEvent event )
@@ -290,7 +302,7 @@ void FadingWavesApp::updateUI()
     }
     
     if ( ui::CollapsingHeader( "Blur" ) ) {
-      
+      ui::SliderFloat( "B Amount", &mBlurAmount, 0.f, 1.f );
     }
     
     if ( ui::CollapsingHeader( "LUT" ) ) {
@@ -406,16 +418,20 @@ void FadingWavesApp::drawScene()
       mPostProcessingPing = mPostProcessingPong;
       mPostProcessingPong = ( mPostProcessingPing + 1 ) % 2;
     }
-  
-  // Distorsion
-    // Dist1 Intensity
-    // Dist2 Intensity
-    // Dist3 Intensity
-    // Mix
+    
+    {
+      // Distorsion
+        // Dist1 Intensity
+        // Dist2 Intensity
+        // Dist3 Intensity
+        // Mix
+    }
   
     {
       // Blur
         // Amount
+      gl::ScopedFramebuffer scopedFBO( mPostProcessingFboPingPong );
+      gl::drawBuffer( GL_COLOR_ATTACHMENT0 + (GLenum)mPostProcessingPing );
       gl::ScopedGlslProg shader( mBlurShader );
       gl::ScopedTextureBind inputTexture( mPostProcessingTextureFboPingPong[ mPostProcessingPong ], 0 );
       mBlurShader->uniform( "u_resolution", resolution );
@@ -425,9 +441,16 @@ void FadingWavesApp::drawScene()
       mPostProcessingPong = ( mPostProcessingPing + 1 ) % 2;
     }
   
-  // Color Post-Processing (Agnes Martin)
-    // Palette
-    // Mix
+    {
+      // LUT (Agnes Martin)
+        // Palette
+        // Mix
+      gl::ScopedGlslProg shader( mLUTShader );
+      gl::ScopedTextureBind inputTexture( mPostProcessingTextureFboPingPong[ mPostProcessingPong ], 0 );
+      gl::ScopedTextureBind lookup_table( mLUT, 1 );
+      mLUTShader->uniform( "u_mix_amount", mLUTMixAmount );
+      gl::drawSolidRect( drawRect );
+    }
   
   // Visual Feedback Loop
     // Mix
