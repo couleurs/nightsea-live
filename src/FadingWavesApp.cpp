@@ -53,6 +53,8 @@ private:
   void drawUI();
   void drawScene();
   
+  void resizeScene();
+  
   void clearFBO( gl::FboRef fbo );
   
   osc::Listener           mOSCIn;
@@ -110,6 +112,7 @@ FadingWavesApp::FadingWavesApp()
   mSceneWindow = createWindow( Window::Format().size( 1280, 720 ) );
   mSceneWindow->setTitle( "Night Sea: Scene" );
   mSceneWindow->getSignalDraw().connect( bind( &FadingWavesApp::drawScene, this ) );
+  mSceneWindow->getSignalResize().connect( bind( &FadingWavesApp::resizeScene, this ) );
 }
 
 void FadingWavesApp::setup()
@@ -139,6 +142,18 @@ void FadingWavesApp::setupScene()
 {
   mSceneWindow->getRenderer()->makeCurrentContext();
   
+  // Shaders
+  initShaderFiles();
+  loadShaders();
+  
+  // FBOs
+  resizeScene();
+  
+  mSceneIsSetup = true;
+}
+
+void FadingWavesApp::resizeScene()
+{
   auto w = mSceneWindow->getWidth();
   auto h = mSceneWindow->getHeight();
   
@@ -160,12 +175,6 @@ void FadingWavesApp::setupScene()
   clearFBO( mFeedbackFboPingPong );
   clearFBO( mPostProcessingFboPingPong );
   clearFBO( mSourceFbo );
-  
-  // Shaders
-  initShaderFiles();
-  loadShaders();
-  
-  mSceneIsSetup = true;
 }
 
 // Shader paths
