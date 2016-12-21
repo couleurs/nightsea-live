@@ -89,7 +89,7 @@ private:
   
   // Blur
   gl::GlslProgRef         mBlurShader;
-  float                   mBlurAmount = 1.f;
+  float                   mBlurRadius = 1.f;
   
   // LUT
   gl::GlslProgRef         mLUTShader;
@@ -302,7 +302,7 @@ void FadingWavesApp::updateUI()
     }
     
     if ( ui::CollapsingHeader( "Blur" ) ) {
-      ui::SliderFloat( "B Amount", &mBlurAmount, 0.f, 1.f );
+      ui::SliderFloat( "B Amount", &mBlurRadius, 0.f, 8.f );
     }
     
     if ( ui::CollapsingHeader( "LUT" ) ) {
@@ -430,15 +430,19 @@ void FadingWavesApp::drawScene()
     {
       // Blur
         // Amount
-      gl::ScopedFramebuffer scopedFBO( mPostProcessingFboPingPong );
-      gl::drawBuffer( GL_COLOR_ATTACHMENT0 + (GLenum)mPostProcessingPing );
-      gl::ScopedGlslProg shader( mBlurShader );
-      gl::ScopedTextureBind inputTexture( mPostProcessingTextureFboPingPong[ mPostProcessingPong ], 0 );
-      mBlurShader->uniform( "u_resolution", resolution );
-      mBlurShader->uniform( "u_blur_direction", vec2( 1.f, 0.f ) );
-      gl::drawSolidRect( drawRect );
-      mPostProcessingPing = mPostProcessingPong;
-      mPostProcessingPong = ( mPostProcessingPing + 1 ) % 2;
+      int iterations = 2;
+      for ( int i = 0; i < iterations; i++ ) {
+        gl::ScopedFramebuffer scopedFBO( mPostProcessingFboPingPong );
+        gl::drawBuffer( GL_COLOR_ATTACHMENT0 + (GLenum)mPostProcessingPing );
+        gl::ScopedGlslProg shader( mBlurShader );
+        mBlurShader->uniform( "u_resolution", resolution );
+        gl::ScopedTextureBind inputTexture( mPostProcessingTextureFboPingPong[ mPostProcessingPong ], 0 );
+        vec2 direction = ( i % 2 == 0 ) ? vec2( mBlurRadius, 0.f ) : vec2( 0.f, mBlurRadius );
+        mBlurShader->uniform( "u_blur_direction", direction );
+        gl::drawSolidRect( drawRect );
+        mPostProcessingPing = mPostProcessingPong;
+        mPostProcessingPong = ( mPostProcessingPing + 1 ) % 2;
+      }
     }
   
     {
