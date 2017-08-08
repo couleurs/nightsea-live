@@ -11,13 +11,17 @@ vec2 random2( vec2 p ) {
   return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);
 }
 
+float circleSDF( vec2 p ) {
+  return length( p - .5 ) * 2.;
+}
+
 void main() {
   vec2 st = gl_FragCoord.xy / u_resolution.xy;
   st.x *= u_resolution.x / u_resolution.y;
   vec3 color = vec3(.0);
 
   // Scale
-  st *= 30.;
+  st *= 20.;
 
   // Tile the space
   vec2 i_st = floor(st);
@@ -59,5 +63,6 @@ void main() {
   // Show isolines
 //  color -= step(.7,abs(sin(27.0*m_dist)))*.5;
 
-  oColor = vec4(color,1.0);
+  // oColor = vec4(color,1.0);
+  oColor = vec4( vec3( step( .2, circleSDF( vec2( vTexCoord0.x + .1 * sin( 5. * u_time ), vTexCoord0.y ) ) ) ), 1. );
 }

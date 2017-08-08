@@ -9,6 +9,13 @@ in vec2 vTexCoord0;
 
 out vec4 oColor;
 
+vec2 scaleCentered(vec2 uv, float scale) {
+  return ((uv - .5) * scale) + .5;
+}
+
 void main() {
-  oColor = texture( sourceTexture, vTexCoord0 );  
+  vec4 source = texture( sourceTexture, vTexCoord0 );
+  vec4 feedback = texture( feedbackTexture, scaleCentered( vTexCoord0, 1. ) );
+  oColor = mix(source, feedback, .9);
+  // oColor = feedback;
 }

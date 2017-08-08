@@ -28,15 +28,13 @@
 		5C10B9CE1DBD88270070123F /* OscListener.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C10B9BE1DBD88270070123F /* OscListener.cpp */; };
 		5C10B9CF1DBD88270070123F /* OscMessage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C10B9C01DBD88270070123F /* OscMessage.cpp */; };
 		5C10B9D01DBD88270070123F /* OscSender.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C10B9C21DBD88270070123F /* OscSender.cpp */; };
-		5C4E7A7B1DDD318A00B78834 /* imgui_user.inl in Resources */ = {isa = PBXBuildFile; fileRef = 5C4E79BA1DDD318A00B78834 /* imgui_user.inl */; };
 		5C4E7ACB1DDD318A00B78834 /* imgui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C4E7A431DDD318A00B78834 /* imgui.cpp */; };
 		5C4E7ACC1DDD318A00B78834 /* imgui_demo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C4E7A451DDD318A00B78834 /* imgui_demo.cpp */; };
 		5C4E7ACD1DDD318A00B78834 /* imgui_draw.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C4E7A461DDD318A00B78834 /* imgui_draw.cpp */; };
 		5C4E7AE41DDD318A00B78834 /* CinderImGui.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C4E7A761DDD318A00B78834 /* CinderImGui.cpp */; };
-		5C4E7AEC1DDD33F500B78834 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 5C4E7AEB1DDD33F500B78834 /* assets */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
 		AC54BA6EA8C54146AACBAC31 /* CinderApp.icns in Resources */ = {isa = PBXBuildFile; fileRef = 564FFEE539B64B9E97FC1770 /* CinderApp.icns */; };
-		F28FB318D4FB40A88DAAC40C /* FadingWavesApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EC2C06C06B8C4CAE85C4AD75 /* FadingWavesApp.cpp */; };
+		F28FB318D4FB40A88DAAC40C /* CouleursApp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EC2C06C06B8C4CAE85C4AD75 /* CouleursApp.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -84,8 +82,6 @@
 		5C10B9C21DBD88270070123F /* OscSender.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = OscSender.cpp; path = ../../cinder_0.9.0_mac/blocks/OSC/src/OscSender.cpp; sourceTree = "<group>"; };
 		5C10B9C31DBD88270070123F /* OscSender.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = OscSender.h; path = ../../cinder_0.9.0_mac/blocks/OSC/src/OscSender.h; sourceTree = "<group>"; };
 		5C4E79B81DDD318A00B78834 /* CinderImGui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CinderImGui.h; sourceTree = "<group>"; };
-		5C4E79B91DDD318A00B78834 /* imgui_user.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imgui_user.h; sourceTree = "<group>"; };
-		5C4E79BA1DDD318A00B78834 /* imgui_user.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = imgui_user.inl; sourceTree = "<group>"; };
 		5C4E7A421DDD318A00B78834 /* imconfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imconfig.h; sourceTree = "<group>"; };
 		5C4E7A431DDD318A00B78834 /* imgui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = imgui.cpp; sourceTree = "<group>"; };
 		5C4E7A441DDD318A00B78834 /* imgui.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = imgui.h; sourceTree = "<group>"; };
@@ -98,11 +94,11 @@
 		5C4E7A761DDD318A00B78834 /* CinderImGui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CinderImGui.cpp; sourceTree = "<group>"; };
 		5C4E7AEB1DDD33F500B78834 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../assets; sourceTree = "<group>"; };
 		5CFA1E3B1DDE21D9009E4F69 /* Watchdog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Watchdog.h; sourceTree = "<group>"; };
-		5DC6B680118644329E7A0053 /* FadingWaves_Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = "\"\""; path = FadingWaves_Prefix.pch; sourceTree = "<group>"; };
+		5DC6B680118644329E7A0053 /* Couleurs_Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Couleurs_Prefix.pch; sourceTree = "<group>"; };
 		6770A4F81E2C4B5EA193253D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		86E00851AB01436EA44144BF /* Resources.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Resources.h; path = ../include/Resources.h; sourceTree = "<group>"; };
-		8D1107320486CEB800E47090 /* FadingWaves.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FadingWaves.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		EC2C06C06B8C4CAE85C4AD75 /* FadingWavesApp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.cpp; name = FadingWavesApp.cpp; path = ../src/FadingWavesApp.cpp; sourceTree = "<group>"; };
+		8D1107320486CEB800E47090 /* Couleurs.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Couleurs.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		EC2C06C06B8C4CAE85C4AD75 /* CouleursApp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = CouleursApp.cpp; path = ../src/CouleursApp.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -140,7 +136,7 @@
 		080E96DDFE201D6D7F000001 /* Source */ = {
 			isa = PBXGroup;
 			children = (
-				EC2C06C06B8C4CAE85C4AD75 /* FadingWavesApp.cpp */,
+				EC2C06C06B8C4CAE85C4AD75 /* CouleursApp.cpp */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -175,7 +171,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8D1107320486CEB800E47090 /* FadingWaves.app */,
+				8D1107320486CEB800E47090 /* Couleurs.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -198,7 +194,7 @@
 			isa = PBXGroup;
 			children = (
 				86E00851AB01436EA44144BF /* Resources.h */,
-				5DC6B680118644329E7A0053 /* FadingWaves_Prefix.pch */,
+				5DC6B680118644329E7A0053 /* Couleurs_Prefix.pch */,
 			);
 			name = Headers;
 			sourceTree = "<group>";
@@ -298,8 +294,6 @@
 			isa = PBXGroup;
 			children = (
 				5C4E79B81DDD318A00B78834 /* CinderImGui.h */,
-				5C4E79B91DDD318A00B78834 /* imgui_user.h */,
-				5C4E79BA1DDD318A00B78834 /* imgui_user.inl */,
 			);
 			path = include;
 			sourceTree = "<group>";
@@ -356,9 +350,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		8D1107260486CEB800E47090 /* FadingWaves */ = {
+		8D1107260486CEB800E47090 /* Couleurs */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "FadingWaves" */;
+			buildConfigurationList = C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "Couleurs" */;
 			buildPhases = (
 				8D1107290486CEB800E47090 /* Resources */,
 				8D11072C0486CEB800E47090 /* Sources */,
@@ -368,10 +362,10 @@
 			);
 			dependencies = (
 			);
-			name = FadingWaves;
+			name = Couleurs;
 			productInstallPath = "$(HOME)/Applications";
 			productName = FadingWaves;
-			productReference = 8D1107320486CEB800E47090 /* FadingWaves.app */;
+			productReference = 8D1107320486CEB800E47090 /* Couleurs.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -381,7 +375,7 @@
 			isa = PBXProject;
 			attributes = {
 			};
-			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "FadingWaves" */;
+			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "Couleurs" */;
 			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 1;
@@ -396,7 +390,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				8D1107260486CEB800E47090 /* FadingWaves */,
+				8D1107260486CEB800E47090 /* Couleurs */,
 			);
 		};
 /* End PBXProject section */
@@ -406,8 +400,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5C4E7AEC1DDD33F500B78834 /* assets in Resources */,
-				5C4E7A7B1DDD318A00B78834 /* imgui_user.inl in Resources */,
 				AC54BA6EA8C54146AACBAC31 /* CinderApp.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -432,7 +424,7 @@
 				5C10B9C41DBD88270070123F /* IpEndpointName.cpp in Sources */,
 				5C10B9CC1DBD88270070123F /* OscTypes.cpp in Sources */,
 				5C10B9D01DBD88270070123F /* OscSender.cpp in Sources */,
-				F28FB318D4FB40A88DAAC40C /* FadingWavesApp.cpp in Sources */,
+				F28FB318D4FB40A88DAAC40C /* CouleursApp.cpp in Sources */,
 				5C10B9CF1DBD88270070123F /* OscMessage.cpp in Sources */,
 				5C4E7ACB1DDD318A00B78834 /* imgui.cpp in Sources */,
 			);
@@ -451,7 +443,7 @@
 				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = FadingWaves_Prefix.pch;
+				GCC_PREFIX_HEADER = Couleurs_Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -468,7 +460,7 @@
 				INSTALL_PATH = "$(HOME)/Applications";
 				OTHER_LDFLAGS = "\"$(CINDER_PATH)/lib/libcinder_d.a\"";
 				PRODUCT_BUNDLE_IDENTIFIER = "org.libcinder.${PRODUCT_NAME:rfc1034identifier}";
-				PRODUCT_NAME = FadingWaves;
+				PRODUCT_NAME = Couleurs;
 				SYMROOT = ./build;
 				WRAPPER_EXTENSION = app;
 			};
@@ -485,7 +477,7 @@
 				GCC_INLINES_ARE_PRIVATE_EXTERN = YES;
 				GCC_OPTIMIZATION_LEVEL = 3;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = FadingWaves_Prefix.pch;
+				GCC_PREFIX_HEADER = Couleurs_Prefix.pch;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"NDEBUG=1",
 					"$(inherited)",
@@ -502,7 +494,7 @@
 				INSTALL_PATH = "$(HOME)/Applications";
 				OTHER_LDFLAGS = "\"$(CINDER_PATH)/lib/libcinder.a\"";
 				PRODUCT_BUNDLE_IDENTIFIER = "org.libcinder.${PRODUCT_NAME:rfc1034identifier}";
-				PRODUCT_NAME = FadingWaves;
+				PRODUCT_NAME = Couleurs;
 				STRIP_INSTALLED_PRODUCT = YES;
 				SYMROOT = ./build;
 				WRAPPER_EXTENSION = app;
@@ -546,7 +538,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "FadingWaves" */ = {
+		C01FCF4A08A954540054247B /* Build configuration list for PBXNativeTarget "Couleurs" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C01FCF4B08A954540054247B /* Debug */,
@@ -555,7 +547,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "FadingWaves" */ = {
+		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "Couleurs" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C01FCF4F08A954540054247B /* Debug */,

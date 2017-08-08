@@ -1,0 +1,36 @@
+{
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "2DEE13513E787DA04AD2C0CB3D93F067C441B880" : 9223372036854775807,
+    "0C95EEA8FF0C0E695973CB8EA4E7E70E385D606F" : 9223372036854775807,
+    "C2E3EEDDF7D33C9D21B8959E3E82FF5CA14DCD11" : 9223372036854775807
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "F66B65A8-789E-4545-8DA3-E9B19EF1EE5B",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "2DEE13513E787DA04AD2C0CB3D93F067C441B880" : "cinder_0.9.0_mac\/blocks\/Cinder-ImGui\/",
+    "0C95EEA8FF0C0E695973CB8EA4E7E70E385D606F" : "cinder_0.9.0_mac\/blocks\/Cinder-ImGui\/lib\/imgui\/",
+    "C2E3EEDDF7D33C9D21B8959E3E82FF5CA14DCD11" : "cinder_0.9.0_mac\/blocks\/Watchdog\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "FadingWaves",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "xcode\/FadingWaves.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/ocornut\/imgui.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "0C95EEA8FF0C0E695973CB8EA4E7E70E385D606F"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/simongeilfus\/Cinder-ImGui.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "2DEE13513E787DA04AD2C0CB3D93F067C441B880"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/simongeilfus\/Watchdog.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "C2E3EEDDF7D33C9D21B8959E3E82FF5CA14DCD11"
+    }
+  ]
+}
