@@ -1,8 +1,8 @@
 #version 330
 
-uniform sampler2D	inputTexture;
-uniform sampler2D	lookup_table;
-uniform float     u_mix_amount;
+uniform sampler2D	u_texInput;
+uniform sampler2D	u_texLUT;
+uniform float     u_mixAmount;
 
 in vec2 vTexCoord0;
 
@@ -48,7 +48,7 @@ vec4 lookup( vec4 texture_color, sampler2D lookup_table ) {
 
 void main()
 {
-  vec4 color = texture( inputTexture, vTexCoord0 );
-  vec4 newColor = lookup( color, lookup_table );
-	oColor = mix( color, newColor, u_mix_amount );
+  vec4 color = texture( u_texInput, vTexCoord0 );
+  vec4 newColor = lookup( color, u_texLUT );
+	oColor = mix( color, newColor, u_mixAmount );  
 }

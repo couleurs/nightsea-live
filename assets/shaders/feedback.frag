@@ -1,9 +1,10 @@
 #version 330
 
-// uniform vec2 u_resolution;
-// uniform float mix_amount;
-uniform sampler2D sourceTexture;
-uniform sampler2D feedbackTexture;
+uniform sampler2D u_texSource;
+uniform sampler2D u_texFeedback;
+
+uniform float u_feedbackScale;
+uniform float u_feedbackAmount;
 
 in vec2 vTexCoord0;
 
@@ -14,8 +15,7 @@ vec2 scaleCentered(vec2 uv, float scale) {
 }
 
 void main() {
-  vec4 source = texture( sourceTexture, vTexCoord0 );
-  vec4 feedback = texture( feedbackTexture, scaleCentered( vTexCoord0, 1. ) );
-  oColor = mix(source, feedback, .9);
-  // oColor = feedback;
+  vec4 source = texture( u_texSource, vTexCoord0 );
+  vec4 feedback = texture( u_texFeedback, scaleCentered( vTexCoord0, u_feedbackScale ) );
+  oColor = mix(source, feedback, u_feedbackAmount);  
 }

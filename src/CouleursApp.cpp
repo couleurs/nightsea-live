@@ -1,8 +1,11 @@
 #define CI_MIN_LOG_LEVEL 0
 
 // Dimensions
-#define WIDTH 640
-#define HEIGHT 640
+#define SCENE_WIDTH 640
+#define SCENE_HEIGHT 640
+#define UI_WIDTH 600
+#define UI_HEIGHT 400
+#define WINDOW_PADDING 20
 
 // Shader
 #define SCENE_SHADER "shaders/cellular.frag"
@@ -53,9 +56,9 @@ typedef struct {
 class CouleursApp : public App {
 public:
   CouleursApp();
-	void setup() override;
-	void mouseDown( MouseEvent event ) override;
-	void update() override;
+  void setup() override;
+  void mouseDown( MouseEvent event ) override;
+  void update() override;
   
 private:
   void initShaderFiles();
@@ -86,17 +89,14 @@ private:
   gl::GlslProgRef         mSceneShader;
   
   // Feedback
-  gl::FboRef              mFeedbackFboPingPong;
-  gl::Texture2dRef        mFeedbackTextureFboPingPong[ 2 ];
-  size_t                  mFeedbackPing = 0;
-  size_t                  mFeedbackPong = 1;
+  gl::FboRef              mFeedbackFbo1;
+  gl::FboRef              mFeedbackFbo2;
   gl::GlslProgRef         mFeedbackShader;
+  int                     mFeedbackFboCount = 0;
+  float                   mFeedbackAmount = .95f;
+  float                   mFeedbackScale = .99f;
   
   // Post-Processing
-  gl::FboRef              mPostProcessingFboPingPong;
-  gl::Texture2dRef        mPostProcessingTextureFboPingPong[ 2 ];
-  size_t                  mPostProcessingPing = 0;
-  size_t                  mPostProcessingPong = 1;
   ci::gl::Texture2dRef    mLUT;
   gl::GlslProgRef         mPostProcessingShader;
   float                   mEdgeDetectionMixAmount = .0f;
@@ -105,7 +105,7 @@ private:
   float                   mMaskSharpness = .05f;
   float                   mMaskRadius    = .5f;
   float                   mBlurRadius = 0.f;
-  float                   mLUTMixAmount = 0.f;
+  float                   mLUTMixAmount = .9f;
   
   
   // Window Management
@@ -123,11 +123,13 @@ CouleursApp::CouleursApp()
   
   // Window Management
   mUIWindow = getWindow();
-  mUIWindow->setTitle( "Night Sea: Parameters" );
+  mUIWindow->setTitle( "Couleurs: UI" );
   mUIWindow->getSignalDraw().connect( bind( &CouleursApp::drawUI, this ) );
+  mUIWindow->setPos(WINDOW_PADDING, 3. * WINDOW_PADDING);
+  mUIWindow->setSize(UI_WIDTH, UI_HEIGHT);
   
-  mSceneWindow = createWindow( Window::Format().size( WIDTH, HEIGHT ) );
-  mSceneWindow->setTitle( "Night Sea: Scene" );
+  mSceneWindow = createWindow( Window::Format().size( SCENE_WIDTH, SCENE_HEIGHT ) );
+  mSceneWindow->setTitle( "Couleurs: Render" );
   mSceneWindow->getSignalDraw().connect( bind( &CouleursApp::drawScene, this ) );
   mSceneWindow->getSignalResize().connect( bind( &CouleursApp::resizeScene, this ) );
 }
@@ -146,11 +148,11 @@ void CouleursApp::setupUI()
   // UI
   ui::initialize( ui::Options()
                  .fonts( {
-//                          { getAssetPath( "fonts/Roboto-Medium.ttf" ), 14.f },
-//                          { getAssetPath( "fonts/Roboto-MediumItalic.ttf" ), 14.f },
-//                          { getAssetPath( "fonts/Roboto-BoldItalic.ttf" ), 14.f },
-//                          { getAssetPath( "fonts/fontawesome.ttf" ), 14.f }
-                         } )
+    //                          { getAssetPath( "fonts/Roboto-Medium.ttf" ), 14.f },
+    //                          { getAssetPath( "fonts/Roboto-MediumItalic.ttf" ), 14.f },
+    //                          { getAssetPath( "fonts/Roboto-BoldItalic.ttf" ), 14.f },
+    //                          { getAssetPath( "fonts/fontawesome.ttf" ), 14.f }
+  } )
                  .window( mUIWindow )
                  .frameRounding( 0.0f )
                  );
@@ -191,25 +193,14 @@ void CouleursApp::resizeScene()
 {
   auto w = mSceneWindow->getWidth();
   auto h = mSceneWindow->getHeight();
-  
-  // Set up the FBOs
-  gl::Fbo::Format feedbackFormat, postProcessingFormat;
-  feedbackFormat.disableDepth();
-  postProcessingFormat.disableDepth();
-  for ( size_t i = 0; i < 2; ++i ) {
-    mFeedbackTextureFboPingPong[ i ] = gl::Texture2d::create( w, h );
-    feedbackFormat.attachment( GL_COLOR_ATTACHMENT0 + (GLenum)i, mFeedbackTextureFboPingPong[ i ] );
-    
-    mPostProcessingTextureFboPingPong[ i ] = gl::Texture2d::create( w, h );
-    postProcessingFormat.attachment( GL_COLOR_ATTACHMENT0 + (GLenum)i, mPostProcessingTextureFboPingPong[ i ] );
-  }
-  mFeedbackFboPingPong = gl::Fbo::create( w, h, feedbackFormat );
-  mPostProcessingFboPingPong = gl::Fbo::create( w, h, postProcessingFormat );
+
   mSceneFbo = gl::Fbo::create( w, h );
+  mFeedbackFbo1 = gl::Fbo::create( w, h );
+  mFeedbackFbo2 = gl::Fbo::create( w, h );
   
   clearFBO( mSceneFbo );
-  clearFBO( mFeedbackFboPingPong );
-  clearFBO( mPostProcessingFboPingPong );
+  clearFBO( mFeedbackFbo1 );
+  clearFBO( mFeedbackFbo2 );
 }
 
 // Shader paths
@@ -244,10 +235,10 @@ void CouleursApp::loadShaders()
                                            .vertex( vert )
                                            .fragment( feedbackFrag ) );
     mPostProcessingShader = gl::GlslProg::create( gl::GlslProg::Format()
-                                           .version( 330 )
-                                           .vertex( vert )
-                                           .fragment( postProcessingFrag )
-                                           .define( "LUT_FLIP_Y" ) );
+                                                 .version( 330 )
+                                                 .vertex( vert )
+                                                 .fragment( postProcessingFrag )
+                                                 .define( "LUT_FLIP_Y" ) );
   }
   
   catch ( const std::exception &e ) {
@@ -275,11 +266,11 @@ void CouleursApp::updateOSC()
     mOSCIn.getNextMessage( &message );
     auto address = message.getAddress();
     CI_LOG_D( "address from Live: " << address );
-//      string deviceId = message.getArgAsString( 0 );
-//      float x = message.getArgAsFloat( 1 );
-//      float y = message.getArgAsFloat( 2 );
-//      float z = message.getArgAsFloat( 3 );
-//      float w = message.getArgAsFloat( 4 );
+    //      string deviceId = message.getArgAsString( 0 );
+    //      float x = message.getArgAsFloat( 1 );
+    //      float y = message.getArgAsFloat( 2 );
+    //      float z = message.getArgAsFloat( 3 );
+    //      float w = message.getArgAsFloat( 4 );
   }
 }
 
@@ -288,7 +279,7 @@ void CouleursApp::updateUI()
   // Draw UI ----------------------------------------------------------------
   {
     ui::ScopedMainMenuBar mainMenu;
-//    ui::ScopedFont font( "Roboto-BoldItalic" );
+    //    ui::ScopedFont font( "Roboto-BoldItalic" );
     
     if ( ui::BeginMenu( "NightSea" ) ) {
       if ( ui::MenuItem( "QUIT" ) ) {
@@ -299,29 +290,24 @@ void CouleursApp::updateUI()
   }
   
   {
-    ui::ScopedWindow win( "Drawing" );
+    ui::ScopedWindow win( "Parameters" );
     
-    if ( ui::CollapsingHeader( "Edge Detection" ) ) {
-      ui::SliderFloat( "ED Threshold", &mEdgeDetectionThreshold, 0.f, 1.f );
-      ui::SliderFloat( "ED Mix",       &mEdgeDetectionMixAmount, 0.f, 1.f );
+    if ( ui::CollapsingHeader( "Scene", ImGuiTreeNodeFlags_DefaultOpen ) ) {
     }
     
-    if ( ui::CollapsingHeader( "Vignette" ) ) {
-      ui::SliderFloat( "V Sharpness", &mMaskSharpness, 0.f, 1.f );
-      ui::SliderFloat( "V Radius",    &mMaskRadius,    0.f, 1.f );
-      ui::SliderFloat( "V Mix",       &mMaskMixAmount, 0.f, 1.f );
+    if ( ui::CollapsingHeader( "Feedback", ImGuiTreeNodeFlags_DefaultOpen ) ) {
+      ui::SliderFloat( "Feedback Scale",      &mFeedbackScale,          0.f, 2.f );
+      ui::SliderFloat( "Feedback Amount",     &mFeedbackAmount,         0.f, 1.f );
     }
     
-    if ( ui::CollapsingHeader( "Distorsion" ) ) {
-      
-    }
-    
-    if ( ui::CollapsingHeader( "Blur" ) ) {
-      ui::SliderFloat( "B Amount", &mBlurRadius, 0.f, 8.f );
-    }
-    
-    if ( ui::CollapsingHeader( "LUT" ) ) {
-      ui::SliderFloat( "LUT Mix", &mLUTMixAmount, 0.f, 1.f );
+    if ( ui::CollapsingHeader( "Post Processing", ImGuiTreeNodeFlags_DefaultOpen ) ) {
+      ui::SliderFloat( "Edge Threshold",      &mEdgeDetectionThreshold, 0.f, 1.f );
+      ui::SliderFloat( "Edge Mix",            &mEdgeDetectionMixAmount, 0.f, 1.f );
+      ui::SliderFloat( "Vignette Sharpness",  &mMaskSharpness,          0.f, 1.f );
+      ui::SliderFloat( "Vignette Radius",     &mMaskRadius,             0.f, 1.f );
+      ui::SliderFloat( "Vignette Mix",        &mMaskMixAmount,          0.f, 1.f );
+      ui::SliderFloat( "Blur Amount",         &mBlurRadius,             0.f, 8.f );
+      ui::SliderFloat( "LUT Mix",             &mLUTMixAmount,           0.f, 1.f );
     }
   }
   
@@ -336,7 +322,7 @@ void CouleursApp::updateShaders()
   bool shadersNeedReload = false;
   for (size_t i = 0; i < mShaderFiles.size(); i++) {
     auto file = mShaderFiles[i];
-    time_t lastUpdate = fs::last_write_time( file.path );    
+    time_t lastUpdate = fs::last_write_time( file.path );
     if ( difftime( lastUpdate, file.modified ) > 0 ) {
       // Shader has changed: reload shader and update File
       file.modified = lastUpdate;
@@ -382,24 +368,34 @@ void CouleursApp::drawScene()
     }
     
     {
-      // Feedback
-      gl::ScopedFramebuffer scopedFBO( mFeedbackFboPingPong );
-      gl::drawBuffer( GL_COLOR_ATTACHMENT0 + (GLenum)mFeedbackPing );
-      gl::ScopedGlslProg shader( mFeedbackShader );
-      gl::ScopedTextureBind sourceTexture( mSceneFbo->getColorTexture(), 0 );
-      gl::ScopedTextureBind feedbackTexture( mFeedbackTextureFboPingPong[ mFeedbackPong ], 1 );
-      gl::drawSolidRect( drawRect );
-      mFeedbackPing = mFeedbackPong;
-      mFeedbackPong = ( mFeedbackPing + 1 ) % 2;
-    }
-    
-    {
-      // Post Processing
-      gl::ScopedGlslProg shader( mPostProcessingShader );
-      gl::ScopedTextureBind inputTexture( mFeedbackTextureFboPingPong[ mFeedbackPong ], 0 );
-      gl::ScopedTextureBind lookup_table( mLUT, 1 );
-      mPostProcessingShader->uniform( "u_mix_amount", mLUTMixAmount );
-      gl::drawSolidRect( drawRect );
+      bool fboSwap = (mFeedbackFboCount % 2 == 0);
+      auto fboOut = fboSwap ? mFeedbackFbo1 : mFeedbackFbo2;
+      auto fboIn =  fboSwap ? mFeedbackFbo2 : mFeedbackFbo1;
+      
+      {
+        // Feedback
+        gl::ScopedFramebuffer scopedFBO( fboOut );
+        gl::ScopedGlslProg shader( mFeedbackShader );
+        gl::ScopedTextureBind sourceTexture( mSceneFbo->getColorTexture(), 0 );
+        gl::ScopedTextureBind feedbackTexture( fboIn->getColorTexture(), 1 );
+        mFeedbackShader->uniform( "u_texSource", 0 );
+        mFeedbackShader->uniform( "u_texFeedback", 1 );
+        mFeedbackShader->uniform( "u_feedbackAmount", mFeedbackAmount );
+        mFeedbackShader->uniform( "u_feedbackScale", mFeedbackScale );
+        gl::drawSolidRect( drawRect );
+        mFeedbackFboCount++;
+      }
+      
+      {
+        // Post Processing
+        gl::ScopedGlslProg shader( mPostProcessingShader );
+        gl::ScopedTextureBind inputTexture( fboOut->getColorTexture(), 0 );
+        gl::ScopedTextureBind lookupTable( mLUT, 1 );
+        mPostProcessingShader->uniform( "u_texInput", 0 );
+        mPostProcessingShader->uniform( "u_texLUT", 1 );
+        mPostProcessingShader->uniform( "u_mixAmount", mLUTMixAmount );
+        gl::drawSolidRect( drawRect );
+      }
     }
   }
   
