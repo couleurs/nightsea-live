@@ -23,8 +23,8 @@
 #include "cinder/app/RendererGl.h"
 #include "cinder/gl/gl.h"
 #include "cinder/Log.h"
-
 #include "cinder/qtime/AvfWriter.h"
+#include "cinder/Timer.h"
 
 // Blocks
 #include "OscListener.h"
@@ -72,6 +72,7 @@ private:
   void updateUI();
   void updateShaders();
   void updateMovieWriter();
+  void updateTimer();
   
   void drawUI();
   void drawScene();
@@ -81,8 +82,14 @@ private:
   void clearFBO( gl::FboRef fbo );
   
   osc::Listener           mOSCIn;
-  
   qtime::MovieWriterRef   mMovieWriter;
+  std::vector<File>       mShaderFiles;
+  bool                    mSceneIsSetup = false;
+  
+  // BPM
+  ci::Timer               mTimer;
+  int                     mBPM = 125;
+  float                   mTick; // [0 - 1]
   
   // Scene
   gl::FboRef              mSceneFbo;
@@ -107,13 +114,9 @@ private:
   float                   mBlurRadius = 0.f;
   float                   mLUTMixAmount = .9f;
   
-  
   // Window Management
   ci::app::WindowRef			mUIWindow, mSceneWindow;
   
-  bool                    mSceneIsSetup = false;
-  
-  std::vector<File>       mShaderFiles;
 };
 
 CouleursApp::CouleursApp()
@@ -139,6 +142,7 @@ void CouleursApp::setup()
   setupUI();
   setupScene();
   setupMovieWriter();
+  mTimer.start();
 }
 
 void CouleursApp::setupUI()
@@ -257,6 +261,7 @@ void CouleursApp::update()
   updateUI();
   updateShaders();
   updateMovieWriter();
+  updateTimer();
 }
 
 void CouleursApp::updateOSC()
@@ -315,6 +320,16 @@ void CouleursApp::updateUI()
     ui::ScopedWindow win( "Performance" );
     ui::Text( "FPS: %d", (int)getAverageFps() );
   }
+  
+  {
+    ui::ScopedWindow win( "AV Sync" );
+    ui::SliderInt( "BPM", &mBPM, 20.f, 200.f );
+    auto draw = ui::GetWindowDrawList();
+    vec2 p = (vec2)ui::GetCursorScreenPos() + vec2( 0.f, 3.f );
+    vec2 size( ui::GetContentRegionAvailWidth() * .7f, ui::GetTextLineHeightWithSpacing() );
+    ImU32 c = ImColor( .8f, 0.f, 0.f, 1.f );
+    draw->AddRectFilled( p, vec2( p.x + size.x * mTick, p.y + size.y ), c );
+  }
 }
 
 void CouleursApp::updateShaders()
@@ -341,6 +356,14 @@ void CouleursApp::updateMovieWriter()
   else if ( mMovieWriter && getElapsedFrames() >= NUM_FRAMES ) {
     mMovieWriter->finish();
   }
+}
+
+void CouleursApp::updateTimer()
+{
+  double t = mTimer.getSeconds();
+  float bps = mBPM / 60.f;
+  float beatLengthSeconds = 1.f / bps;
+  mTick = ( fmod( t, beatLengthSeconds ) ) / beatLengthSeconds;
 }
 
 void CouleursApp::drawUI()
