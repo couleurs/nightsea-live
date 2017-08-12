@@ -1,5 +1,7 @@
 #define CI_MIN_LOG_LEVEL 0
 
+#define PROJECT_NAME "001"
+
 // Dimensions
 #define SCENE_WIDTH 640
 #define SCENE_HEIGHT 640
@@ -7,10 +9,11 @@
 #define UI_HEIGHT 400
 #define WINDOW_PADDING 20
 
-// Shader
-#define SCENE_SHADER "shaders/cellular.frag"
-#define FEEDBACK_SHADER "shaders/feedback.frag"
-#define POST_PROCESSING_SHADER "shaders/post_processing.frag"
+// Shaders
+#define SHADER_FOLDER "shaders/projects/"
+#define SCENE_SHADER "/scene.frag"
+#define FEEDBACK_SHADER "/feedback.frag"
+#define POST_PROCESSING_SHADER "/post_processing.frag"
 
 // Assets
 #define LUT_FILE "images/lookup_couleurs_bw.png"
@@ -76,6 +79,7 @@ private:
   
   void drawUI();
   void drawScene();
+  void bindCommonUniforms( gl::GlslProgRef shader );
   
   void resizeScene();
   
@@ -208,10 +212,10 @@ void CouleursApp::resizeScene()
 }
 
 // Shader paths
-static fs::path scenePath               = SCENE_SHADER;
-static fs::path feedbackPath            = FEEDBACK_SHADER;
-static fs::path postProcessingPath      = POST_PROCESSING_SHADER;
-static fs::path vertPath                = "shaders/passthrough.vert";
+static fs::path scenePath          = string(SHADER_FOLDER) + string(PROJECT_NAME) + string(SCENE_SHADER);
+static fs::path feedbackPath       = string(SHADER_FOLDER) + string(PROJECT_NAME) + string(FEEDBACK_SHADER);
+static fs::path postProcessingPath = string(SHADER_FOLDER) + string(PROJECT_NAME) + string(POST_PROCESSING_SHADER);;
+static fs::path vertPath           = "shaders/vertex/passthrough.vert";
 
 void CouleursApp::initShaderFiles()
 {
@@ -379,14 +383,12 @@ void CouleursApp::drawScene()
   
   {
     Rectf drawRect = Rectf( 0.f, 0.f, mSceneWindow->getWidth(), mSceneWindow->getHeight() );
-    vec2 resolution = mSceneWindow->getSize();
     
     {
       // Scene
       gl::ScopedFramebuffer scopedFBO( mSceneFbo );
       gl::ScopedGlslProg shader( mSceneShader );
-      mSceneShader->uniform( "u_resolution", resolution );
-      mSceneShader->uniform( "u_time", (float)getElapsedSeconds() );
+      bindCommonUniforms( mSceneShader );
       gl::drawSolidRect( drawRect );
     }
     
@@ -405,6 +407,7 @@ void CouleursApp::drawScene()
         mFeedbackShader->uniform( "u_texFeedback", 1 );
         mFeedbackShader->uniform( "u_feedbackAmount", mFeedbackAmount );
         mFeedbackShader->uniform( "u_feedbackScale", mFeedbackScale );
+        bindCommonUniforms( mFeedbackShader );
         gl::drawSolidRect( drawRect );
         mFeedbackFboCount++;
       }
@@ -417,12 +420,21 @@ void CouleursApp::drawScene()
         mPostProcessingShader->uniform( "u_texInput", 0 );
         mPostProcessingShader->uniform( "u_texLUT", 1 );
         mPostProcessingShader->uniform( "u_mixAmount", mLUTMixAmount );
+        bindCommonUniforms( mPostProcessingShader );
         gl::drawSolidRect( drawRect );
       }
     }
   }
   
   gl::printError();
+}
+
+void CouleursApp::bindCommonUniforms( gl::GlslProgRef shader )
+{
+  vec2 resolution = mSceneWindow->getSize();
+  shader->uniform( "u_resolution", resolution );
+  shader->uniform( "u_time", (float)getElapsedSeconds() );
+  shader->uniform( "u_tick", mTick );
 }
 
 void CouleursApp::clearFBO( gl::FboRef fbo )
