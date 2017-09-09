@@ -1,10 +1,10 @@
 #define CI_MIN_LOG_LEVEL 0
 
-#define PROJECT_NAME "001"
+#define PROJECT_NAME "shed"
 
 // Dimensions
 #define SCENE_WIDTH 640
-#define SCENE_HEIGHT 640
+#define SCENE_HEIGHT 480
 #define UI_WIDTH 600
 #define UI_HEIGHT 400
 #define WINDOW_PADDING 20
@@ -200,7 +200,7 @@ void CouleursApp::resizeScene()
 {
   auto w = mSceneWindow->getWidth();
   auto h = mSceneWindow->getHeight();
-
+  
   mSceneFbo = gl::Fbo::create( w, h );
   mFeedbackFbo1 = gl::Fbo::create( w, h );
   mFeedbackFbo2 = gl::Fbo::create( w, h );
