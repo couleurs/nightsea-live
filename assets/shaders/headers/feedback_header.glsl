@@ -3,4 +3,5 @@
 uniform sampler2D u_texSource;
 uniform sampler2D u_texFeedback;
 
-uniform float u_feedbackAmount;
+uniform float     u_feedbackAmount;
+uniform float     u_feedbackScale;

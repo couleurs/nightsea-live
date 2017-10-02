@@ -1,9 +1,10 @@
 #define CI_MIN_LOG_LEVEL 0
 
 #define PROJECT_NAME "shed"
+#define NUM_SECTIONS 5
 
 // Dimensions
-#define SCENE_WIDTH 640
+#define SCENE_WIDTH 640 //2560x1440
 #define SCENE_HEIGHT 480
 #define UI_WIDTH 600
 #define UI_HEIGHT 400
@@ -16,11 +17,20 @@
 #define POST_PROCESSING_SHADER "/post_processing.frag"
 
 // Assets
-#define LUT_FILE "images/lookup_couleurs_bw.png"
+#define SCENE_LUT_FILE_1 "images/shed/lookup_shed_1.png"
+#define SCENE_LUT_FILE_2 "images/shed/lookup_shed_2.png"
+#define POST_PROCESSING_LUT_FILE "images/lookup_couleurs_bw.png"
+#define MUSIC_FILE "sounds/music/shed.mp3"
+
+// Config
+#define CONFIG_FILE "/params.json"
 
 // Recording
 #define RECORD false
 #define NUM_FRAMES 1000
+
+// OSC
+#define OSC_PORT 9001
 
 #include "cinder/app/App.h"
 #include "cinder/app/RendererGl.h"
@@ -28,10 +38,16 @@
 #include "cinder/Log.h"
 #include "cinder/qtime/AvfWriter.h"
 #include "cinder/Timer.h"
+#include "cinder/audio/Voice.h"
 
 // Blocks
 #include "OscListener.h"
 #include "CinderImGui.h"
+#include "MidiIn.h"
+#include "MidiMessage.h"
+#include "MidiConstants.h"
+
+#include "Config.hpp"
 
 #include <ctime>
 
@@ -52,24 +68,36 @@ using namespace std;
 
 typedef struct {
   fs::path path;
-  time_t modified;
+  time_t   modified;
 } File;
+
+typedef struct {
+  float speed;
+  float feedbackAmount;
+  float feedbackScale;
+  float randomDisplacement;
+} Parameter;
 
 class CouleursApp : public App {
 public:
   CouleursApp();
   void setup() override;
-  void mouseDown( MouseEvent event ) override;
   void update() override;
+  void keyDown( KeyEvent event ) override;
   
 private:
   void initShaderFiles();
   void loadShaders();
   
+  // Setup
   void setupUI();
   void setupScene();
   void setupMovieWriter();
+  void setupMusic();
+  void setupMidi();
+  void setupParams();
   
+  // Update
   void updateOSC();
   void updateUI();
   void updateShaders();
@@ -84,60 +112,73 @@ private:
   
   void clearFBO( gl::FboRef fbo );
   
-  osc::Listener           mOSCIn;
-  qtime::MovieWriterRef   mMovieWriter;
-  std::vector<File>       mShaderFiles;
-  bool                    mSceneIsSetup = false;
+  void midiListener( midi::Message msg );
   
-  // BPM
-  ci::Timer               mTimer;
-  int                     mBPM = 125;
-  float                   mTick; // [0 - 1]
+  osc::Listener            mOSCIn;
+  midi::Input              mMidiIn;
+  
+  Config                   mConfig;
+  
+  qtime::MovieWriterRef    mMovieWriter;
+  std::vector<File>        mShaderFiles;
+  bool                     mSceneIsSetup = false;
+  audio::VoiceRef          mMusic;
+  
+  // AV Sync
+  ci::Timer                mTimer;
+  int                      mBPM = 125;
+  float                    mTick; //[0 - 1]
+  int                      mSection = 0;
   
   // Scene
-  gl::FboRef              mSceneFbo;
-  gl::GlslProgRef         mSceneShader;
+  gl::FboRef               mSceneFbo;
+  gl::GlslProgRef          mSceneShader;
+  float                    mSmooth = .058f;
+  float                    mSpeed = .1f;
   
   // Feedback
-  gl::FboRef              mFeedbackFbo1;
-  gl::FboRef              mFeedbackFbo2;
-  gl::GlslProgRef         mFeedbackShader;
-  int                     mFeedbackFboCount = 0;
-  float                   mFeedbackAmount = .95f;
-  float                   mFeedbackScale = .99f;
+  gl::FboRef               mFeedbackFbo1;
+  gl::FboRef               mFeedbackFbo2;
+  gl::GlslProgRef          mFeedbackShader;
+  int                      mFeedbackFboCount = 0;
+  float                    mFeedbackAmount = .833f;
+  float                    mFeedbackScale = .944f;
   
   // Post-Processing
-  ci::gl::Texture2dRef    mLUT;
-  gl::GlslProgRef         mPostProcessingShader;
-  float                   mEdgeDetectionMixAmount = .0f;
-  float                   mEdgeDetectionThreshold = .05f;
-  float                   mMaskMixAmount = .0f;
-  float                   mMaskSharpness = .05f;
-  float                   mMaskRadius    = .5f;
-  float                   mBlurRadius = 0.f;
-  float                   mLUTMixAmount = .9f;
+  ci::gl::Texture2dRef     mSceneLUT1, mSceneLUT2, mPostProcessingLUT;
+  gl::GlslProgRef          mPostProcessingShader;
+  float                    mLUTMixAmount = .9f;
+  float                    mRandomDisplacement = .003f;
+  float                    mColorMix = 0.f;
+  
+  // Parameters
+  std::vector<Parameter *> mParameters;
   
   // Window Management
-  ci::app::WindowRef			mUIWindow, mSceneWindow;
-  
+  ci::app::WindowRef       mUIWindow, mSceneWindow;
 };
 
-CouleursApp::CouleursApp()
+CouleursApp::CouleursApp() :
+  mConfig( string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( CONFIG_FILE ) )
 {
   // OSC
-  mOSCIn.setup( 3000 );
+  mOSCIn.setup( OSC_PORT );
   
   // Window Management
   mUIWindow = getWindow();
   mUIWindow->setTitle( "Couleurs: UI" );
   mUIWindow->getSignalDraw().connect( bind( &CouleursApp::drawUI, this ) );
-  mUIWindow->setPos(WINDOW_PADDING, 3. * WINDOW_PADDING);
-  mUIWindow->setSize(UI_WIDTH, UI_HEIGHT);
+  mUIWindow->setPos( WINDOW_PADDING, 3. * WINDOW_PADDING );
+  mUIWindow->setSize( UI_WIDTH, UI_HEIGHT );
   
   mSceneWindow = createWindow( Window::Format().size( SCENE_WIDTH, SCENE_HEIGHT ) );
   mSceneWindow->setTitle( "Couleurs: Render" );
   mSceneWindow->getSignalDraw().connect( bind( &CouleursApp::drawScene, this ) );
   mSceneWindow->getSignalResize().connect( bind( &CouleursApp::resizeScene, this ) );
+//  mSceneWindow->setFullScreen();
+  
+  setupMidi();
+  setupParams();
 }
 
 void CouleursApp::setup()
@@ -145,6 +186,7 @@ void CouleursApp::setup()
   setupUI();
   setupScene();
   setupMovieWriter();
+  setupMusic();
   mTimer.start();
 }
 
@@ -153,16 +195,16 @@ void CouleursApp::setupUI()
   mUIWindow->getRenderer()->makeCurrentContext();
   
   // UI
+  auto color = ImVec4( .85f, .87f, .92f, .76f );
   ui::initialize( ui::Options()
-                 .fonts( {
-    //                          { getAssetPath( "fonts/Roboto-Medium.ttf" ), 14.f },
-    //                          { getAssetPath( "fonts/Roboto-MediumItalic.ttf" ), 14.f },
-    //                          { getAssetPath( "fonts/Roboto-BoldItalic.ttf" ), 14.f },
-    //                          { getAssetPath( "fonts/fontawesome.ttf" ), 14.f }
-  } )
                  .window( mUIWindow )
                  .frameRounding( 0.0f )
-                 );
+                 .color( ImGuiCol_TitleBgActive, ImVec4( color.x, color.y, color.z, .76f ) )
+                 .color( ImGuiCol_Header, ImVec4( color.x, color.y, color.z, .76f ) )
+                 .color( ImGuiCol_HeaderHovered, ImVec4( color.x, color.y, color.z, .86f ) )
+                 .color( ImGuiCol_HeaderActive, ImVec4( color.x, color.y, color.z, 1.f ) )
+                 .color( ImGuiCol_ButtonHovered, ImVec4( color.x, color.y, color.z, .86f ) )
+                );
 }
 
 void CouleursApp::setupScene()
@@ -175,8 +217,9 @@ void CouleursApp::setupScene()
   
   // FBOs & Textures
   resizeScene();
-  auto lutData = app::loadAsset( LUT_FILE );
-  mLUT = gl::Texture2d::create( loadImage( lutData ) );
+  mSceneLUT1 = gl::Texture2d::create( loadImage( app::loadAsset( SCENE_LUT_FILE_1 ) ) );
+  mSceneLUT2 = gl::Texture2d::create( loadImage( app::loadAsset( SCENE_LUT_FILE_2 ) ) );
+  mPostProcessingLUT = gl::Texture2d::create( loadImage( app::loadAsset( POST_PROCESSING_LUT_FILE ) ) );
   
   // GL State
   gl::disableDepthRead();
@@ -185,7 +228,8 @@ void CouleursApp::setupScene()
   mSceneIsSetup = true;
 }
 
-void CouleursApp::setupMovieWriter() {
+void CouleursApp::setupMovieWriter()
+{
   if (RECORD) {
     fs::path path = getSaveFilePath();
     if ( !path.empty() ) {
@@ -193,6 +237,76 @@ void CouleursApp::setupMovieWriter() {
       //    .jpegQuality( 0.09f ).averageBitsPerSecond( 10000000 );
       mMovieWriter = qtime::MovieWriter::create( path, getWindowWidth(), getWindowHeight() );
     }
+  }
+}
+
+void CouleursApp::setupMusic()
+{
+  auto sourceFile = audio::load( loadAsset( MUSIC_FILE ) );
+  mMusic = audio::Voice::create( sourceFile );
+}
+
+void CouleursApp::setupMidi()
+{
+  if ( mMidiIn.getNumPorts() > 0 ) {
+    mMidiIn.listPorts();
+    mMidiIn.openPort( 0 );
+    cout << "Opening MIDI port 0" << endl;
+    mMidiIn.midiSignal.connect( bind( &CouleursApp::midiListener, this, placeholders::_1 ) );
+  }
+  else {
+    cout << "No MIDI ports found" << endl;
+  }
+}
+
+void CouleursApp::setupParams()
+{
+  //TODO: fill this section by binding params
+  for ( int i = 0; i < NUM_SECTIONS; i++ ) {
+    mParameters.push_back( new Parameter() );
+    mConfig( to_string( i ) + ".u_feedbackScale",      &mParameters[ i ]->feedbackScale );
+    mConfig( to_string( i ) + ".u_feedbackAmount",     &mParameters[ i ]->feedbackAmount );
+    mConfig( to_string( i ) + ".u_randomDisplacement", &mParameters[ i ]->randomDisplacement );
+    mConfig( to_string( i ) + ".u_speed",              &mParameters[ i ]->speed );
+  }
+}
+
+void CouleursApp::midiListener( midi::Message msg )
+{
+  switch ( msg.status ) {
+    case MIDI_NOTE_ON:
+      switch ( msg.pitch ) {
+        case 72: //D#4
+          mSection = 0;
+          break;
+        case 73: //E4
+          mSection = 1;
+          break;
+        case 74:
+          mSection = 2;
+          break;
+        case 75:
+          mSection = 3;
+          break;
+        case 76:
+          mSection = 4;
+          break;
+      }      
+      break;
+    case MIDI_NOTE_OFF:
+      break;
+    case MIDI_START:
+      cout << "MIDI START" << endl;
+      mTimer.stop();
+      mTimer.start();
+      break;
+    case MIDI_STOP:
+      cout << "MIDI STOP" << endl;
+      mTimer.stop();
+      break;
+    case MIDI_TIME_CLOCK:
+//      cout << "TIME CLOCK: " << msg.value << endl;  
+      break;
   }
 }
 
@@ -253,9 +367,16 @@ void CouleursApp::loadShaders()
   }
 }
 
-void CouleursApp::mouseDown( MouseEvent event )
+void CouleursApp::keyDown( KeyEvent event )
 {
-  writeImage( "/Users/johanismael/Desktop/screenshot.png", copyWindowSurface() );
+  if ( event.getCode() == KeyEvent::KEY_s ) {
+    CI_LOG_I( "Saving config file" );
+    mConfig.save();
+  }
+  else if ( event.getCode() == KeyEvent::KEY_f ) {
+    CI_LOG_I( "Saving screenshot" );
+    writeImage( "/Users/johanismael/Desktop/screenshot.png", copyWindowSurface() );
+  }
 }
 
 void CouleursApp::update()
@@ -272,24 +393,25 @@ void CouleursApp::updateOSC()
   while ( mOSCIn.hasWaitingMessages() ) {
     osc::Message message;
     mOSCIn.getNextMessage( &message );
-    auto address = message.getAddress();
-    CI_LOG_D( "address from Live: " << address );
-    //      string deviceId = message.getArgAsString( 0 );
-    //      float x = message.getArgAsFloat( 1 );
-    //      float y = message.getArgAsFloat( 2 );
-    //      float z = message.getArgAsFloat( 3 );
-    //      float w = message.getArgAsFloat( 4 );
+    string address = message.getAddress();
+    float value = message.getArgAsFloat( 0 );
+    
+    if ( address == "/1/Size" ) {
+      mSmooth = value;
+    }
   }
 }
 
 void CouleursApp::updateUI()
 {
+  assert( mParameters.size() > mSection );
+  auto param = mParameters[ mSection ];
+  
   // Draw UI ----------------------------------------------------------------
   {
-    ui::ScopedMainMenuBar mainMenu;
-    //    ui::ScopedFont font( "Roboto-BoldItalic" );
+    ui::ScopedMainMenuBar mainMenu;    
     
-    if ( ui::BeginMenu( "NightSea" ) ) {
+    if ( ui::BeginMenu( "Couleurs" ) ) {
       if ( ui::MenuItem( "QUIT" ) ) {
         quit();
       }
@@ -301,21 +423,18 @@ void CouleursApp::updateUI()
     ui::ScopedWindow win( "Parameters" );
     
     if ( ui::CollapsingHeader( "Scene", ImGuiTreeNodeFlags_DefaultOpen ) ) {
+      ui::SliderFloat( "SDF Smooth",          &mSmooth,                  0.f, 1.f );
+      ui::SliderFloat( "Speed",               &param->speed,              0.f, 1.f );
     }
     
     if ( ui::CollapsingHeader( "Feedback", ImGuiTreeNodeFlags_DefaultOpen ) ) {
-      ui::SliderFloat( "Feedback Scale",      &mFeedbackScale,          0.f, 2.f );
-      ui::SliderFloat( "Feedback Amount",     &mFeedbackAmount,         0.f, 1.f );
+      ui::SliderFloat( "Feedback Scale",      &param->feedbackScale,      0.f, 2.f );
+      ui::SliderFloat( "Feedback Amount",     &param->feedbackAmount,     0.f, 1.f );
     }
     
     if ( ui::CollapsingHeader( "Post Processing", ImGuiTreeNodeFlags_DefaultOpen ) ) {
-      ui::SliderFloat( "Edge Threshold",      &mEdgeDetectionThreshold, 0.f, 1.f );
-      ui::SliderFloat( "Edge Mix",            &mEdgeDetectionMixAmount, 0.f, 1.f );
-      ui::SliderFloat( "Vignette Sharpness",  &mMaskSharpness,          0.f, 1.f );
-      ui::SliderFloat( "Vignette Radius",     &mMaskRadius,             0.f, 1.f );
-      ui::SliderFloat( "Vignette Mix",        &mMaskMixAmount,          0.f, 1.f );
-      ui::SliderFloat( "Blur Amount",         &mBlurRadius,             0.f, 8.f );
-      ui::SliderFloat( "LUT Mix",             &mLUTMixAmount,           0.f, 1.f );
+      ui::SliderFloat( "LUT Mix",             &mLUTMixAmount,            0.f, 1.f );
+      ui::SliderFloat( "Random Displacement", &param->randomDisplacement, 0.f, .1f );
     }
   }
   
@@ -326,12 +445,30 @@ void CouleursApp::updateUI()
   
   {
     ui::ScopedWindow win( "AV Sync" );
+    ui::SliderInt( "Section", &mSection, 0.f, 5.f );
     ui::SliderInt( "BPM", &mBPM, 20.f, 200.f );
     auto draw = ui::GetWindowDrawList();
     vec2 p = (vec2)ui::GetCursorScreenPos() + vec2( 0.f, 3.f );
     vec2 size( ui::GetContentRegionAvailWidth() * .7f, ui::GetTextLineHeightWithSpacing() );
-    ImU32 c = ImColor( .8f, 0.f, 0.f, 1.f );
+    auto c = ImColor( .85f, .87f, .92f, .76f );
     draw->AddRectFilled( p, vec2( p.x + size.x * mTick, p.y + size.y ), c );
+  }
+  
+  {
+    ui::ScopedWindow win( "Music" );
+    if ( ui::SmallButton( "Play" ) ) {
+      mMusic->start();
+      mTimer.stop();
+      mTimer.start();
+    }
+    
+    if ( ui::SmallButton( "Pause" ) ) {
+      mMusic->pause();
+    }
+    
+    if ( ui::SmallButton( "Stop" ) ) {
+      mMusic->stop();
+    }
   }
 }
 
@@ -382,11 +519,16 @@ void CouleursApp::drawScene()
   
   {
     Rectf drawRect = Rectf( 0.f, 0.f, mSceneWindow->getWidth(), mSceneWindow->getHeight() );
+    assert( mParameters.size() > mSection );
+    auto param = mParameters[ mSection ];
     
     {
       // Scene
       gl::ScopedFramebuffer scopedFBO( mSceneFbo );
       gl::ScopedGlslProg shader( mSceneShader );
+      mSceneShader->uniform( "u_texLUT", 0 );
+      mSceneShader->uniform( "u_smooth", mSmooth );
+      mSceneShader->uniform( "u_speed", param->speed );
       bindCommonUniforms( mSceneShader );
       gl::drawSolidRect( drawRect );
     }
@@ -404,8 +546,8 @@ void CouleursApp::drawScene()
         gl::ScopedTextureBind feedbackTexture( fboIn->getColorTexture(), 1 );
         mFeedbackShader->uniform( "u_texSource", 0 );
         mFeedbackShader->uniform( "u_texFeedback", 1 );
-        mFeedbackShader->uniform( "u_feedbackAmount", mFeedbackAmount );
-        mFeedbackShader->uniform( "u_feedbackScale", mFeedbackScale );
+        mFeedbackShader->uniform( "u_feedbackAmount", param->feedbackAmount );
+        mFeedbackShader->uniform( "u_feedbackScale", param->feedbackScale );
         bindCommonUniforms( mFeedbackShader );
         gl::drawSolidRect( drawRect );
         mFeedbackFboCount++;
@@ -415,10 +557,16 @@ void CouleursApp::drawScene()
         // Post Processing
         gl::ScopedGlslProg shader( mPostProcessingShader );
         gl::ScopedTextureBind inputTexture( fboOut->getColorTexture(), 0 );
-        gl::ScopedTextureBind lookupTable( mLUT, 1 );
+        gl::ScopedTextureBind lookupTable( mPostProcessingLUT, 1 );
+        gl::ScopedTextureBind colorTable1( mSceneLUT1, 2 );
+        gl::ScopedTextureBind colorTable2( mSceneLUT2, 3 );
         mPostProcessingShader->uniform( "u_texInput", 0 );
         mPostProcessingShader->uniform( "u_texLUT", 1 );
+        mPostProcessingShader->uniform( "u_texColors_1", 2 );
+        mPostProcessingShader->uniform( "u_texColors_2", 3 );
+        mPostProcessingShader->uniform( "u_colorMix", mColorMix );
         mPostProcessingShader->uniform( "u_mixAmount", mLUTMixAmount );
+        mPostProcessingShader->uniform( "u_randomDisplacement", param->randomDisplacement );
         bindCommonUniforms( mPostProcessingShader );
         gl::drawSolidRect( drawRect );
       }
@@ -430,10 +578,12 @@ void CouleursApp::drawScene()
 
 void CouleursApp::bindCommonUniforms( gl::GlslProgRef shader )
 {
-  vec2 resolution = mSceneWindow->getSize();
+  auto contentScale = mSceneWindow->getContentScale();
+  vec2 resolution = mSceneWindow->getSize() * ivec2( contentScale, contentScale );
   shader->uniform( "u_resolution", resolution );
   shader->uniform( "u_time", (float)getElapsedSeconds() );
   shader->uniform( "u_tick", mTick );
+  shader->uniform( "u_section", mSection );
 }
 
 void CouleursApp::clearFBO( gl::FboRef fbo )
@@ -443,4 +593,6 @@ void CouleursApp::clearFBO( gl::FboRef fbo )
   gl::clear();
 }
 
-CINDER_APP( CouleursApp, RendererGl )
+CINDER_APP( CouleursApp, RendererGl, [&]( App::Settings *settings ) {
+//  settings->setHighDensityDisplayEnabled();
+})

@@ -1,0 +1,32 @@
+{
+   "0" : {
+      "u_feedbackAmount" : 0,
+      "u_feedbackScale" : 0,
+      "u_randomDisplacement" : 0.045000001788139343,
+      "u_speed" : 0
+   },
+   "1" : {
+      "u_feedbackAmount" : 0,
+      "u_feedbackScale" : 0,
+      "u_randomDisplacement" : 0,
+      "u_speed" : 0
+   },
+   "2" : {
+      "u_feedbackAmount" : 0,
+      "u_feedbackScale" : 0,
+      "u_randomDisplacement" : 0,
+      "u_speed" : 0
+   },
+   "3" : {
+      "u_feedbackAmount" : 0,
+      "u_feedbackScale" : 0,
+      "u_randomDisplacement" : 0,
+      "u_speed" : 0
+   },
+   "4" : {
+      "u_feedbackAmount" : 0,
+      "u_feedbackScale" : 0,
+      "u_randomDisplacement" : 0,
+      "u_speed" : 0
+   }
+}
