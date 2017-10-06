@@ -1,31 +1,36 @@
 {
    "0" : {
       "u_feedbackAmount" : 0,
-      "u_feedbackScale" : 0,
-      "u_randomDisplacement" : 0.003,
+      "u_feedbackScale" : 0.90900003910064697,
+      "u_lutMix" : 0.60100001096725464,
+      "u_randomDisplacement" : 0.0030000000260770321,
       "u_speed" : 0
    },
    "1" : {
       "u_feedbackAmount" : 0,
-      "u_feedbackScale" : 0,
-      "u_randomDisplacement" : 0,
-      "u_speed" : 0
+      "u_feedbackScale" : 0.91400003433227539,
+      "u_lutMix" : 0.31600001454353333,
+      "u_randomDisplacement" : 0.0010000000474974513,
+      "u_speed" : 0.10000000149011612
    },
    "2" : {
       "u_feedbackAmount" : 0,
       "u_feedbackScale" : 0,
+      "u_lutMix" : 0,
       "u_randomDisplacement" : 0,
       "u_speed" : 0
    },
    "3" : {
       "u_feedbackAmount" : 0,
       "u_feedbackScale" : 0,
+      "u_lutMix" : 0,
       "u_randomDisplacement" : 0,
       "u_speed" : 0
    },
    "4" : {
       "u_feedbackAmount" : 0,
       "u_feedbackScale" : 0,
+      "u_lutMix" : 0,
       "u_randomDisplacement" : 0,
       "u_speed" : 0
    }

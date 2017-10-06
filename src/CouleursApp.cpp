@@ -76,6 +76,7 @@ typedef struct {
   float feedbackAmount;
   float feedbackScale;
   float randomDisplacement;
+  float lutMix;
 } Parameter;
 
 class CouleursApp : public App {
@@ -261,13 +262,13 @@ void CouleursApp::setupMidi()
 
 void CouleursApp::setupParams()
 {
-  //TODO: fill this section by binding params
   for ( int i = 0; i < NUM_SECTIONS; i++ ) {
     mParameters.push_back( new Parameter() );
     mConfig( to_string( i ) + ".u_feedbackScale",      &mParameters[ i ]->feedbackScale );
     mConfig( to_string( i ) + ".u_feedbackAmount",     &mParameters[ i ]->feedbackAmount );
     mConfig( to_string( i ) + ".u_randomDisplacement", &mParameters[ i ]->randomDisplacement );
     mConfig( to_string( i ) + ".u_speed",              &mParameters[ i ]->speed );
+    mConfig( to_string( i ) + ".u_lutMix",             &mParameters[ i ]->lutMix );
   }
 }
 
@@ -433,7 +434,7 @@ void CouleursApp::updateUI()
     }
     
     if ( ui::CollapsingHeader( "Post Processing", ImGuiTreeNodeFlags_DefaultOpen ) ) {
-      ui::SliderFloat( "LUT Mix",             &mLUTMixAmount,            0.f, 1.f );
+      ui::SliderFloat( "LUT Mix",             &param->lutMix,             0.f, 1.f );
       ui::SliderFloat( "Random Displacement", &param->randomDisplacement, 0.f, .1f );
     }
   }
@@ -445,8 +446,8 @@ void CouleursApp::updateUI()
   
   {
     ui::ScopedWindow win( "AV Sync" );
-    ui::SliderInt( "Section", &mSection, 0.f, 5.f );
-    ui::SliderInt( "BPM", &mBPM, 20.f, 200.f );
+    ui::SliderInt( "Section", &mSection, 0, NUM_SECTIONS - 1 );
+    ui::SliderInt( "BPM", &mBPM, 20, 200 );
     auto draw = ui::GetWindowDrawList();
     vec2 p = (vec2)ui::GetCursorScreenPos() + vec2( 0.f, 3.f );
     vec2 size( ui::GetContentRegionAvailWidth() * .7f, ui::GetTextLineHeightWithSpacing() );
@@ -565,7 +566,7 @@ void CouleursApp::drawScene()
         mPostProcessingShader->uniform( "u_texColors_1", 2 );
         mPostProcessingShader->uniform( "u_texColors_2", 3 );
         mPostProcessingShader->uniform( "u_colorMix", mColorMix );
-        mPostProcessingShader->uniform( "u_mixAmount", mLUTMixAmount );
+        mPostProcessingShader->uniform( "u_mixAmount", param->lutMix );
         mPostProcessingShader->uniform( "u_randomDisplacement", param->randomDisplacement );
         bindCommonUniforms( mPostProcessingShader );
         gl::drawSolidRect( drawRect );
