@@ -1,7 +1,9 @@
 #define CI_MIN_LOG_LEVEL 0
 
+// Project
 #define PROJECT_NAME "shed"
 #define NUM_SECTIONS 5
+#define NUM_POST_PROCESSORS 3
 
 // Dimensions
 #define SCENE_WIDTH 640 //2560x1440
@@ -14,11 +16,10 @@
 #define SHADER_FOLDER "shaders/projects/"
 #define SCENE_SHADER "/scene.frag"
 #define FEEDBACK_SHADER "/feedback.frag"
-#define POST_PROCESSING_SHADER "/post_processing.frag"
+#define POST_PROCESSING_SHADER "/post_processing_"
 
 // Assets
-#define SCENE_LUT_FILE_1 "images/shed/lookup_shed_1.png"
-#define SCENE_LUT_FILE_2 "images/shed/lookup_shed_2.png"
+#define COLOR_PALETTE_LUT_FILE "images/shed/lookup_shed_1.png"
 #define POST_PROCESSING_LUT_FILE "images/lookup_couleurs_bw.png"
 #define MUSIC_FILE "sounds/music/shed.mp3"
 
@@ -115,42 +116,43 @@ private:
   
   void midiListener( midi::Message msg );
   
-  osc::Listener            mOSCIn;
-  midi::Input              mMidiIn;
+  osc::Listener                mOSCIn;
+  midi::Input                  mMidiIn;
   
-  Config                   mConfig;
+  Config                       mConfig;
   
-  qtime::MovieWriterRef    mMovieWriter;
-  std::vector<File>        mShaderFiles;
-  bool                     mSceneIsSetup = false;
-  audio::VoiceRef          mMusic;
+  qtime::MovieWriterRef        mMovieWriter;
+  std::vector<File>            mShaderFiles;
+  bool                         mSceneIsSetup = false;
+  audio::VoiceRef              mMusic;
   
   // AV Sync
-  ci::Timer                mTimer;
-  int                      mBPM = 125;
-  float                    mTick; //[0 - 1]
-  int                      mSection = 0;
+  ci::Timer                    mTimer;
+  int                          mBPM = 125;
+  float                        mTick; //[0 - 1]
+  int                          mSection = 0;
   
   // Scene
-  gl::FboRef               mSceneFbo;
-  gl::GlslProgRef          mSceneShader;
-  float                    mSmooth = .058f;
-  float                    mSpeed = .1f;
+  gl::FboRef                   mSceneFbo;
+  gl::GlslProgRef              mSceneShader;
+  float                        mSmooth = .058f;
+  float                        mSpeed = .1f;
   
   // Feedback
-  gl::FboRef               mFeedbackFbo1;
-  gl::FboRef               mFeedbackFbo2;
-  gl::GlslProgRef          mFeedbackShader;
-  int                      mFeedbackFboCount = 0;
-  float                    mFeedbackAmount = .833f;
-  float                    mFeedbackScale = .944f;
+  gl::FboRef                   mFeedbackFbo1, mFeedbackFbo2;
+  gl::GlslProgRef              mFeedbackShader;
+  int                          mFeedbackFboCount = 0;
+  float                        mFeedbackAmount = .833f;
+  float                        mFeedbackScale = .944f;
   
   // Post-Processing
-  ci::gl::Texture2dRef     mSceneLUT1, mSceneLUT2, mPostProcessingLUT;
-  gl::GlslProgRef          mPostProcessingShader;
-  float                    mLUTMixAmount = .9f;
-  float                    mRandomDisplacement = .003f;
-  float                    mColorMix = 0.f;
+  ci::gl::Texture2dRef         mColorPaletteLUT, mPostProcessingLUT;
+  gl::FboRef                   mPostProcessingFbo1, mPostProcessingFbo2;
+  std::vector<gl::GlslProgRef> mPostProcessingShaders;
+  int                          mPostProcessingFboCount = 0;
+  float                        mLUTMixAmount = .9f;
+  float                        mRandomDisplacement = .003f;
+  float                        mColorMix = 0.f;
   
   // Parameters
   std::vector<Parameter *> mParameters;
@@ -218,8 +220,7 @@ void CouleursApp::setupScene()
   
   // FBOs & Textures
   resizeScene();
-  mSceneLUT1 = gl::Texture2d::create( loadImage( app::loadAsset( SCENE_LUT_FILE_1 ) ) );
-  mSceneLUT2 = gl::Texture2d::create( loadImage( app::loadAsset( SCENE_LUT_FILE_2 ) ) );
+  mColorPaletteLUT = gl::Texture2d::create( loadImage( app::loadAsset( COLOR_PALETTE_LUT_FILE ) ) );
   mPostProcessingLUT = gl::Texture2d::create( loadImage( app::loadAsset( POST_PROCESSING_LUT_FILE ) ) );
   
   // GL State
@@ -319,24 +320,31 @@ void CouleursApp::resizeScene()
   mSceneFbo = gl::Fbo::create( w, h );
   mFeedbackFbo1 = gl::Fbo::create( w, h );
   mFeedbackFbo2 = gl::Fbo::create( w, h );
+  mPostProcessingFbo1 = gl::Fbo::create( w, h );
+  mPostProcessingFbo2 = gl::Fbo::create( w, h );
   
   clearFBO( mSceneFbo );
   clearFBO( mFeedbackFbo1 );
   clearFBO( mFeedbackFbo2 );
+  clearFBO( mPostProcessingFbo1 );
+  clearFBO( mPostProcessingFbo2 );
 }
 
 // Shader paths
-static fs::path scenePath          = string(SHADER_FOLDER) + string(PROJECT_NAME) + string(SCENE_SHADER);
-static fs::path feedbackPath       = string(SHADER_FOLDER) + string(PROJECT_NAME) + string(FEEDBACK_SHADER);
-static fs::path postProcessingPath = string(SHADER_FOLDER) + string(PROJECT_NAME) + string(POST_PROCESSING_SHADER);;
+static fs::path scenePath          = string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( SCENE_SHADER );
+static fs::path feedbackPath       = string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( FEEDBACK_SHADER );
+static fs::path postProcessingPath = string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( POST_PROCESSING_SHADER );
 static fs::path vertPath           = "shaders/vertex/passthrough.vert";
 
-void CouleursApp::initShaderFiles()
+void CouleursApp::initShaderFiles() //TODO: replace this by watchdog?
 {
   time_t now = time( 0 );
   mShaderFiles.push_back( { getAssetPath( scenePath ), now } );
   mShaderFiles.push_back( { getAssetPath( feedbackPath ), now } );
-  mShaderFiles.push_back( { getAssetPath( postProcessingPath ), now } );
+  for ( int i = 0; i < NUM_POST_PROCESSORS; i++ ) {
+    auto path = string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( POST_PROCESSING_SHADER ) + to_string( i ) + ".frag";
+    mShaderFiles.push_back( { getAssetPath( path ), now } );
+  }
   mShaderFiles.push_back( { getAssetPath( vertPath ), now } );
 }
 
@@ -345,7 +353,6 @@ void CouleursApp::loadShaders()
   DataSourceRef vert = app::loadAsset( vertPath );
   DataSourceRef sceneFrag = app::loadAsset( scenePath );
   DataSourceRef feedbackFrag = app::loadAsset( feedbackPath );
-  DataSourceRef postProcessingFrag = app::loadAsset( postProcessingPath );
   
   try {
     mSceneShader = gl::GlslProg::create( gl::GlslProg::Format()
@@ -356,11 +363,17 @@ void CouleursApp::loadShaders()
                                            .version( 330 )
                                            .vertex( vert )
                                            .fragment( feedbackFrag ) );
-    mPostProcessingShader = gl::GlslProg::create( gl::GlslProg::Format()
-                                                 .version( 330 )
-                                                 .vertex( vert )
-                                                 .fragment( postProcessingFrag )
-                                                 .define( "LUT_FLIP_Y" ) );
+    mPostProcessingShaders.clear();
+    for ( int i = 0; i < NUM_POST_PROCESSORS; i++ ) {
+      auto path = string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( POST_PROCESSING_SHADER ) + to_string( i ) + ".frag";
+      auto postProcessingFrag = app::loadAsset( path );
+      auto shader = gl::GlslProg::create( gl::GlslProg::Format()
+                                         .version( 330 )
+                                         .vertex( vert )
+                                         .fragment( postProcessingFrag )
+                                         .define( "LUT_FLIP_Y" ) );
+      mPostProcessingShaders.push_back( shader );
+    }
   }
   
   catch ( const std::exception &e ) {
@@ -535,16 +548,16 @@ void CouleursApp::drawScene()
     }
     
     {
-      bool fboSwap = (mFeedbackFboCount % 2 == 0);
-      auto fboOut = fboSwap ? mFeedbackFbo1 : mFeedbackFbo2;
-      auto fboIn =  fboSwap ? mFeedbackFbo2 : mFeedbackFbo1;
+      bool feedbackFBOSwap = ( mFeedbackFboCount % 2 == 0 );
+      auto feedbackFBOOut = feedbackFBOSwap ? mFeedbackFbo1 : mFeedbackFbo2;
+      auto feedbackFBOIn =  feedbackFBOSwap ? mFeedbackFbo2 : mFeedbackFbo1;
       
       {
         // Feedback
-        gl::ScopedFramebuffer scopedFBO( fboOut );
+        gl::ScopedFramebuffer scopedFBO( feedbackFBOOut );
         gl::ScopedGlslProg shader( mFeedbackShader );
         gl::ScopedTextureBind sourceTexture( mSceneFbo->getColorTexture(), 0 );
-        gl::ScopedTextureBind feedbackTexture( fboIn->getColorTexture(), 1 );
+        gl::ScopedTextureBind feedbackTexture( feedbackFBOIn->getColorTexture(), 1 );
         mFeedbackShader->uniform( "u_texSource", 0 );
         mFeedbackShader->uniform( "u_texFeedback", 1 );
         mFeedbackShader->uniform( "u_feedbackAmount", param->feedbackAmount );
@@ -554,22 +567,43 @@ void CouleursApp::drawScene()
         mFeedbackFboCount++;
       }
       
-      {
-        // Post Processing
-        gl::ScopedGlslProg shader( mPostProcessingShader );
-        gl::ScopedTextureBind inputTexture( fboOut->getColorTexture(), 0 );
+      // Post Processing
+      auto input = feedbackFBOOut->getColorTexture();
+      for ( int i = 0; i < NUM_POST_PROCESSORS; i++ ) {        
+        bool isLastPass = ( i == NUM_POST_PROCESSORS - 1 );
+        bool ppFBOSwap = ( mPostProcessingFboCount % 2 == 0 );
+        auto ppFBOOut = ppFBOSwap ? mPostProcessingFbo1 : mPostProcessingFbo2;
+        auto ppFBOIn =  ppFBOSwap ? mPostProcessingFbo2 : mPostProcessingFbo1;
+        
+        // Input: feed result of last pass into next one, except for the first one
+        if ( i > 0 ) {
+          input = ppFBOIn->getColorTexture();
+        }
+        
+        // Output: last pass draws to screen
+        if ( !isLastPass ) {
+          ppFBOOut->bindFramebuffer();
+        }
+        
+        // Draw
+        auto postProcessingShader = mPostProcessingShaders[ i ];
+        gl::ScopedGlslProg shader( postProcessingShader );
+        gl::ScopedTextureBind inputTexture( input, 0 );
         gl::ScopedTextureBind lookupTable( mPostProcessingLUT, 1 );
-        gl::ScopedTextureBind colorTable1( mSceneLUT1, 2 );
-        gl::ScopedTextureBind colorTable2( mSceneLUT2, 3 );
-        mPostProcessingShader->uniform( "u_texInput", 0 );
-        mPostProcessingShader->uniform( "u_texLUT", 1 );
-        mPostProcessingShader->uniform( "u_texColors_1", 2 );
-        mPostProcessingShader->uniform( "u_texColors_2", 3 );
-        mPostProcessingShader->uniform( "u_colorMix", mColorMix );
-        mPostProcessingShader->uniform( "u_mixAmount", param->lutMix );
-        mPostProcessingShader->uniform( "u_randomDisplacement", param->randomDisplacement );
-        bindCommonUniforms( mPostProcessingShader );
+        gl::ScopedTextureBind colorTable1( mColorPaletteLUT, 2 );
+        postProcessingShader->uniform( "u_texInput", 0 );
+        postProcessingShader->uniform( "u_texLUT", 1 );
+        postProcessingShader->uniform( "u_texColors", 2 );
+        postProcessingShader->uniform( "u_colorMix", mColorMix );
+        postProcessingShader->uniform( "u_mixAmount", param->lutMix );
+        postProcessingShader->uniform( "u_randomDisplacement", param->randomDisplacement );
+        bindCommonUniforms( postProcessingShader );
         gl::drawSolidRect( drawRect );
+        mPostProcessingFboCount++;
+        
+        if ( !isLastPass ) {
+          ppFBOOut->unbindFramebuffer();
+        }
       }
     }
   }

@@ -4,8 +4,7 @@
 #include "../../fb_lib/generative/random.glsl"
 #include "../../fb_lib/space/scale.glsl"
 
-uniform sampler2D u_texColors_1;
-uniform sampler2D u_texColors_2;
+uniform sampler2D u_texColors;
 uniform float     u_colorMix;
 uniform float     u_randomDisplacement;
 
@@ -15,7 +14,7 @@ void main() {
   vec4 color = texture( u_texInput, vTexCoord0 + u_randomDisplacement * r );
 
   // Color palette
-  vec4 newColor = mix( lut( color, u_texColors_1 ), lut( color, u_texColors_2 ), 0. );
+  vec4 newColor = lut( color, u_texColors );
 
   // LUT
   newColor = lut( newColor, u_texLUT );
@@ -27,4 +26,5 @@ void main() {
   // Grain
   // float grain = random( ( scale ) )
   // oColor = r.x * .02 + oColor;
+
 }
