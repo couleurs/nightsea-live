@@ -8,10 +8,10 @@
 
 const float radius = 110.;
 
+uniform int u_section;
 uniform float u_smooth;
 uniform float u_speed;
-uniform int u_section;
-// const float tick = .058;
+uniform float u_tickSensitivity;
 
 float dist( vec2 pt ) {
   // return min(abs(pt.x+pt.y),abs(pt.x-pt.y))+0.001;
@@ -42,7 +42,7 @@ void main() {
 
   // Part 1: BEAST
   float localRadius = radius / u_resolution.x;
-  localRadius *= map( sineInOut( u_tick ), 0., 1., .8, 1. );
+  localRadius *= map( sineInOut( u_tick ), 0., 1., 1. - u_tickSensitivity, 1. );
 
   float waveFactorR = sin( u_time * 1.07 - st.y * 15. * PI ) * .015;
   float waveFactorG = sin( u_time * 1.03 - st.y * 14. * PI)  * .01;
@@ -54,7 +54,6 @@ void main() {
                              distance( st, vec2( .5175 ) + waveFactorG ) );
   float b = 1. - smoothstep( localRadius - u_smooth / 2., localRadius * 1.1 + u_smooth / 2.,
                              distance( st, vec2( .4675 ) + waveFactorG ) );
-
   vec4 color = vec4(r, mix(r, g, 1.), mix(r, b, 1.), 1.);
 
   // Part 2: ROAD
@@ -62,10 +61,7 @@ void main() {
   float rInv = 1. / dist( st );
   st = st * rInv - vec2( rInv + u_time * u_speed * 100., 0. );
   float n = 1. - smoothstep( .15, .27, noise( st ) );
-  vec4 noiseColor = vec4( vec3( n + ( .03 + sineInOut( u_tick ) * .01 ) * rInv ), 1. );
+  vec4 noiseColor = vec4( vec3( n + ( .03 + sineInOut( u_tick ) * u_tickSensitivity ) * rInv ), 1. );
 
-  // oColor = color;
-  // oColor = noiseColor;
-  // oColor = vec4( vec3( noise( vTexCoord0 ) ), 1. );
   oColor = mix(color, noiseColor, float(u_section));
 }

@@ -73,6 +73,7 @@ typedef struct {
 } File;
 
 typedef struct {
+  float tickSensitivity;
   float speed;
   float feedbackAmount;
   float feedbackScale;
@@ -267,10 +268,16 @@ void CouleursApp::setupParams()
 {
   for ( int i = 0; i < NUM_SECTIONS; i++ ) {
     mParameters.push_back( new Parameter() );
+    // Scene
+    mConfig( to_string( i ) + ".u_speed",              &mParameters[ i ]->speed );
+    mConfig( to_string( i ) + ".u_tickSensitivity",    &mParameters[ i ]->tickSensitivity );
+    
+    // Feedback
     mConfig( to_string( i ) + ".u_feedbackScale",      &mParameters[ i ]->feedbackScale );
     mConfig( to_string( i ) + ".u_feedbackAmount",     &mParameters[ i ]->feedbackAmount );
+    
+    // Post-Processing
     mConfig( to_string( i ) + ".u_randomDisplacement", &mParameters[ i ]->randomDisplacement );
-    mConfig( to_string( i ) + ".u_speed",              &mParameters[ i ]->speed );
     mConfig( to_string( i ) + ".u_lutMix",             &mParameters[ i ]->lutMix );
     mConfig( to_string( i ) + ".u_blurKernelSize",     &mParameters[ i ]->blurKernelSize );
     mConfig( to_string( i ) + ".u_blurRadius",         &mParameters[ i ]->blurRadius );
@@ -441,8 +448,9 @@ void CouleursApp::updateUI()
     ui::ScopedWindow win( "Parameters" );
     
     if ( ui::CollapsingHeader( "Scene", ImGuiTreeNodeFlags_DefaultOpen ) ) {
-      ui::SliderFloat( "SDF Smooth",          &mSmooth,                  0.f, 1.f );
+      ui::SliderFloat( "SDF Smooth",          &mSmooth,                   0.f, 1.f );
       ui::SliderFloat( "Speed",               &param->speed,              0.f, 1.f );
+      ui::SliderFloat( "Tick Sensitivity",    &param->tickSensitivity,    0.f, 1.f );
     }
     
     if ( ui::CollapsingHeader( "Feedback", ImGuiTreeNodeFlags_DefaultOpen ) ) {
@@ -549,6 +557,7 @@ void CouleursApp::drawScene()
       mSceneShader->uniform( "u_texLUT", 0 );
       mSceneShader->uniform( "u_smooth", mSmooth );
       mSceneShader->uniform( "u_speed", param->speed );
+      mSceneShader->uniform( "u_tickSensitivity", param->tickSensitivity );
       bindCommonUniforms( mSceneShader );
       gl::drawSolidRect( drawRect );
     }

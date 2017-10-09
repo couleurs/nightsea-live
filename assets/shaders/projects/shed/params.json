@@ -6,7 +6,8 @@
       "u_feedbackScale" : 0.90900003910064697,
       "u_lutMix" : 0.60100001096725464,
       "u_randomDisplacement" : 0.0030000000260770321,
-      "u_speed" : 0
+      "u_speed" : 0,
+      "u_tickSensitivity" : 0.20200000703334808
    },
    "1" : {
       "u_blurKernelSize" : 1,
@@ -15,7 +16,8 @@
       "u_feedbackScale" : 0.91400003433227539,
       "u_lutMix" : 0.31600001454353333,
       "u_randomDisplacement" : 0.0010000000474974513,
-      "u_speed" : 0.10000000149011612
+      "u_speed" : 0.10000000149011612,
+      "u_tickSensitivity" : 0.01100000087171793
    },
    "2" : {
       "u_blurKernelSize" : 1,
@@ -24,7 +26,8 @@
       "u_feedbackScale" : 0,
       "u_lutMix" : 0,
       "u_randomDisplacement" : 0,
-      "u_speed" : 0
+      "u_speed" : 0,
+      "u_tickSensitivity" : 0
    },
    "3" : {
       "u_blurKernelSize" : 1,
@@ -33,7 +36,8 @@
       "u_feedbackScale" : 0,
       "u_lutMix" : 0,
       "u_randomDisplacement" : 0,
-      "u_speed" : 0
+      "u_speed" : 0,
+      "u_tickSensitivity" : 0
    },
    "4" : {
       "u_blurKernelSize" : 1,
@@ -42,6 +46,7 @@
       "u_feedbackScale" : 0,
       "u_lutMix" : 0,
       "u_randomDisplacement" : 0,
-      "u_speed" : 0
+      "u_speed" : 0,
+      "u_tickSensitivity" : 0
    }
 }
