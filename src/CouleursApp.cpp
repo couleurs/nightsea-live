@@ -78,6 +78,8 @@ typedef struct {
   float feedbackScale;
   float randomDisplacement;
   float lutMix;
+  int   blurKernelSize;
+  float blurRadius;
 } Parameter;
 
 class CouleursApp : public App {
@@ -270,6 +272,8 @@ void CouleursApp::setupParams()
     mConfig( to_string( i ) + ".u_randomDisplacement", &mParameters[ i ]->randomDisplacement );
     mConfig( to_string( i ) + ".u_speed",              &mParameters[ i ]->speed );
     mConfig( to_string( i ) + ".u_lutMix",             &mParameters[ i ]->lutMix );
+    mConfig( to_string( i ) + ".u_blurKernelSize",     &mParameters[ i ]->blurKernelSize );
+    mConfig( to_string( i ) + ".u_blurRadius",         &mParameters[ i ]->blurRadius );
   }
 }
 
@@ -421,7 +425,7 @@ void CouleursApp::updateUI()
   assert( mParameters.size() > mSection );
   auto param = mParameters[ mSection ];
   
-  // Draw UI ----------------------------------------------------------------
+  // Draw UI
   {
     ui::ScopedMainMenuBar mainMenu;    
     
@@ -449,6 +453,8 @@ void CouleursApp::updateUI()
     if ( ui::CollapsingHeader( "Post Processing", ImGuiTreeNodeFlags_DefaultOpen ) ) {
       ui::SliderFloat( "LUT Mix",             &param->lutMix,             0.f, 1.f );
       ui::SliderFloat( "Random Displacement", &param->randomDisplacement, 0.f, .1f );
+      ui::SliderInt(   "Blur Kernel Size",    &param->blurKernelSize    , 1,   20 );
+      ui::SliderFloat( "Blur Radius",         &param->blurRadius        , 1.f, 30.f );
     }
   }
   
@@ -548,12 +554,12 @@ void CouleursApp::drawScene()
     }
     
     {
+      // Feedback
       bool feedbackFBOSwap = ( mFeedbackFboCount % 2 == 0 );
       auto feedbackFBOOut = feedbackFBOSwap ? mFeedbackFbo1 : mFeedbackFbo2;
       auto feedbackFBOIn =  feedbackFBOSwap ? mFeedbackFbo2 : mFeedbackFbo1;
       
       {
-        // Feedback
         gl::ScopedFramebuffer scopedFBO( feedbackFBOOut );
         gl::ScopedGlslProg shader( mFeedbackShader );
         gl::ScopedTextureBind sourceTexture( mSceneFbo->getColorTexture(), 0 );
@@ -567,7 +573,7 @@ void CouleursApp::drawScene()
         mFeedbackFboCount++;
       }
       
-      // Post Processing
+      // Post-Processing
       auto input = feedbackFBOOut->getColorTexture();
       for ( int i = 0; i < NUM_POST_PROCESSORS; i++ ) {        
         bool isLastPass = ( i == NUM_POST_PROCESSORS - 1 );
@@ -597,6 +603,8 @@ void CouleursApp::drawScene()
         postProcessingShader->uniform( "u_colorMix", mColorMix );
         postProcessingShader->uniform( "u_mixAmount", param->lutMix );
         postProcessingShader->uniform( "u_randomDisplacement", param->randomDisplacement );
+        postProcessingShader->uniform( "u_blurKernelSize", param->blurKernelSize );
+        postProcessingShader->uniform( "u_blurRadius", param->blurRadius );
         bindCommonUniforms( postProcessingShader );
         gl::drawSolidRect( drawRect );
         mPostProcessingFboCount++;

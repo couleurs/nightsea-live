@@ -1,5 +1,7 @@
 {
    "0" : {
+      "u_blurKernelSize" : 10,
+      "u_blurRadius" : 9.9970006942749023,
       "u_feedbackAmount" : 0,
       "u_feedbackScale" : 0.90900003910064697,
       "u_lutMix" : 0.60100001096725464,
@@ -7,6 +9,8 @@
       "u_speed" : 0
    },
    "1" : {
+      "u_blurKernelSize" : 1,
+      "u_blurRadius" : 0,
       "u_feedbackAmount" : 0,
       "u_feedbackScale" : 0.91400003433227539,
       "u_lutMix" : 0.31600001454353333,
@@ -14,6 +18,8 @@
       "u_speed" : 0.10000000149011612
    },
    "2" : {
+      "u_blurKernelSize" : 1,
+      "u_blurRadius" : 0,
       "u_feedbackAmount" : 0,
       "u_feedbackScale" : 0,
       "u_lutMix" : 0,
@@ -21,6 +27,8 @@
       "u_speed" : 0
    },
    "3" : {
+      "u_blurKernelSize" : 1,
+      "u_blurRadius" : 0,
       "u_feedbackAmount" : 0,
       "u_feedbackScale" : 0,
       "u_lutMix" : 0,
@@ -28,6 +36,8 @@
       "u_speed" : 0
    },
    "4" : {
+      "u_blurKernelSize" : 1,
+      "u_blurRadius" : 0,
       "u_feedbackAmount" : 0,
       "u_feedbackScale" : 0,
       "u_lutMix" : 0,
