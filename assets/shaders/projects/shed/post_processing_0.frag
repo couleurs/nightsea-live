@@ -5,7 +5,6 @@
 #include "../../fb_lib/space/scale.glsl"
 
 uniform sampler2D u_texColors;
-uniform float     u_colorMix;
 uniform float     u_randomDisplacement;
 
 void main() {

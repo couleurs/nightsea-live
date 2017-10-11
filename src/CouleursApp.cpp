@@ -145,17 +145,13 @@ private:
   gl::FboRef                   mFeedbackFbo1, mFeedbackFbo2;
   gl::GlslProgRef              mFeedbackShader;
   int                          mFeedbackFboCount = 0;
-  float                        mFeedbackAmount = .833f;
-  float                        mFeedbackScale = .944f;
   
   // Post-Processing
   ci::gl::Texture2dRef         mColorPaletteLUT, mPostProcessingLUT;
   gl::FboRef                   mPostProcessingFbo1, mPostProcessingFbo2;
   std::vector<gl::GlslProgRef> mPostProcessingShaders;
   int                          mPostProcessingFboCount = 0;
-  float                        mLUTMixAmount = .9f;
-  float                        mRandomDisplacement = .003f;
-  float                        mColorMix = 0.f;
+  float                        mGrainAmount = 0.043f;
   
   // Parameters
   std::vector<Parameter *> mParameters;
@@ -461,6 +457,7 @@ void CouleursApp::updateUI()
     if ( ui::CollapsingHeader( "Post Processing", ImGuiTreeNodeFlags_DefaultOpen ) ) {
       ui::SliderFloat( "LUT Mix",             &param->lutMix,             0.f, 1.f );
       ui::SliderFloat( "Random Displacement", &param->randomDisplacement, 0.f, .1f );
+      ui::SliderFloat( "Grain Amount",        &mGrainAmount,              0.f, .2f );
       ui::SliderInt(   "Blur Kernel Size",    &param->blurKernelSize    , 1,   20 );
       ui::SliderFloat( "Blur Radius",         &param->blurRadius        , 1.f, 30.f );
     }
@@ -609,7 +606,7 @@ void CouleursApp::drawScene()
         postProcessingShader->uniform( "u_texInput", 0 );
         postProcessingShader->uniform( "u_texLUT", 1 );
         postProcessingShader->uniform( "u_texColors", 2 );
-        postProcessingShader->uniform( "u_colorMix", mColorMix );
+        postProcessingShader->uniform( "u_grainAmount", mGrainAmount );
         postProcessingShader->uniform( "u_mixAmount", param->lutMix );
         postProcessingShader->uniform( "u_randomDisplacement", param->randomDisplacement );
         postProcessingShader->uniform( "u_blurKernelSize", param->blurKernelSize );
