@@ -4,6 +4,9 @@
 #include "../../fb_lib/generative/random.glsl"
 #include "../../couleurs_lib/grain.glsl"
 
+#define CHROMA_SAMPLER_FNC(POS_UV) texture(tex,POS_UV)
+#include "../../fb_lib/fx/chromaAB.glsl"
+
 #define GAUSSIANBLUR1D_SAMPLER_FNC(POS_UV) texture(tex, POS_UV)
 #include "../../fb_lib/operation/gaussianBlur/1D.glsl"
 

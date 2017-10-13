@@ -2,8 +2,8 @@
 
 // Project
 #define PROJECT_NAME "shed"
-#define NUM_SECTIONS 5
-#define NUM_POST_PROCESSORS 3
+#define NUM_SECTIONS 4
+#define NUM_POST_PROCESSORS 4
 
 // Dimensions
 #define SCENE_WIDTH 640 //2560x1440

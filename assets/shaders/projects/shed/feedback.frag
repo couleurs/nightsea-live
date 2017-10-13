@@ -6,6 +6,7 @@
 #include "../../fb_lib/space/polar2cartesian.glsl"
 #include "../../fb_lib/math/const.glsl"
 #include "../../fb_lib/math/map.glsl"
+#include "../../fb_lib/math/mirror.glsl"
 
 float hash( float n ) {
   return fract(sin(n)*43758.5453123);
@@ -34,23 +35,31 @@ float fractalNoise(vec2 pos) {
 	return n;
 }
 
+// #define DEBUG_NOISE_FBACK
+
 void main() {
   vec4 source = texture( u_texSource, vTexCoord0 );
-
-  float l = length( vTexCoord0 );
-  // vec2 polar_uv = cartesian2polar( vTexCoord0 );
-  vec2 polar_uv = vTexCoord0 - .5;
-  float angle = atan(polar_uv.y, polar_uv.x);
-  float ll = polar_uv.x * .5;
-  ll -= fractalNoise( vec2( sin( angle * 4. + u_time * 2. ) + l * 10.,
-                            l * 20. + sin( angle * 4. ) ) ) * .05;
-  vec2 new_uv = polar2cartesian( ll, angle );
-
   vec4 feedback = texture( u_texFeedback, scale( vTexCoord0, u_feedbackScale ) );
   oColor = mix( source, feedback, u_feedbackAmount );
-  // oColor = source + feedback * .2;
-  // oColor = mix( source, feedback, .8 );
 
-  // oColor = vec4(vec3(map(angle, -HALF_PI, HALF_PI, 0., 1.)), 1.);
-  // oColor = vec4(vec3(vTexCoord0, 0.), 1.);
+  #ifdef DEBUG_NOISE_FBACK
+    float l = length(vTexCoord0);
+    vec2 polar_uv = cartesian2polar( vTexCoord0 );
+    // vec2 polar_uv = vTexCoord0 * 2. - 1.;
+    float angle = atan(polar_uv.y, polar_uv.x);
+    angle = map(angle, -HALF_PI, HALF_PI, 0., 2.);
+    // angle = pow(angle, 1.);
+    angle = mirror(angle);
+    // angle = min(.9, pow(angle, .75));
+    float ll = polar_uv.x;
+    ll *= 1.1;
+    ll -= fractalNoise( vec2( sin( angle * 2. + u_time * 2. ) + l * 20.,
+                              l * 10. + sin( angle * 2. ) ) ) * .1;
+    vec2 new_uv = polar2cartesian( ll, angle );
+    feedback = texture( u_texFeedback, new_uv );
+    oColor = source + feedback * .86;
+    // oColor = mix( source, feedback, .8 );
+    // oColor = vec4(vec3(angle), 1.);
+    // oColor = vec4(vec3(ll), 1.);
+  #endif
 }

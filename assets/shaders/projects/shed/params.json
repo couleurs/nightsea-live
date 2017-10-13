@@ -2,10 +2,10 @@
    "0" : {
       "u_blurKernelSize" : 10,
       "u_blurRadius" : 9.9970006942749023,
-      "u_feedbackAmount" : 0,
+      "u_feedbackAmount" : 0.74600005149841309,
       "u_feedbackScale" : 0.90900003910064697,
-      "u_lutMix" : 0.60100001096725464,
-      "u_randomDisplacement" : 0.0030000000260770321,
+      "u_lutMix" : 0.59700000286102295,
+      "u_randomDisplacement" : 0.0040000001899898052,
       "u_speed" : 0,
       "u_tickSensitivity" : 0.20200000703334808
    },
