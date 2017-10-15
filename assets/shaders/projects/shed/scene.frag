@@ -31,7 +31,7 @@ float noise( vec2 st ) {
   // return step( .5, n );
 
   // Option 3
-  float n = snoise( vec2( st.x * .1, u_time * .5 ) ) * .3;
+  float n = snoise( vec2( st.x * .1, u_time * .5 ) ) * .15;
   float delta = .5;// * abs( snoise( vec2( st.x ) ) );
   return 1. - smoothstep( n - delta, n + delta, st.y + .2 );
 }
@@ -60,7 +60,7 @@ void main() {
   st = st - vec2( .5 );
   float rInv = 1. / dist( st );
   st = st * rInv - vec2( rInv + u_time * u_speed * 100., 0. );
-  float n = 1. - smoothstep( .15, .27, noise( st ) );
+  float n = 1. - smoothstep( .15, .47, noise( st ) );
   vec4 noiseColor = vec4( vec3( n + ( .03 + sineInOut( u_tick ) * u_tickSensitivity ) * rInv ), 1. );
 
   oColor = mix(color, noiseColor, float(u_section));

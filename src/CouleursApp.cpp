@@ -9,7 +9,7 @@
 #define SCENE_WIDTH 640 //2560x1440
 #define SCENE_HEIGHT 480
 #define UI_WIDTH 600
-#define UI_HEIGHT 400
+#define UI_HEIGHT 600
 #define WINDOW_PADDING 20
 
 // Shaders
@@ -75,12 +75,12 @@ typedef struct {
 typedef struct {
   float tickSensitivity;
   float speed;
-  float feedbackAmount;
-  float feedbackScale;
+  float feedbackAmount, feedbackScale;
   float randomDisplacement;
   float lutMix;
   int   blurKernelSize;
   float blurRadius;
+  float chromaSpeed, chromaAmount;
 } Parameter;
 
 class CouleursApp : public App {
@@ -277,6 +277,8 @@ void CouleursApp::setupParams()
     mConfig( to_string( i ) + ".u_lutMix",             &mParameters[ i ]->lutMix );
     mConfig( to_string( i ) + ".u_blurKernelSize",     &mParameters[ i ]->blurKernelSize );
     mConfig( to_string( i ) + ".u_blurRadius",         &mParameters[ i ]->blurRadius );
+    mConfig( to_string( i ) + ".u_chromaAmount",       &mParameters[ i ]->chromaAmount );
+    mConfig( to_string( i ) + ".u_chromaSpeed",        &mParameters[ i ]->chromaSpeed );
   }
 }
 
@@ -460,6 +462,8 @@ void CouleursApp::updateUI()
       ui::SliderFloat( "Grain Amount",        &mGrainAmount,              0.f, .2f );
       ui::SliderInt(   "Blur Kernel Size",    &param->blurKernelSize    , 1,   20 );
       ui::SliderFloat( "Blur Radius",         &param->blurRadius        , 1.f, 30.f );
+      ui::SliderFloat( "Chroma Amount",       &param->chromaAmount      , 1.f, 100.f );
+      ui::SliderFloat( "Chroma Speed",        &param->chromaSpeed       , 0.f, 5.f );
     }
   }
   
@@ -611,6 +615,8 @@ void CouleursApp::drawScene()
         postProcessingShader->uniform( "u_randomDisplacement", param->randomDisplacement );
         postProcessingShader->uniform( "u_blurKernelSize", param->blurKernelSize );
         postProcessingShader->uniform( "u_blurRadius", param->blurRadius );
+        postProcessingShader->uniform( "u_chromaAmount", param->chromaAmount );
+        postProcessingShader->uniform( "u_chromaSpeed", param->chromaSpeed );
         bindCommonUniforms( postProcessingShader );
         gl::drawSolidRect( drawRect );
         mPostProcessingFboCount++;

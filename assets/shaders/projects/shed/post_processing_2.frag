@@ -4,9 +4,6 @@
 #include "../../fb_lib/generative/random.glsl"
 #include "../../couleurs_lib/grain.glsl"
 
-#define CHROMA_SAMPLER_FNC(POS_UV) texture(tex,POS_UV)
-#include "../../fb_lib/fx/chromaAB.glsl"
-
 #define GAUSSIANBLUR1D_SAMPLER_FNC(POS_UV) texture(tex, POS_UV)
 #include "../../fb_lib/operation/gaussianBlur/1D.glsl"
 
@@ -16,7 +13,8 @@ uniform float u_grainAmount;
 
 void main() {
   vec4 color = texture( u_texInput, vTexCoord0 );
-  color = gaussianBlur1D( u_texInput, vTexCoord0, vec2( 0., u_blurRadius / u_resolution.y ), u_blurKernelSize );
+  float blurRadius = u_blurRadius + 0. * snoise( vTexCoord0 + u_time );
+  color = gaussianBlur1D( u_texInput, vTexCoord0, vec2( 0., blurRadius / u_resolution.y ), u_blurKernelSize );
 
   // Grain v1
   vec4 grain_1 = vec4( vec3( random( vTexCoord0 ) ), 1. );
