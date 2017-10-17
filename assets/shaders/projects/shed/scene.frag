@@ -3,6 +3,7 @@
 #include "../../headers/common_header.glsl"
 #include "../../fb_lib/space/ratio.glsl"
 #include "../../fb_lib/math/map.glsl"
+#include "../../fb_lib/draw/circleSDF.glsl"
 #include "../../fb_lib/easing/sine.glsl"
 #include "../../couleurs_lib/snoise.glsl"
 
@@ -55,6 +56,15 @@ void main() {
   float b = 1. - smoothstep( localRadius - u_smooth / 2., localRadius * 1.1 + u_smooth / 2.,
                              distance( st, vec2( .4675 ) + waveFactorG ) );
   vec4 color = vec4(r, mix(r, g, 1.), mix(r, b, 1.), 1.);
+
+  float vignette = circleSDF( vTexCoord0 * 1. );
+  // color += vec4( vec3( step( .999, vignette ) ), 1. );
+
+  // TODO: BREAK THIS INTO SEPARATE AMBIENT PATCH
+  // color = vec4( vec3( vignette ), 1. );
+
+
+
 
   // Part 2: ROAD
   st = st - vec2( .5 );

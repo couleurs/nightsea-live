@@ -41,7 +41,8 @@ public:
 	const ci::JsonTree&	operator[]( const std::string &relativePath ) const;
 
 	bool				hasKey( const std::string &key ) const { return mJson.hasChild( key ); }
-
+  size_t      getNumChildren() const { return mJson.getNumChildren(); };
+  
 private:
     ci::JsonTree*                           ensurePath( const std::string &key );
 

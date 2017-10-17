@@ -2,7 +2,6 @@
 
 // Project
 #define PROJECT_NAME "shed"
-#define NUM_SECTIONS 4
 #define NUM_POST_PROCESSORS 4
 
 // Dimensions
@@ -123,6 +122,7 @@ private:
   midi::Input                  mMidiIn;
   
   Config                       mConfig;
+  int                          mNumSections;
   
   qtime::MovieWriterRef        mMovieWriter;
   std::vector<File>            mShaderFiles;
@@ -262,7 +262,8 @@ void CouleursApp::setupMidi()
 
 void CouleursApp::setupParams()
 {
-  for ( int i = 0; i < NUM_SECTIONS; i++ ) {
+  mNumSections = mConfig.getNumChildren();
+  for ( int i = 0; i < mNumSections; i++ ) {
     mParameters.push_back( new Parameter() );
     // Scene
     mConfig( to_string( i ) + ".u_speed",              &mParameters[ i ]->speed );
@@ -474,7 +475,7 @@ void CouleursApp::updateUI()
   
   {
     ui::ScopedWindow win( "AV Sync" );
-    ui::SliderInt( "Section", &mSection, 0, NUM_SECTIONS - 1 );
+    ui::SliderInt( "Section", &mSection, 0, mNumSections - 1 );
     ui::SliderInt( "BPM", &mBPM, 20, 200 );
     auto draw = ui::GetWindowDrawList();
     vec2 p = (vec2)ui::GetCursorScreenPos() + vec2( 0.f, 3.f );
