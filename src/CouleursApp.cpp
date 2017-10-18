@@ -41,7 +41,7 @@
 #include "cinder/audio/Voice.h"
 
 // Blocks
-#include "OscListener.h"
+#include "Osc.h"
 #include "CinderImGui.h"
 #include "MidiIn.h"
 #include "MidiMessage.h"
@@ -118,7 +118,7 @@ private:
   
   void midiListener( midi::Message msg );
   
-  osc::Listener                mOSCIn;
+//  osc::Listener                mOSCIn;
   midi::Input                  mMidiIn;
   
   Config                       mConfig;
@@ -164,7 +164,7 @@ CouleursApp::CouleursApp() :
   mConfig( string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( CONFIG_FILE ) )
 {
   // OSC
-  mOSCIn.setup( OSC_PORT );
+//  mOSCIn.setup( OSC_PORT );
   
   // Window Management
   mUIWindow = getWindow();
@@ -414,16 +414,16 @@ void CouleursApp::update()
 
 void CouleursApp::updateOSC()
 {
-  while ( mOSCIn.hasWaitingMessages() ) {
-    osc::Message message;
-    mOSCIn.getNextMessage( &message );
-    string address = message.getAddress();
-    float value = message.getArgAsFloat( 0 );
-    
-    if ( address == "/1/Size" ) {
-      mSmooth = value;
-    }
-  }
+//  while ( mOSCIn.hasWaitingMessages() ) {
+//    osc::Message message;
+//    mOSCIn.getNextMessage( &message );
+//    string address = message.getAddress();
+//    float value = message.getArgAsFloat( 0 );
+//    
+//    if ( address == "/1/Size" ) {
+//      mSmooth = value;
+//    }
+//  }
 }
 
 void CouleursApp::updateUI()
