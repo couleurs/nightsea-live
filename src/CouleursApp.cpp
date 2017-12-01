@@ -1,8 +1,8 @@
 #define CI_MIN_LOG_LEVEL 0
 
 // Project
-#define PROJECT_NAME "shed"
-#define NUM_POST_PROCESSORS 4
+#define PROJECT_NAME "test"
+#define NUM_POST_PROCESSORS 1
 
 // Dimensions
 #define SCENE_WIDTH 640 //2560x1440
@@ -20,6 +20,9 @@
 // Assets
 #define COLOR_PALETTE_LUT_FILE "images/shed/lookup_shed_1.png"
 #define POST_PROCESSING_LUT_FILE "images/lookup_couleurs_bw.png"
+
+// Audio
+#define LOAD_AUDIO false
 #define MUSIC_FILE "sounds/music/shed.mp3"
 
 // Config
@@ -243,8 +246,10 @@ void CouleursApp::setupMovieWriter()
 
 void CouleursApp::setupMusic()
 {
-  auto sourceFile = audio::load( loadAsset( MUSIC_FILE ) );
-  mMusic = audio::Voice::create( sourceFile );
+  if (LOAD_AUDIO) {
+    auto sourceFile = audio::load( loadAsset( MUSIC_FILE ) );
+    mMusic = audio::Voice::create( sourceFile );
+  }
 }
 
 void CouleursApp::setupMidi()

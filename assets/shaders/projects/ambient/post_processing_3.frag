@@ -2,7 +2,7 @@
 
 #include "../../headers/post_processing_header.glsl"
 
-#define CHROMA_SAMPLER_FNC(POS_UV) texture(tex,POS_UV)
+#define CHROMAAB_SAMPLER_FNC(POS_UV) texture(tex,POS_UV)
 #include "../../fb_lib/fx/chromaAB.glsl"
 
 #include "../../fb_lib/space/rotate.glsl"

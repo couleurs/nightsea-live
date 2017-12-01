@@ -5,7 +5,7 @@
 #include "../../couleurs_lib/grain.glsl"
 
 #define GAUSSIANBLUR1D_SAMPLER_FNC(POS_UV) texture(tex, POS_UV)
-#include "../../fb_lib/operation/gaussianBlur/1D.glsl"
+#include "../../fb_lib/filter/gaussianBlur/1D.glsl"
 
 uniform int u_blurKernelSize;
 uniform float u_blurRadius;
