@@ -1,7 +1,7 @@
 #define CI_MIN_LOG_LEVEL 0
 
 // Project
-#define PROJECT_NAME "test"
+#define PROJECT_NAME "ambient"
 #define NUM_POST_PROCESSORS 1
 
 // Dimensions
@@ -153,6 +153,7 @@ private:
   ci::gl::Texture2dRef         mColorPaletteLUT, mPostProcessingLUT;
   gl::FboRef                   mPostProcessingFbo1, mPostProcessingFbo2;
   std::vector<gl::GlslProgRef> mPostProcessingShaders;
+  int                          mNumPostProcessors;
   int                          mPostProcessingFboCount = 0;
   float                        mGrainAmount = 0.043f;
   
@@ -356,10 +357,12 @@ void CouleursApp::initShaderFiles() //TODO: replace this by watchdog?
   time_t now = time( 0 );
   mShaderFiles.push_back( { getAssetPath( scenePath ), now } );
   mShaderFiles.push_back( { getAssetPath( feedbackPath ), now } );
+  
   for ( int i = 0; i < NUM_POST_PROCESSORS; i++ ) {
     auto path = string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( POST_PROCESSING_SHADER ) + to_string( i ) + ".frag";
     mShaderFiles.push_back( { getAssetPath( path ), now } );
   }
+  
   mShaderFiles.push_back( { getAssetPath( vertPath ), now } );
 }
 
@@ -379,15 +382,24 @@ void CouleursApp::loadShaders()
                                            .vertex( vert )
                                            .fragment( feedbackFrag ) );
     mPostProcessingShaders.clear();
-    for ( int i = 0; i < NUM_POST_PROCESSORS; i++ ) {
-      auto path = string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( POST_PROCESSING_SHADER ) + to_string( i ) + ".frag";
-      auto postProcessingFrag = app::loadAsset( path );
-      auto shader = gl::GlslProg::create( gl::GlslProg::Format()
-                                         .version( 330 )
-                                         .vertex( vert )
-                                         .fragment( postProcessingFrag )
-                                         .define( "LUT_FLIP_Y" ) );
-      mPostProcessingShaders.push_back( shader );
+        
+    int count = 0;
+    while ( true ) {
+      auto path = string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( POST_PROCESSING_SHADER ) + to_string( count ) + ".frag";
+      auto fullPath = getAssetPath( path );
+      if ( fs::exists( fullPath ) ) {
+        auto postProcessingFrag = app::loadAsset( path );
+        auto shader = gl::GlslProg::create( gl::GlslProg::Format()
+                                           .version( 330 )
+                                           .vertex( vert )
+                                           .fragment( postProcessingFrag )
+                                           .define( "LUT_FLIP_Y" ) );
+        mPostProcessingShaders.push_back( shader );
+        count++;
+      }
+      else {
+        break;
+      }
     }
   }
   
@@ -591,8 +603,9 @@ void CouleursApp::drawScene()
       
       // Post-Processing
       auto input = feedbackFBOOut->getColorTexture();
-      for ( int i = 0; i < NUM_POST_PROCESSORS; i++ ) {        
-        bool isLastPass = ( i == NUM_POST_PROCESSORS - 1 );
+      auto numPPs = mPostProcessingShaders.size();
+      for ( int i = 0; i < numPPs; i++ ) {
+        bool isLastPass = ( i == numPPs - 1 );
         bool ppFBOSwap = ( mPostProcessingFboCount % 2 == 0 );
         auto ppFBOOut = ppFBOSwap ? mPostProcessingFbo1 : mPostProcessingFbo2;
         auto ppFBOIn =  ppFBOSwap ? mPostProcessingFbo2 : mPostProcessingFbo1;
