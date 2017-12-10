@@ -2,7 +2,6 @@
 
 // Project
 #define PROJECT_NAME "ambient"
-#define NUM_POST_PROCESSORS 1
 
 // Dimensions
 #define SCENE_WIDTH 640 //2560x1440
@@ -49,6 +48,7 @@
 #include "MidiIn.h"
 #include "MidiMessage.h"
 #include "MidiConstants.h"
+#include "Watchdog.h"
 
 #include "Config.hpp"
 
@@ -93,7 +93,7 @@ public:
   void keyDown( KeyEvent event ) override;
   
 private:
-  void initShaderFiles();
+  void initShaderWatching();
   void loadShaders();
   
   // Setup
@@ -218,8 +218,8 @@ void CouleursApp::setupScene()
   mSceneWindow->getRenderer()->makeCurrentContext();
   
   // Shaders
-  initShaderFiles();
   loadShaders();
+  initShaderWatching();
   
   // FBOs & Textures
   resizeScene();
@@ -352,13 +352,13 @@ static fs::path feedbackPath       = string( SHADER_FOLDER ) + string( PROJECT_N
 static fs::path postProcessingPath = string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( POST_PROCESSING_SHADER );
 static fs::path vertPath           = "shaders/vertex/passthrough.vert";
 
-void CouleursApp::initShaderFiles() //TODO: replace this by watchdog?
+void CouleursApp::initShaderWatching() //TODO: replace this by watchdog?
 {
   time_t now = time( 0 );
   mShaderFiles.push_back( { getAssetPath( scenePath ), now } );
   mShaderFiles.push_back( { getAssetPath( feedbackPath ), now } );
   
-  for ( int i = 0; i < NUM_POST_PROCESSORS; i++ ) {
+  for ( int i = 0; i < mNumPostProcessors; i++ ) {
     auto path = string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( POST_PROCESSING_SHADER ) + to_string( i ) + ".frag";
     mShaderFiles.push_back( { getAssetPath( path ), now } );
   }
@@ -398,6 +398,7 @@ void CouleursApp::loadShaders()
         count++;
       }
       else {
+        mNumPostProcessors = count;
         break;
       }
     }

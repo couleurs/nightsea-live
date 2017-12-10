@@ -63,6 +63,7 @@
 		5C4E7A4C1DDD318A00B78834 /* stb_truetype.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stb_truetype.h; sourceTree = "<group>"; };
 		5C4E7A761DDD318A00B78834 /* CinderImGui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CinderImGui.cpp; sourceTree = "<group>"; };
 		5C4E7AEB1DDD33F500B78834 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../assets; sourceTree = "<group>"; };
+		5CA43EC31FD2350500769E2E /* Watchdog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Watchdog.h; sourceTree = "<group>"; };
 		5CC93AAC1F97C45F00B85E77 /* MidiConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MidiConstants.h; sourceTree = "<group>"; };
 		5CC93AAD1F97C45F00B85E77 /* MidiExceptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MidiExceptions.h; sourceTree = "<group>"; };
 		5CC93AAE1F97C45F00B85E77 /* MidiHeaders.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MidiHeaders.h; sourceTree = "<group>"; };
@@ -112,6 +113,7 @@
 		01B97315FEAEA392516A2CEA /* Blocks */ = {
 			isa = PBXGroup;
 			children = (
+				5CA43EC01FD2350500769E2E /* Watchdog */,
 				5CC93B8C1F97C49400B85E77 /* OSC */,
 				5CC93AA61F97C45F00B85E77 /* Cinder-MIDI2 */,
 				5C4E79B21DDD318A00B78834 /* Cinder-ImGui */,
@@ -255,6 +257,23 @@
 				5C4E7A761DDD318A00B78834 /* CinderImGui.cpp */,
 			);
 			path = src;
+			sourceTree = "<group>";
+		};
+		5CA43EC01FD2350500769E2E /* Watchdog */ = {
+			isa = PBXGroup;
+			children = (
+				5CA43EC21FD2350500769E2E /* include */,
+			);
+			name = Watchdog;
+			path = ../../cinder_0.9.0_mac/blocks/Watchdog;
+			sourceTree = "<group>";
+		};
+		5CA43EC21FD2350500769E2E /* include */ = {
+			isa = PBXGroup;
+			children = (
+				5CA43EC31FD2350500769E2E /* Watchdog.h */,
+			);
+			path = include;
 			sourceTree = "<group>";
 		};
 		5CC93AA61F97C45F00B85E77 /* Cinder-MIDI2 */ = {
@@ -443,6 +462,7 @@
 					"\"$(CINDER_PATH)/blocks/Cinder-ImGui/lib/imgui\"",
 					"\"$(CINDER_PATH)/blocks/Cinder-MIDI2/include\"",
 					"\"$(CINDER_PATH)/blocks/Cinder-MIDI2/lib\"",
+					"\"$(CINDER_PATH)/blocks/Watchdog/include\"",
 				);
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
@@ -480,6 +500,7 @@
 					"\"$(CINDER_PATH)/blocks/Cinder-ImGui/lib/imgui\"",
 					"\"$(CINDER_PATH)/blocks/Cinder-MIDI2/include\"",
 					"\"$(CINDER_PATH)/blocks/Cinder-MIDI2/lib\"",
+					"\"$(CINDER_PATH)/blocks/Watchdog/include\"",
 				);
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
