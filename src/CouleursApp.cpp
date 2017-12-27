@@ -1,11 +1,11 @@
 #define CI_MIN_LOG_LEVEL 0
 
 // Project
-#define PROJECT_NAME "ambient"
+#define PROJECT_NAME "sure_thing_cover"
 
 // Dimensions
-#define SCENE_WIDTH 640 //2560x1440
-#define SCENE_HEIGHT 480
+#define SCENE_WIDTH 800 //2560x1440
+#define SCENE_HEIGHT 800
 #define UI_WIDTH 600
 #define UI_HEIGHT 600
 #define WINDOW_PADDING 20
@@ -18,7 +18,7 @@
 
 // Assets
 #define COLOR_PALETTE_LUT_FILE "images/shed/lookup_shed_1.png"
-#define POST_PROCESSING_LUT_FILE "images/lookup_couleurs_bw.png"
+#define POST_PROCESSING_LUT_FILE "images/LUTs/lookup_couleurs_bw.png"
 
 // Audio
 #define LOAD_AUDIO false
@@ -83,6 +83,7 @@ typedef struct {
   int   blurKernelSize;
   float blurRadius;
   float chromaSpeed, chromaAmount;
+  float grainAmount;
 } Parameter;
 
 class CouleursApp : public App {
@@ -139,6 +140,7 @@ private:
   int                          mSection = 0;
   
   // Scene
+  ci::gl::Texture2dRef         mRandomTexture;
   gl::FboRef                   mSceneFbo;
   gl::GlslProgRef              mSceneShader;
   float                        mSmooth = .058f;
@@ -155,7 +157,7 @@ private:
   std::vector<gl::GlslProgRef> mPostProcessingShaders;
   int                          mNumPostProcessors;
   int                          mPostProcessingFboCount = 0;
-  float                        mGrainAmount = 0.043f;
+  float                        mGrainAmount = 0.051f;
   
   // Parameters
   std::vector<Parameter *> mParameters;
@@ -225,6 +227,7 @@ void CouleursApp::setupScene()
   resizeScene();
   mColorPaletteLUT = gl::Texture2d::create( loadImage( app::loadAsset( COLOR_PALETTE_LUT_FILE ) ) );
   mPostProcessingLUT = gl::Texture2d::create( loadImage( app::loadAsset( POST_PROCESSING_LUT_FILE ) ) );
+  mRandomTexture = gl::Texture2d::create( loadImage( app::loadAsset( "images/generative/texRandom.png" ) ) );
   
   // GL State
   gl::disableDepthRead();
@@ -286,6 +289,7 @@ void CouleursApp::setupParams()
     mConfig( to_string( i ) + ".u_blurRadius",         &mParameters[ i ]->blurRadius );
     mConfig( to_string( i ) + ".u_chromaAmount",       &mParameters[ i ]->chromaAmount );
     mConfig( to_string( i ) + ".u_chromaSpeed",        &mParameters[ i ]->chromaSpeed );
+    mConfig( to_string( i ) + ".u_grainAmount",        &mParameters[ i ]->grainAmount );
   }
 }
 
@@ -417,7 +421,7 @@ void CouleursApp::keyDown( KeyEvent event )
   }
   else if ( event.getCode() == KeyEvent::KEY_f ) {
     CI_LOG_I( "Saving screenshot" );
-    writeImage( "/Users/johanismael/Desktop/screenshot.png", copyWindowSurface() );
+    writeImage( string( "/Users/johanismael/Desktop/screenshot_" ) + to_string( getElapsedSeconds() ) + string( ".png" ), copyWindowSurface() );
   }
 }
 
@@ -478,11 +482,11 @@ void CouleursApp::updateUI()
     if ( ui::CollapsingHeader( "Post Processing", ImGuiTreeNodeFlags_DefaultOpen ) ) {
       ui::SliderFloat( "LUT Mix",             &param->lutMix,             0.f, 1.f );
       ui::SliderFloat( "Random Displacement", &param->randomDisplacement, 0.f, .1f );
-      ui::SliderFloat( "Grain Amount",        &mGrainAmount,              0.f, .2f );
       ui::SliderInt(   "Blur Kernel Size",    &param->blurKernelSize    , 1,   20 );
       ui::SliderFloat( "Blur Radius",         &param->blurRadius        , 1.f, 30.f );
       ui::SliderFloat( "Chroma Amount",       &param->chromaAmount      , 1.f, 100.f );
       ui::SliderFloat( "Chroma Speed",        &param->chromaSpeed       , 0.f, 5.f );
+      ui::SliderFloat( "Grain Amount",        &param->grainAmount       , 0.f, .2f );
     }
   }
   
@@ -574,7 +578,8 @@ void CouleursApp::drawScene()
       // Scene
       gl::ScopedFramebuffer scopedFBO( mSceneFbo );
       gl::ScopedGlslProg shader( mSceneShader );
-      mSceneShader->uniform( "u_texLUT", 0 );
+      gl::ScopedTextureBind lookupTable( mRandomTexture, 0 );
+      mSceneShader->uniform( "u_texRandom", 0 );
       mSceneShader->uniform( "u_smooth", mSmooth );
       mSceneShader->uniform( "u_speed", param->speed );
       mSceneShader->uniform( "u_tickSensitivity", param->tickSensitivity );
@@ -630,7 +635,7 @@ void CouleursApp::drawScene()
         postProcessingShader->uniform( "u_texInput", 0 );
         postProcessingShader->uniform( "u_texLUT", 1 );
         postProcessingShader->uniform( "u_texColors", 2 );
-        postProcessingShader->uniform( "u_grainAmount", mGrainAmount );
+        postProcessingShader->uniform( "u_grainAmount", param->grainAmount );
         postProcessingShader->uniform( "u_mixAmount", param->lutMix );
         postProcessingShader->uniform( "u_randomDisplacement", param->randomDisplacement );
         postProcessingShader->uniform( "u_blurKernelSize", param->blurKernelSize );
