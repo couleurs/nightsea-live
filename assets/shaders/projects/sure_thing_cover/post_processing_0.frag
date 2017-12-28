@@ -3,6 +3,7 @@
 #include "../../headers/post_processing_header.glsl"
 
 #include "../../fb_lib/color/contrast.glsl"
+#include "../../fb_lib/color/desaturate.glsl"
 #include "../../couleurs_lib/grain.glsl"
 
 uniform float u_grainAmount;
@@ -16,4 +17,6 @@ void main() {
 	oColor = mix( color, newColor, u_mixAmount );
 
   oColor = contrast(oColor, 1.15);
+  oColor = desaturate(oColor, -1.);
+  // oColor = desaturate(oColor, .8);
 }

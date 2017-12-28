@@ -1,7 +1,7 @@
 #define CI_MIN_LOG_LEVEL 0
 
 // Project
-#define PROJECT_NAME "sure_thing_cover"
+#define PROJECT_NAME "ambient"
 
 // Dimensions
 #define SCENE_WIDTH 800 //2560x1440
