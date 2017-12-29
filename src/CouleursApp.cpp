@@ -484,7 +484,7 @@ void CouleursApp::updateUI()
       ui::SliderFloat( "Random Displacement", &param->randomDisplacement, 0.f, .1f );
       ui::SliderInt(   "Blur Kernel Size",    &param->blurKernelSize    , 1,   20 );
       ui::SliderFloat( "Blur Radius",         &param->blurRadius        , 1.f, 30.f );
-      ui::SliderFloat( "Chroma Amount",       &param->chromaAmount      , 1.f, 100.f );
+      ui::SliderFloat( "Chroma Amount",       &param->chromaAmount      , 1.f, 1000.f );
       ui::SliderFloat( "Chroma Speed",        &param->chromaSpeed       , 0.f, 5.f );
       ui::SliderFloat( "Grain Amount",        &param->grainAmount       , 0.f, .2f );
     }

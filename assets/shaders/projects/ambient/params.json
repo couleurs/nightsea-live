@@ -1,14 +1,15 @@
 {
    "0" : {
       "u_blurKernelSize" : 20,
-      "u_blurRadius" : 18.91400146484375,
-      "u_chromaAmount" : 100.00000762939453,
-      "u_chromaSpeed" : 0.30500000715255737,
-      "u_feedbackAmount" : 0.70100003480911255,
-      "u_feedbackScale" : 0.90900003910064697,
-      "u_lutMix" : 0.52600002288818359,
-      "u_randomDisplacement" : 0.0040000001899898052,
+      "u_blurRadius" : 18.914000000000001,
+      "u_chromaAmount" : 1000,
+      "u_chromaSpeed" : 0.249,
+      "u_feedbackAmount" : 0.73099999999999998,
+      "u_feedbackScale" : 0.90900000000000003,
+      "u_grainAmount" : 0.055,
+      "u_lutMix" : 1,
+      "u_randomDisplacement" : 0.10000000000000001,
       "u_speed" : 0,
-      "u_tickSensitivity" : 0.20200000703334808
+      "u_tickSensitivity" : 0.20200000000000001
    }
 }
