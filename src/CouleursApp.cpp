@@ -164,6 +164,10 @@ private:
   
   // Window Management
   ci::app::WindowRef       mUIWindow, mSceneWindow;
+  
+  // Error Handling
+  bool                     mShaderCompilationFailed = false;
+  std::string              mShaderCompileErrorMessage;
 };
 
 CouleursApp::CouleursApp() :
@@ -406,10 +410,14 @@ void CouleursApp::loadShaders()
         break;
       }
     }
+    
+    mShaderCompilationFailed = false;
   }
   
   catch ( const std::exception &e ) {
     console() << "Shader exception: " << e.what() << std::endl;
+    mShaderCompilationFailed = true;
+    mShaderCompileErrorMessage = string( e.what() );
   }
 }
 
@@ -520,6 +528,14 @@ void CouleursApp::updateUI()
     
     if ( ui::SmallButton( "Stop" ) ) {
       mMusic->stop();
+    }
+  }
+  
+  {
+    if ( mShaderCompilationFailed ) {
+      ui::ScopedStyleColor color( ImGuiCol_TitleBgActive, ImVec4( .9f, .1f, .1f, .85f ) );
+      ui::ScopedWindow win( "Debug" );      
+      ui::Text( "%s", mShaderCompileErrorMessage.c_str() );
     }
   }
 }
