@@ -10,7 +10,7 @@
 #include "../../fb_lib/fx/lensFlare.glsl"
 
 void main() {
-  float vignette = circleSDF(scale(vTexCoord0, mix(1., 1., sineInOut(u_tick))));
+  float vignette = circleSDF(scale(vTexCoord0, mix(1., 1., sineInOut(u_tick))), (.3 * vec2(sin(u_time / 10.), cos(u_time / 10.)) + 1.) / 2.);
   oColor = vec4(vec3(vignette * 1.), 1.);
   // oColor.rgb += lensFlare(vTexCoord0, vec2(.1));
 }

@@ -26,9 +26,10 @@ void main() {
   oColor = vec4( c, 1. );
   oColor = contrast(oColor, 1.1);
   oColor = desaturate(oColor, -.75);
-  // oColor = desaturate(oColor, .5);
 
   oColor.r = mix(0., oColor.r, 1.);
   oColor = levelsInputRange(oColor, vec3(0.), vec3(1., 1., .71));
   oColor = levelsOutputRange(oColor, vec3(0.25, 0., 0.), vec3(1., 1., 1.));
+
+  oColor = desaturate(oColor, .0);
 }

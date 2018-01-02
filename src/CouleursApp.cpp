@@ -135,7 +135,7 @@ private:
   
   // AV Sync
   ci::Timer                    mTimer;
-  int                          mBPM = 125;
+  int                          mBPM = 107;
   float                        mTick; //[0 - 1]
   int                          mSection = 0;
   
@@ -431,6 +431,10 @@ void CouleursApp::keyDown( KeyEvent event )
     CI_LOG_I( "Saving screenshot" );
     writeImage( string( "/Users/johanismael/Desktop/screenshot_" ) + to_string( getElapsedSeconds() ) + string( ".png" ), copyWindowSurface() );
   }
+  else if ( event.getCode() == KeyEvent::KEY_r ) {
+    CI_LOG_I( "Resetting params" );
+    setupParams();
+  }
 }
 
 void CouleursApp::update()
@@ -466,6 +470,9 @@ void CouleursApp::updateUI()
     ui::ScopedMainMenuBar mainMenu;    
     
     if ( ui::BeginMenu( "Couleurs" ) ) {
+      if ( ui::MenuItem( "Reset" ) ) {
+        setupParams();
+      }
       if ( ui::MenuItem( "QUIT" ) ) {
         quit();
       }
