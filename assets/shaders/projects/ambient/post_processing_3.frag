@@ -15,14 +15,17 @@
 #include "../../fb_lib/color/levels/inputRange.glsl"
 #include "../../fb_lib/color/levels/outputRange.glsl"
 
+#include "../../fb_lib/color/space/rgb2hsv.glsl"
+#include "../../fb_lib/color/space/hsv2rgb.glsl"
+
 uniform float u_chromaAmount;
 uniform float u_chromaSpeed;
 
 void main() {
-  vec4 color = texture( u_texInput, vTexCoord0 );
   vec2 direction = rotate( vec2( 1. ), u_time * u_chromaSpeed, vec2( .5 ) + 0. * vec2( snoise( vTexCoord0 ) ) );
   float sdf = dot( vTexCoord0 - .5, vTexCoord0 - .5 );
-  vec3 c = chromaAB( u_texInput, vTexCoord0, direction * sdf * 2.5, u_chromaAmount );
+  vec2 st = vTexCoord0 + .1 * vec2(snoise(vec2(vTexCoord0.x, u_time / 8.)), snoise(vec2(vTexCoord0.y, u_time / 10.)));
+  vec3 c = chromaAB( u_texInput, st, direction * sdf * 2.5, u_chromaAmount );
   oColor = vec4( c, 1. );
   oColor = contrast(oColor, 1.1);
   oColor = desaturate(oColor, -.75);
@@ -31,5 +34,6 @@ void main() {
   oColor = levelsInputRange(oColor, vec3(0.), vec3(1., 1., .71));
   oColor = levelsOutputRange(oColor, vec3(0.25, 0., 0.), vec3(1., 1., 1.));
 
-  oColor = desaturate(oColor, .0);
+  oColor = desaturate(oColor, 0.);
+  oColor = mix(oColor, vec4(1.), .2);
 }
