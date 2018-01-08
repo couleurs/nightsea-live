@@ -1,0 +1,22 @@
+{
+   "params" : [
+      {
+         "max" : 1000,
+         "min" : 0,
+         "name" : "u_chromaAmount",
+         "value" : 1000
+      },
+      {
+         "max" : 5,
+         "min" : 0,
+         "name" : "u_chromaSpeed",
+         "value" : 0.23400000000000001
+      },
+      {
+         "min": 0,
+         "max" : 40,
+         "name" : "u_blurRadius",
+         "value" : 18.914000000000001
+      }
+   ]
+}

@@ -7,14 +7,13 @@
 #define GAUSSIANBLUR1D_SAMPLER_FNC(POS_UV) texture(tex, POS_UV)
 #include "../../fb_lib/filter/gaussianBlur/1D.glsl"
 
-uniform int u_blurKernelSize;
 uniform float u_blurRadius;
 uniform float u_grainAmount;
 
 void main() {
   vec4 color = texture( u_texInput, vTexCoord0 );
   float blurRadius = u_blurRadius + 0. * snoise( vTexCoord0 + u_time );
-  color = gaussianBlur1D( u_texInput, vTexCoord0, vec2( 0., blurRadius / u_resolution.y ), u_blurKernelSize );
+  color = gaussianBlur1D( u_texInput, vTexCoord0, vec2( 0., blurRadius / u_resolution.y ), 20 );
 
   // Grain v1
   vec4 grain_1 = vec4( vec3( random( vTexCoord0 ) ), 1. );

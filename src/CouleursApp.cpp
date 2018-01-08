@@ -1,7 +1,7 @@
 #define CI_MIN_LOG_LEVEL 0
 
 // Project
-#define PROJECT_NAME "ambient"
+#define PROJECT_NAME "sure_thing_cover"
 
 // Dimensions
 #define SCENE_WIDTH 800 //2560x1440
@@ -25,7 +25,8 @@
 #define MUSIC_FILE "sounds/music/shed.mp3"
 
 // Config
-#define CONFIG_FILE "/params.json"
+#define CONFIG_FILE_BASE "/params_base.json"
+#define CONFIG_FILE_DYNAMIC "/params_dynamic.json"
 
 // Recording
 #define RECORD false
@@ -51,6 +52,7 @@
 #include "Watchdog.h"
 
 #include "Config.hpp"
+#include "Parameters.hpp"
 
 #include <ctime>
 
@@ -75,14 +77,8 @@ typedef struct {
 } File;
 
 typedef struct {
-  float tickSensitivity;
-  float speed;
   float feedbackAmount, feedbackScale;
-  float randomDisplacement;
   float lutMix;
-  int   blurKernelSize;
-  float blurRadius;
-  float chromaSpeed, chromaAmount;
   float grainAmount;
 } Parameter;
 
@@ -126,6 +122,7 @@ private:
   midi::Input                  mMidiIn;
   
   Config                       mConfig;
+  Parameters                   mParams;
   int                          mNumSections;
   
   qtime::MovieWriterRef        mMovieWriter;
@@ -171,7 +168,8 @@ private:
 };
 
 CouleursApp::CouleursApp() :
-  mConfig( string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( CONFIG_FILE ) )
+  mConfig( string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( CONFIG_FILE_BASE ) ),
+  mParams( string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( CONFIG_FILE_DYNAMIC ) )
 {
   // OSC
 //  mOSCIn.setup( OSC_PORT );
@@ -278,21 +276,13 @@ void CouleursApp::setupParams()
   mNumSections = mConfig.getNumChildren();
   for ( int i = 0; i < mNumSections; i++ ) {
     mParameters.push_back( new Parameter() );
-    // Scene
-    mConfig( to_string( i ) + ".u_speed",              &mParameters[ i ]->speed );
-    mConfig( to_string( i ) + ".u_tickSensitivity",    &mParameters[ i ]->tickSensitivity );
     
     // Feedback
     mConfig( to_string( i ) + ".u_feedbackScale",      &mParameters[ i ]->feedbackScale );
     mConfig( to_string( i ) + ".u_feedbackAmount",     &mParameters[ i ]->feedbackAmount );
     
     // Post-Processing
-    mConfig( to_string( i ) + ".u_randomDisplacement", &mParameters[ i ]->randomDisplacement );
     mConfig( to_string( i ) + ".u_lutMix",             &mParameters[ i ]->lutMix );
-    mConfig( to_string( i ) + ".u_blurKernelSize",     &mParameters[ i ]->blurKernelSize );
-    mConfig( to_string( i ) + ".u_blurRadius",         &mParameters[ i ]->blurRadius );
-    mConfig( to_string( i ) + ".u_chromaAmount",       &mParameters[ i ]->chromaAmount );
-    mConfig( to_string( i ) + ".u_chromaSpeed",        &mParameters[ i ]->chromaSpeed );
     mConfig( to_string( i ) + ".u_grainAmount",        &mParameters[ i ]->grainAmount );
   }
 }
@@ -426,6 +416,7 @@ void CouleursApp::keyDown( KeyEvent event )
   if ( event.getCode() == KeyEvent::KEY_s ) {
     CI_LOG_I( "Saving config file" );
     mConfig.save();
+    mParams.save();
   }
   else if ( event.getCode() == KeyEvent::KEY_f ) {
     CI_LOG_I( "Saving screenshot" );
@@ -434,6 +425,7 @@ void CouleursApp::keyDown( KeyEvent event )
   else if ( event.getCode() == KeyEvent::KEY_r ) {
     CI_LOG_I( "Resetting params" );
     setupParams();
+    mParams.reload();
   }
 }
 
@@ -483,12 +475,6 @@ void CouleursApp::updateUI()
   {
     ui::ScopedWindow win( "Parameters" );
     
-    if ( ui::CollapsingHeader( "Scene", ImGuiTreeNodeFlags_DefaultOpen ) ) {
-      ui::SliderFloat( "SDF Smooth",          &mSmooth,                   0.f, 1.f );
-      ui::SliderFloat( "Speed",               &param->speed,              0.f, 1.f );
-      ui::SliderFloat( "Tick Sensitivity",    &param->tickSensitivity,    0.f, 1.f );
-    }
-    
     if ( ui::CollapsingHeader( "Feedback", ImGuiTreeNodeFlags_DefaultOpen ) ) {
       ui::SliderFloat( "Feedback Scale",      &param->feedbackScale,      0.f, 2.f );
       ui::SliderFloat( "Feedback Amount",     &param->feedbackAmount,     0.f, 1.f );
@@ -496,12 +482,15 @@ void CouleursApp::updateUI()
     
     if ( ui::CollapsingHeader( "Post Processing", ImGuiTreeNodeFlags_DefaultOpen ) ) {
       ui::SliderFloat( "LUT Mix",             &param->lutMix,             0.f, 1.f );
-      ui::SliderFloat( "Random Displacement", &param->randomDisplacement, 0.f, .1f );
-      ui::SliderInt(   "Blur Kernel Size",    &param->blurKernelSize    , 1,   20 );
-      ui::SliderFloat( "Blur Radius",         &param->blurRadius        , 1.f, 30.f );
-      ui::SliderFloat( "Chroma Amount",       &param->chromaAmount      , 1.f, 1000.f );
-      ui::SliderFloat( "Chroma Speed",        &param->chromaSpeed       , 0.f, 5.f );
       ui::SliderFloat( "Grain Amount",        &param->grainAmount       , 0.f, .2f );
+    }
+    
+    if ( ui::CollapsingHeader( "Dynamic Parameters", ImGuiTreeNodeFlags_DefaultOpen ) ) {
+      auto params = mParams.get();
+      for (auto it = params.begin(); it != params.end(); it++ ) {
+        auto param = *it;
+        ui::SliderFloat( param->name.c_str(), &param->value, param->min, param->max );
+      }
     }
   }
   
@@ -603,9 +592,6 @@ void CouleursApp::drawScene()
       gl::ScopedGlslProg shader( mSceneShader );
       gl::ScopedTextureBind lookupTable( mRandomTexture, 0 );
       mSceneShader->uniform( "u_texRandom", 0 );
-      mSceneShader->uniform( "u_smooth", mSmooth );
-      mSceneShader->uniform( "u_speed", param->speed );
-      mSceneShader->uniform( "u_tickSensitivity", param->tickSensitivity );
       bindCommonUniforms( mSceneShader );
       gl::drawSolidRect( drawRect );
     }
@@ -660,11 +646,6 @@ void CouleursApp::drawScene()
         postProcessingShader->uniform( "u_texColors", 2 );
         postProcessingShader->uniform( "u_grainAmount", param->grainAmount );
         postProcessingShader->uniform( "u_mixAmount", param->lutMix );
-        postProcessingShader->uniform( "u_randomDisplacement", param->randomDisplacement );
-        postProcessingShader->uniform( "u_blurKernelSize", param->blurKernelSize );
-        postProcessingShader->uniform( "u_blurRadius", param->blurRadius );
-        postProcessingShader->uniform( "u_chromaAmount", param->chromaAmount );
-        postProcessingShader->uniform( "u_chromaSpeed", param->chromaSpeed );
         bindCommonUniforms( postProcessingShader );
         gl::drawSolidRect( drawRect );
         mPostProcessingFboCount++;
@@ -687,6 +668,11 @@ void CouleursApp::bindCommonUniforms( gl::GlslProgRef shader )
   shader->uniform( "u_time", (float)getElapsedSeconds() );
   shader->uniform( "u_tick", mTick );
   shader->uniform( "u_section", mSection );
+    
+  auto params = mParams.get();
+  for (auto it = params.begin(); it != params.end(); it++ ) {
+      shader->uniform( (*it)->name, (*it)->value );
+  }
 }
 
 void CouleursApp::clearFBO( gl::FboRef fbo )

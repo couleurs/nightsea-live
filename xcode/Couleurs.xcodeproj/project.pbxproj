@@ -16,6 +16,7 @@
 		00B784B60FF439BC000DE1D7 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00B784B20FF439BC000DE1D7 /* CoreAudio.framework */; };
 		00B9955A1B128DF400A5C623 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00B995581B128DF400A5C623 /* IOKit.framework */; };
 		00B9955B1B128DF400A5C623 /* IOSurface.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00B995591B128DF400A5C623 /* IOSurface.framework */; };
+		2C1F8ECE20015F310051888C /* Parameters.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2C1F8ECC20015F310051888C /* Parameters.cpp */; };
 		5323E6B20EAFCA74003A9687 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5323E6B10EAFCA74003A9687 /* CoreVideo.framework */; };
 		5C0BAFCD1F70952E00CD60A6 /* CoreMIDI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C0BAFCC1F70952E00CD60A6 /* CoreMIDI.framework */; };
 		5C1B472A1F7FA07700011ACF /* Config.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5C1B47291F7FA07700011ACF /* Config.cpp */; };
@@ -47,6 +48,8 @@
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		2C1F8ECC20015F310051888C /* Parameters.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Parameters.cpp; path = ../src/Parameters.cpp; sourceTree = "<group>"; };
+		2C1F8ECF20015F750051888C /* Parameters.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Parameters.hpp; path = ../include/Parameters.hpp; sourceTree = "<group>"; };
 		5323E6B10EAFCA74003A9687 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = /System/Library/Frameworks/CoreVideo.framework; sourceTree = "<absolute>"; };
 		5C0BAFCC1F70952E00CD60A6 /* CoreMIDI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMIDI.framework; path = System/Library/Frameworks/CoreMIDI.framework; sourceTree = SDKROOT; };
 		5C1B47291F7FA07700011ACF /* Config.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Config.cpp; path = ../src/Config.cpp; sourceTree = "<group>"; };
@@ -126,6 +129,7 @@
 			children = (
 				EC2C06C06B8C4CAE85C4AD75 /* CouleursApp.cpp */,
 				5C1B47291F7FA07700011ACF /* Config.cpp */,
+				2C1F8ECC20015F310051888C /* Parameters.cpp */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -184,6 +188,7 @@
 			children = (
 				86E00851AB01436EA44144BF /* Resources.h */,
 				5C1B472B1F7FA08100011ACF /* Config.hpp */,
+				2C1F8ECF20015F750051888C /* Parameters.hpp */,
 				5DC6B680118644329E7A0053 /* Couleurs_Prefix.pch */,
 			);
 			name = Headers;
@@ -424,6 +429,7 @@
 				5C4E7AE41DDD318A00B78834 /* CinderImGui.cpp in Sources */,
 				5C4E7ACD1DDD318A00B78834 /* imgui_draw.cpp in Sources */,
 				5CC93B121F97C45F00B85E77 /* MidiMessage.cpp in Sources */,
+				2C1F8ECE20015F310051888C /* Parameters.cpp in Sources */,
 				5C4E7ACC1DDD318A00B78834 /* imgui_demo.cpp in Sources */,
 				F28FB318D4FB40A88DAAC40C /* CouleursApp.cpp in Sources */,
 				5CC93B101F97C45F00B85E77 /* MidiHub.cpp in Sources */,
