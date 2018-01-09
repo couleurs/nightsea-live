@@ -21,6 +21,12 @@ void Parameters::init()
     param->min = (*it)["min"].getValue<float>();
     param->max = (*it)["max"].getValue<float>();
     param->value = (*it)["value"].getValue<float>();
+    try {
+      param->midiNumber = (*it)["midi"].getValue<int>();
+    }
+    catch ( const std::exception &e ) {
+      cinder::app::console() << "No midi for param " << param->name << std::endl;
+    }
     mParameters.push_back( param );
   }
 }
@@ -42,4 +48,15 @@ void Parameters::reload()
 {
   mJson = JsonTree( app::loadAsset( mPath ) );
   init();
+}
+
+Param* Parameters::getParamForMidiNumber( int number )
+{
+  for ( size_t i = 0; i < mParameters.size(); i++ ) {
+    auto param = mParameters[ i ];
+    if ( param->midiNumber == number ) {
+      return param;
+    }
+  }
+  return nullptr;
 }

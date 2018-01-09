@@ -1,7 +1,7 @@
 #define CI_MIN_LOG_LEVEL 0
 
 // Project
-#define PROJECT_NAME "sure_thing_cover"
+#define PROJECT_NAME "ambient"
 
 // Dimensions
 #define SCENE_WIDTH 800 //2560x1440
@@ -42,6 +42,7 @@
 #include "cinder/qtime/AvfWriter.h"
 #include "cinder/Timer.h"
 #include "cinder/audio/Voice.h"
+#include "cinder/CinderMath.h"
 
 // Blocks
 #include "Osc.h"
@@ -116,10 +117,11 @@ private:
   
   void clearFBO( gl::FboRef fbo );
   
-  void midiListener( midi::Message msg );
+  void abletonMidiListener( midi::Message msg );
+  void controllerMidiListener( midi::Message msg );
   
 //  osc::Listener                mOSCIn;
-  midi::Input                  mMidiIn;
+  midi::Input                  mAbletonMidiIn, mControllerMidiIn;
   
   Config                       mConfig;
   Parameters                   mParams;
@@ -260,11 +262,20 @@ void CouleursApp::setupMusic()
 
 void CouleursApp::setupMidi()
 {
-  if ( mMidiIn.getNumPorts() > 0 ) {
-    mMidiIn.listPorts();
-    mMidiIn.openPort( 0 );
+  if ( mAbletonMidiIn.getNumPorts() > 0 ) {
+    mAbletonMidiIn.listPorts();
+    mAbletonMidiIn.openPort( 0 );
     cout << "Opening MIDI port 0" << endl;
-    mMidiIn.midiSignal.connect( bind( &CouleursApp::midiListener, this, placeholders::_1 ) );
+    mAbletonMidiIn.midiSignal.connect( bind( &CouleursApp::abletonMidiListener, this, placeholders::_1 ) );
+  }
+  else {
+    cout << "No MIDI ports found" << endl;
+  }
+  
+  if ( mControllerMidiIn.getNumPorts() > 0 ) {
+    mControllerMidiIn.openPort( 2 );
+    cout << "Opening MIDI port 2" << endl;
+    mControllerMidiIn.midiSignal.connect( bind( &CouleursApp::controllerMidiListener, this, placeholders::_1 ) );
   }
   else {
     cout << "No MIDI ports found" << endl;
@@ -287,37 +298,26 @@ void CouleursApp::setupParams()
   }
 }
 
-void CouleursApp::midiListener( midi::Message msg )
+void CouleursApp::controllerMidiListener( midi::Message msg )
+{
+  auto param = mParams.getParamForMidiNumber( msg.control );
+  if ( param != nullptr ) {
+    console() << "found param: " << param->name << endl;
+    param->value = lmap( (float)msg.value, 0.f, 127.f, param->min, param->max );
+  }
+  console() << "msg value: " << msg.value << "|| msg control: " << msg.control << endl;
+}
+
+void CouleursApp::abletonMidiListener( midi::Message msg )
 {
   switch ( msg.status ) {
-    case MIDI_NOTE_ON:
-      switch ( msg.pitch ) {
-        case 72: //D#4
-          mSection = 0;
-          break;
-        case 73: //E4
-          mSection = 1;
-          break;
-        case 74:
-          mSection = 2;
-          break;
-        case 75:
-          mSection = 3;
-          break;
-        case 76:
-          mSection = 4;
-          break;
-      }      
-      break;
-    case MIDI_NOTE_OFF:
-      break;
     case MIDI_START:
-      cout << "MIDI START" << endl;
+      console() << "MIDI START" << endl;
       mTimer.stop();
       mTimer.start();
       break;
     case MIDI_STOP:
-      cout << "MIDI STOP" << endl;
+      console() << "MIDI STOP" << endl;
       mTimer.stop();
       break;
     case MIDI_TIME_CLOCK:

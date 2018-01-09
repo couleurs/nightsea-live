@@ -5,6 +5,7 @@
 typedef struct {
   float min, max, value;
   std::string name;
+  int midiNumber = -1;
 } Param;
 
 class Parameters {
@@ -15,6 +16,7 @@ public:
   void reload();
   
   std::vector<Param *>& get() { return mParameters; }
+  Param* getParamForMidiNumber( int number );
     
 private:
   std::vector<Param *> mParameters;

@@ -24,7 +24,7 @@ uniform float u_chromaSpeed;
 void main() {
   vec2 direction = rotate( vec2( 1. ), u_time * u_chromaSpeed, vec2( .5 ) + 0. * vec2( snoise( vTexCoord0 ) ) );
   float sdf = dot( vTexCoord0 - .5, vTexCoord0 - .5 );
-  vec2 st = vTexCoord0 + .1 * vec2(snoise(vec2(vTexCoord0.x, u_time / 8.)), snoise(vec2(vTexCoord0.y, u_time / 10.)));
+  vec2 st = vTexCoord0;// + .0 * vec2(snoise(vec2(vTexCoord0.x, u_time / 8.)), snoise(vec2(vTexCoord0.y, u_time / 10.)));
   vec3 c = chromaAB( u_texInput, st, direction * sdf * 2.5, u_chromaAmount );
   oColor = vec4( c, 1. );
   oColor = contrast(oColor, 1.1);

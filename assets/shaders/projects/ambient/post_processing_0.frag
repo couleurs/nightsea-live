@@ -12,7 +12,8 @@ void main() {
   vec4 color = texture( u_texInput, vTexCoord0 + .1 * r );
 
   // Color palette
-  vec4 newColor = lut( color, u_texColors );
+  vec4 newColor = color;
+  newColor = lut( color, u_texColors );
 
   // LUT
   newColor = lut( newColor, u_texLUT );
