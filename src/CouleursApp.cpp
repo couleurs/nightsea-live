@@ -1,7 +1,7 @@
 #define CI_MIN_LOG_LEVEL 0
 
 // Project
-#define PROJECT_NAME "sure_thing_cover"
+#define PROJECT_NAME "ambient"
 
 // Dimensions
 #define SCENE_WIDTH 800 //2560x1440
@@ -19,10 +19,6 @@
 // Assets
 #define COLOR_PALETTE_LUT_FILE "images/shed/lookup_shed_1.png"
 #define POST_PROCESSING_LUT_FILE "images/LUTs/lookup_couleurs_bw.png"
-
-// Audio
-#define LOAD_AUDIO false
-#define MUSIC_FILE "sounds/music/shed.mp3"
 
 // Config
 #define PARAMS_FILE "/params.json"
@@ -96,7 +92,6 @@ private:
   void setupUI();
   void setupScene();
   void setupMovieWriter();
-  void setupMusic();
   void setupMidi();
   
   // Update
@@ -126,7 +121,6 @@ private:
   qtime::MovieWriterRef        mMovieWriter;
   std::vector<File>            mShaderFiles;
   bool                         mSceneIsSetup = false;
-  audio::VoiceRef              mMusic;
   
   // AV Sync
   ci::Timer                    mTimer;
@@ -189,7 +183,6 @@ void CouleursApp::setup()
   setupUI();
   setupScene();
   setupMovieWriter();
-  setupMusic();
   mTimer.start();
 }
 
@@ -240,14 +233,6 @@ void CouleursApp::setupMovieWriter()
       //    .jpegQuality( 0.09f ).averageBitsPerSecond( 10000000 );
       mMovieWriter = qtime::MovieWriter::create( path, getWindowWidth(), getWindowHeight() );
     }
-  }
-}
-
-void CouleursApp::setupMusic()
-{
-  if (LOAD_AUDIO) {
-    auto sourceFile = audio::load( loadAsset( MUSIC_FILE ) );
-    mMusic = audio::Voice::create( sourceFile );
   }
 }
 
@@ -465,23 +450,6 @@ void CouleursApp::updateUI()
     vec2 size( ui::GetContentRegionAvailWidth() * .7f, ui::GetTextLineHeightWithSpacing() );
     auto c = ImColor( .85f, .87f, .92f, .76f );
     draw->AddRectFilled( p, vec2( p.x + size.x * mTick, p.y + size.y ), c );
-  }
-  
-  {
-    ui::ScopedWindow win( "Music" );
-    if ( ui::SmallButton( "Play" ) ) {
-      mMusic->start();
-      mTimer.stop();
-      mTimer.start();
-    }
-    
-    if ( ui::SmallButton( "Pause" ) ) {
-      mMusic->pause();
-    }
-    
-    if ( ui::SmallButton( "Stop" ) ) {
-      mMusic->stop();
-    }
   }
   
   {
