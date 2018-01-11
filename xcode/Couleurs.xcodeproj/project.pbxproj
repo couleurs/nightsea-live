@@ -66,6 +66,7 @@
 		5C4E7A4C1DDD318A00B78834 /* stb_truetype.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stb_truetype.h; sourceTree = "<group>"; };
 		5C4E7A761DDD318A00B78834 /* CinderImGui.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = CinderImGui.cpp; sourceTree = "<group>"; };
 		5C4E7AEB1DDD33F500B78834 /* assets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = assets; path = ../assets; sourceTree = "<group>"; };
+		5C92783D2007DCE600DB9E09 /* Constants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Constants.h; path = ../include/Constants.h; sourceTree = "<group>"; };
 		5CA43EC31FD2350500769E2E /* Watchdog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Watchdog.h; sourceTree = "<group>"; };
 		5CC93AAC1F97C45F00B85E77 /* MidiConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MidiConstants.h; sourceTree = "<group>"; };
 		5CC93AAD1F97C45F00B85E77 /* MidiExceptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MidiExceptions.h; sourceTree = "<group>"; };
@@ -190,6 +191,7 @@
 				5C1B472B1F7FA08100011ACF /* Config.hpp */,
 				2C1F8ECF20015F750051888C /* Parameters.hpp */,
 				5DC6B680118644329E7A0053 /* Couleurs_Prefix.pch */,
+				5C92783D2007DCE600DB9E09 /* Constants.h */,
 			);
 			name = Headers;
 			sourceTree = "<group>";
