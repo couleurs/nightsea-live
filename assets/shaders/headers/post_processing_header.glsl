@@ -2,6 +2,6 @@
 
 uniform sampler2D	u_texInput;
 uniform sampler2D	u_texLUT;
-uniform float     u_mixAmount;
+uniform float     u_lutMix;
 
 #include "../couleurs_lib/lut.glsl"

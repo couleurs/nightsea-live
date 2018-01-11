@@ -1,7 +1,7 @@
 #define CI_MIN_LOG_LEVEL 0
 
 // Project
-#define PROJECT_NAME "ambient"
+#define PROJECT_NAME "sure_thing_cover"
 
 // Dimensions
 #define SCENE_WIDTH 800 //2560x1440
@@ -25,8 +25,7 @@
 #define MUSIC_FILE "sounds/music/shed.mp3"
 
 // Config
-#define CONFIG_FILE_BASE "/params_base.json"
-#define CONFIG_FILE_DYNAMIC "/params_dynamic.json"
+#define PARAMS_FILE "/params.json"
 
 // Recording
 #define RECORD false
@@ -52,7 +51,6 @@
 #include "MidiConstants.h"
 #include "Watchdog.h"
 
-#include "Config.hpp"
 #include "Parameters.hpp"
 
 #include <ctime>
@@ -100,7 +98,6 @@ private:
   void setupMovieWriter();
   void setupMusic();
   void setupMidi();
-  void setupParams();
   
   // Update
   void updateOSC();
@@ -123,7 +120,6 @@ private:
 //  osc::Listener                mOSCIn;
   midi::Input                  mAbletonMidiIn, mControllerMidiIn;
   
-  Config                       mConfig;
   Parameters                   mParams;
   int                          mNumSections;
   
@@ -158,9 +154,6 @@ private:
   int                          mPostProcessingFboCount = 0;
   float                        mGrainAmount = 0.051f;
   
-  // Parameters
-  std::vector<Parameter *> mParameters;
-  
   // Window Management
   ci::app::WindowRef       mUIWindow, mSceneWindow;
   
@@ -170,8 +163,7 @@ private:
 };
 
 CouleursApp::CouleursApp() :
-  mConfig( string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( CONFIG_FILE_BASE ) ),
-  mParams( string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( CONFIG_FILE_DYNAMIC ) )
+  mParams( string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( PARAMS_FILE ) )
 {
   // OSC
 //  mOSCIn.setup( OSC_PORT );
@@ -190,7 +182,6 @@ CouleursApp::CouleursApp() :
 //  mSceneWindow->setFullScreen();
   
   setupMidi();
-  setupParams();
 }
 
 void CouleursApp::setup()
@@ -272,29 +263,13 @@ void CouleursApp::setupMidi()
     cout << "No MIDI ports found" << endl;
   }
   
-  if ( mControllerMidiIn.getNumPorts() > 0 ) {
+  if ( mControllerMidiIn.getNumPorts() > 2 ) {
     mControllerMidiIn.openPort( 2 );
     cout << "Opening MIDI port 2" << endl;
     mControllerMidiIn.midiSignal.connect( bind( &CouleursApp::controllerMidiListener, this, placeholders::_1 ) );
   }
   else {
     cout << "No MIDI ports found" << endl;
-  }
-}
-
-void CouleursApp::setupParams()
-{
-  mNumSections = mConfig.getNumChildren();
-  for ( int i = 0; i < mNumSections; i++ ) {
-    mParameters.push_back( new Parameter() );
-    
-    // Feedback
-    mConfig( to_string( i ) + ".u_feedbackScale",      &mParameters[ i ]->feedbackScale );
-    mConfig( to_string( i ) + ".u_feedbackAmount",     &mParameters[ i ]->feedbackAmount );
-    
-    // Post-Processing
-    mConfig( to_string( i ) + ".u_lutMix",             &mParameters[ i ]->lutMix );
-    mConfig( to_string( i ) + ".u_grainAmount",        &mParameters[ i ]->grainAmount );
   }
 }
 
@@ -415,7 +390,6 @@ void CouleursApp::keyDown( KeyEvent event )
 {
   if ( event.getCode() == KeyEvent::KEY_s ) {
     CI_LOG_I( "Saving config file" );
-    mConfig.save();
     mParams.save();
   }
   else if ( event.getCode() == KeyEvent::KEY_f ) {
@@ -424,7 +398,6 @@ void CouleursApp::keyDown( KeyEvent event )
   }
   else if ( event.getCode() == KeyEvent::KEY_r ) {
     CI_LOG_I( "Resetting params" );
-    setupParams();
     mParams.reload();
   }
 }
@@ -454,16 +427,13 @@ void CouleursApp::updateOSC()
 
 void CouleursApp::updateUI()
 {
-  assert( mParameters.size() > mSection );
-  auto param = mParameters[ mSection ];
-  
   // Draw UI
   {
     ui::ScopedMainMenuBar mainMenu;    
     
     if ( ui::BeginMenu( "Couleurs" ) ) {
       if ( ui::MenuItem( "Reset" ) ) {
-        setupParams();
+        mParams.reload();
       }
       if ( ui::MenuItem( "QUIT" ) ) {
         quit();
@@ -474,23 +444,10 @@ void CouleursApp::updateUI()
   
   {
     ui::ScopedWindow win( "Parameters" );
-    
-    if ( ui::CollapsingHeader( "Feedback", ImGuiTreeNodeFlags_DefaultOpen ) ) {
-      ui::SliderFloat( "Feedback Scale",      &param->feedbackScale,      0.f, 2.f );
-      ui::SliderFloat( "Feedback Amount",     &param->feedbackAmount,     0.f, 1.f );
-    }
-    
-    if ( ui::CollapsingHeader( "Post Processing", ImGuiTreeNodeFlags_DefaultOpen ) ) {
-      ui::SliderFloat( "LUT Mix",             &param->lutMix,             0.f, 1.f );
-      ui::SliderFloat( "Grain Amount",        &param->grainAmount       , 0.f, .2f );
-    }
-    
-    if ( ui::CollapsingHeader( "Dynamic Parameters", ImGuiTreeNodeFlags_DefaultOpen ) ) {
-      auto params = mParams.get();
-      for (auto it = params.begin(); it != params.end(); it++ ) {
-        auto param = *it;
-        ui::SliderFloat( param->name.c_str(), &param->value, param->min, param->max );
-      }
+    auto params = mParams.get();
+    for (auto it = params.begin(); it != params.end(); it++ ) {
+      auto param = *it;
+      ui::SliderFloat( param->name.c_str(), &param->value, param->min, param->max );
     }
   }
   
@@ -583,8 +540,6 @@ void CouleursApp::drawScene()
   
   {
     Rectf drawRect = Rectf( 0.f, 0.f, mSceneWindow->getWidth(), mSceneWindow->getHeight() );
-    assert( mParameters.size() > mSection );
-    auto param = mParameters[ mSection ];
     
     {
       // Scene
@@ -609,8 +564,6 @@ void CouleursApp::drawScene()
         gl::ScopedTextureBind feedbackTexture( feedbackFBOIn->getColorTexture(), 1 );
         mFeedbackShader->uniform( "u_texSource", 0 );
         mFeedbackShader->uniform( "u_texFeedback", 1 );
-        mFeedbackShader->uniform( "u_feedbackAmount", param->feedbackAmount );
-        mFeedbackShader->uniform( "u_feedbackScale", param->feedbackScale );
         bindCommonUniforms( mFeedbackShader );
         gl::drawSolidRect( drawRect );
         mFeedbackFboCount++;
@@ -643,9 +596,7 @@ void CouleursApp::drawScene()
         gl::ScopedTextureBind colorTable1( mColorPaletteLUT, 2 );
         postProcessingShader->uniform( "u_texInput", 0 );
         postProcessingShader->uniform( "u_texLUT", 1 );
-        postProcessingShader->uniform( "u_texColors", 2 );
-        postProcessingShader->uniform( "u_grainAmount", param->grainAmount );
-        postProcessingShader->uniform( "u_mixAmount", param->lutMix );
+        postProcessingShader->uniform( "u_texColors", 2 );        
         bindCommonUniforms( postProcessingShader );
         gl::drawSolidRect( drawRect );
         mPostProcessingFboCount++;

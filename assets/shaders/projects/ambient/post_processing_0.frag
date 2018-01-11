@@ -17,7 +17,7 @@ void main() {
 
   // LUT
   newColor = lut( newColor, u_texLUT );
-	oColor = mix( color, newColor, u_mixAmount );
+	oColor = mix( color, newColor, u_lutMix );
 
   // Saturation
   oColor = vec4( mix( oColor.rgb, vec3( .5 ), .15 ), 1. );

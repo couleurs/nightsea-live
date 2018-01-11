@@ -14,7 +14,7 @@ void main() {
   color += grain * u_grainAmount;
 
   vec4 newColor = lut( color, u_texLUT );
-	oColor = mix( color, newColor, u_mixAmount );
+	oColor = mix( color, newColor, u_lutMix );
 
   oColor = contrast(oColor, 1.15);
   oColor = desaturate(oColor, -1.);
