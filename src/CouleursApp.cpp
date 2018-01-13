@@ -252,6 +252,7 @@ void CouleursApp::abletonMidiListener( midi::Message msg )
     case MIDI_STOP:
       console() << "MIDI STOP" << endl;
       mTimer.stop();
+      mTimer.start();
       break;
     case MIDI_TIME_CLOCK:
 //      cout << "TIME CLOCK: " << msg.value << endl;  

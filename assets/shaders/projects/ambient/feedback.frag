@@ -5,6 +5,9 @@
 #include "../../fb_lib/color/space/rgb2hsv.glsl"
 #include "../../fb_lib/color/space/hsv2rgb.glsl"
 #include "../../couleurs_lib/snoise.glsl"
+#include "../../fb_lib/math/map.glsl"
+
+uniform float u_feedbackBeat;
 
 void main() {
   vec4 source = texture( u_texSource, vTexCoord0 );
@@ -17,6 +20,9 @@ void main() {
   // f_rgb.r += u_time / 20.;
   // f_rgb.r = fract(f_rgb.r);
   // f_rgb += 1.;
-  oColor = mix( source, f_rgb, u_feedbackAmount );
+
+  // oColor = mix( source, f_rgb, u_feedbackAmount );
+  float fb_max = mix(u_feedbackAmount, 1., u_feedbackBeat);
+  oColor = mix(source, f_rgb, map(u_tick, 0., 1., u_feedbackAmount, fb_max));
   // oColor = source;
 }

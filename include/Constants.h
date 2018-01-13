@@ -6,8 +6,8 @@
 #define PROJECT_NAME "ambient"
 
 // Dimensions
-#define SCENE_WIDTH 800 //2560x1440
-#define SCENE_HEIGHT 800
+#define SCENE_WIDTH 1000 //2560x1440
+#define SCENE_HEIGHT 1000
 #define UI_WIDTH 600
 #define UI_HEIGHT 600
 #define WINDOW_PADDING 20
