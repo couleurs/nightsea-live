@@ -17,6 +17,8 @@ void main() {
 	oColor = mix( color, newColor, u_lutMix );
 
   oColor = contrast(oColor, 1.15);
-  oColor = desaturate(oColor, -1.);
+  oColor = desaturate(oColor, -.75);
   // oColor = desaturate(oColor, .8);
+  oColor += .02;
+  oColor = mix(oColor, vec4(1.), 0.02);
 }

@@ -9,25 +9,29 @@
 const float particleDepthIncrementExponent = .1;
 const float particleSmoothstepLeftEdge = .1;
 const float particleSmoothstepRightEdge = .9;
-const float particleVisibility = .3;
+const float particleVisibility = .3; // param between .2 and .3
 const float particleResultExponent = 2.2;
 const float particleDepthLayerIncrement = 10.;
-const float particleSpeed = .005;
+// const float particleSpeed = .013; // param between .003 and .013
 const float particleRotateAmount = .5;
 const float particleBaseTranslateXAmount = .5;
-const float particleBaseTranslateYSpeed = .5;
+// const float particleBaseTranslateYSpeed = 10.5; // param between 10.5 and .5
 const float particlePendulumYCoeff = 3.;
 const float particlePendulumTranslateAmount = 1.;
 const float particleSamplingX = .6;
 const float particleSamplingY = .25;
 const float particleSamplingCoeff = .45;
-const float particlePreScale = .02;
+// const float particlePreScale = .015; // param between .015 and .05
 
 uniform sampler2D u_texRandom;
+uniform float u_particleBaseTranslateYSpeed;
+uniform float u_particleSpeed;
+uniform float u_particlePreScale;
 
 float particleLayer(sampler2D texRandom, vec2 st, float amount, int layer) {
   // Speed: the front layers go faster the back layers
   float normAmount = amount * .11;
+  float particleSpeed = mix(.003, .013, u_particleSpeed);
   float particleTime = 1. + u_time * mix(10., 1.4712, normAmount) * particleSpeed;
 
   vec2 offset = st;
@@ -40,6 +44,7 @@ float particleLayer(sampler2D texRandom, vec2 st, float amount, int layer) {
 
   // Base Movement: downward + slight horizontal oscillation
   float phaseOffset = float(layer) * PI / 4.;
+  float particleBaseTranslateYSpeed = mix(.5, 10.5, u_particleBaseTranslateYSpeed);
   offset += vec2(sin(particleTime + phaseOffset) * particleBaseTranslateXAmount,
                  particleTime * particleBaseTranslateYSpeed);
 
@@ -64,6 +69,7 @@ vec4 particles() {
 	float depth = 1.;
 	for (int i = 0; i < PARTICLE_LAYERS; i++) {
     float f = pow(depth, particleDepthIncrementExponent) + .5;
+    float particlePreScale = mix(.015, .05, u_particlePreScale);
     float p = particleLayer(u_texRandom, st * particlePreScale, f, i);
     p = pow(p, particleResultExponent);
     color += smoothstep(particleSmoothstepLeftEdge, particleSmoothstepRightEdge, p);
