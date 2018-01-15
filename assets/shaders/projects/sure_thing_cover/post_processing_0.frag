@@ -7,6 +7,7 @@
 #include "../../couleurs_lib/grain.glsl"
 
 uniform float u_grainAmount;
+uniform float u_saturation;
 
 void main() {
   vec4 color = texture( u_texInput, vTexCoord0 );
@@ -17,8 +18,8 @@ void main() {
 	oColor = mix( color, newColor, u_lutMix );
 
   oColor = contrast(oColor, 1.15);
-  oColor = desaturate(oColor, -.75);
+  oColor = desaturate(oColor, mix(.25, -.75, u_saturation));
   // oColor = desaturate(oColor, .8);
   oColor += .02;
-  oColor = mix(oColor, vec4(1.), 0.02);
+  // oColor = mix(oColor, vec4(1.), 0.02);
 }

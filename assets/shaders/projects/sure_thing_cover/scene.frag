@@ -9,7 +9,7 @@
 const float particleDepthIncrementExponent = .1;
 const float particleSmoothstepLeftEdge = .1;
 const float particleSmoothstepRightEdge = .9;
-const float particleVisibility = .3; // param between .2 and .3
+// const float particleVisibility = .3; // param between .3 and .4
 const float particleResultExponent = 2.2;
 const float particleDepthLayerIncrement = 10.;
 // const float particleSpeed = .013; // param between .003 and .013
@@ -27,11 +27,13 @@ uniform sampler2D u_texRandom;
 uniform float u_particleBaseTranslateYSpeed;
 uniform float u_particleSpeed;
 uniform float u_particlePreScale;
+uniform float u_particleVisibility;
 
 float particleLayer(sampler2D texRandom, vec2 st, float amount, int layer) {
   // Speed: the front layers go faster the back layers
   float normAmount = amount * .11;
-  float particleSpeed = mix(.003, .013, u_particleSpeed);
+  // float particleSpeed = 0.003;//mix(.003, .013, u_particleSpeed);
+  float particleSpeed = mix(.003, .02, 1. - u_particleBaseTranslateYSpeed);
   float particleTime = 1. + u_time * mix(10., 1.4712, normAmount) * particleSpeed;
 
   vec2 offset = st;
@@ -69,12 +71,13 @@ vec4 particles() {
 	float depth = 1.;
 	for (int i = 0; i < PARTICLE_LAYERS; i++) {
     float f = pow(depth, particleDepthIncrementExponent) + .5;
-    float particlePreScale = mix(.015, .05, u_particlePreScale);
+    float particlePreScale = mix(.02, .05, u_particlePreScale);
     float p = particleLayer(u_texRandom, st * particlePreScale, f, i);
     p = pow(p, particleResultExponent);
     color += smoothstep(particleSmoothstepLeftEdge, particleSmoothstepRightEdge, p);
     depth += particleDepthLayerIncrement;
 	}
+  float particleVisibility = mix(.3, .4, u_particleVisibility);
   return vec4(color, 1.) * particleVisibility;
 }
 
