@@ -3,7 +3,7 @@
 #define CI_MIN_LOG_LEVEL 0
 
 // Project
-#define PROJECT_NAME "sure_thing_cover"
+#define PROJECT_NAME "live_set_cover"
 
 // Dimensions
 #define SCENE_WIDTH 1000 //2560x1440
@@ -19,8 +19,9 @@
 #define POST_PROCESSING_SHADER "/post_processing_"
 
 // Assets
-#define COLOR_PALETTE_LUT_FILE "images/shed/lookup_shed_1.png"
-#define POST_PROCESSING_LUT_FILE "images/LUTs/lookup_couleurs_bw.png"
+#define INPUT_TEXTURE "images/inputs/archilect_1.png"
+#define COLOR_PALETTE_LUT "images/shed/lookup_shed_1.png"
+#define POST_PROCESSING_LUT "images/LUTs/lookup_couleurs_bw.png"
 
 // Config
 #define PARAMS_FILE "/params.json"

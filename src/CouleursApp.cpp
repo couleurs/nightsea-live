@@ -102,7 +102,7 @@ private:
   int                          mSection = 0;
   
   // Scene
-  ci::gl::Texture2dRef         mRandomTexture;
+  ci::gl::Texture2dRef         mRandomTexture, mInputTexture;
   gl::FboRef                   mSceneFbo;
   gl::GlslProgRef              mSceneShader;
   float                        mSmooth = .058f;
@@ -186,9 +186,10 @@ void CouleursApp::setupScene()
   
   // FBOs & Textures
   resizeScene();
-  mColorPaletteLUT = gl::Texture2d::create( loadImage( app::loadAsset( COLOR_PALETTE_LUT_FILE ) ) );
-  mPostProcessingLUT = gl::Texture2d::create( loadImage( app::loadAsset( POST_PROCESSING_LUT_FILE ) ) );
+  mColorPaletteLUT = gl::Texture2d::create( loadImage( app::loadAsset( COLOR_PALETTE_LUT ) ) );
+  mPostProcessingLUT = gl::Texture2d::create( loadImage( app::loadAsset( POST_PROCESSING_LUT ) ) );
   mRandomTexture = gl::Texture2d::create( loadImage( app::loadAsset( "images/generative/texRandom.png" ) ) );
+  mInputTexture = gl::Texture2d::create( loadImage( app::loadAsset( INPUT_TEXTURE ) ) );
   
   // GL State
   gl::disableDepthRead();
@@ -488,7 +489,9 @@ void CouleursApp::drawScene()
       gl::ScopedFramebuffer scopedFBO( mSceneFbo );
       gl::ScopedGlslProg shader( mSceneShader );
       gl::ScopedTextureBind lookupTable( mRandomTexture, 0 );
+      gl::ScopedTextureBind inputTexture( mInputTexture, 1 );
       mSceneShader->uniform( "u_texRandom", 0 );
+      mSceneShader->uniform( "u_texInput", 1 );
       bindCommonUniforms( mSceneShader );
       gl::drawSolidRect( drawRect );
     }
