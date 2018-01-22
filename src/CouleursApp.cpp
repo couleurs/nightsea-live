@@ -18,6 +18,7 @@
 
 // C
 #include <ctime>
+//#include <stdlib.h>
 
 // Couleurs
 #include "Parameters.hpp"
@@ -354,7 +355,8 @@ void CouleursApp::keyDown( KeyEvent event )
   }
   else if ( event.getCode() == KeyEvent::KEY_f ) {
     CI_LOG_I( "Saving screenshot" );
-    writeImage( string( "/Users/johanismael/Desktop/screenshot_" ) + to_string( getElapsedSeconds() ) + string( ".png" ), copyWindowSurface() );
+    const char *homeDir = getenv( "HOME" );    
+    writeImage( string( homeDir ) + string( "/Desktop/screenshot_" ) + to_string( getElapsedSeconds() ) + string( ".png" ), copyWindowSurface() );
   }
   else if ( event.getCode() == KeyEvent::KEY_r ) {
     CI_LOG_I( "Resetting params" );
