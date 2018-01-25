@@ -3,7 +3,7 @@
 #define CI_MIN_LOG_LEVEL 0
 
 // Project
-#define PROJECT_NAME "live_set_cover"
+#define PROJECT_NAME "sure_thing_cover"
 
 // Dimensions
 #define SCENE_WIDTH 1000 //2560x1440
@@ -32,3 +32,6 @@
 
 // OSC
 #define OSC_PORT 9001
+
+// MIDI
+#define MIDI_CONTROLLER_PORT 18

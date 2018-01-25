@@ -223,9 +223,9 @@ void CouleursApp::setupMidi()
     cout << "No MIDI ports found" << endl;
   }
   
-  if ( mControllerMidiIn.getNumPorts() > 2 ) {
-    mControllerMidiIn.openPort( 2 );
-    cout << "Opening MIDI port 2" << endl;
+  if ( mControllerMidiIn.getNumPorts() > MIDI_CONTROLLER_PORT ) {
+    mControllerMidiIn.openPort( MIDI_CONTROLLER_PORT );
+//    cout << "Opening MIDI port 2" << endl;
     mControllerMidiIn.midiSignal.connect( bind( &CouleursApp::controllerMidiListener, this, placeholders::_1 ) );
   }
   else {
