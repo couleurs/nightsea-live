@@ -3,11 +3,11 @@
 #define CI_MIN_LOG_LEVEL 0
 
 // Project
-#define PROJECT_NAME "fbm"
+#define PROJECT_NAME "sure_thing_cover"
 
 // Dimensions
-#define SCENE_WIDTH 800 //2560x1440
-#define SCENE_HEIGHT 800
+#define SCENE_WIDTH 850 //2560x1440
+#define SCENE_HEIGHT 850
 #define UI_WIDTH 600
 #define UI_HEIGHT 600
 #define WINDOW_PADDING 20
@@ -20,7 +20,7 @@
 
 // Assets
 #define INPUT_TEXTURE "images/inputs/archilect_1.png"
-#define COLOR_PALETTE_LUT "images/shed/lookup_shed_1.png"
+#define COLOR_PALETTE_LUT "images/LUTs/lookup_shed_2.png"
 #define POST_PROCESSING_LUT "images/LUTs/lookup_couleurs_bw.png"
 
 // Config

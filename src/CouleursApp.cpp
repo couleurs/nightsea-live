@@ -96,6 +96,10 @@ private:
   std::vector<File>            mShaderFiles;
   bool                         mSceneIsSetup = false;
   
+  // Time
+  float                        mTime = 0;
+  bool                         mTimeStopped = false;
+  
   // AV Sync
   ci::Timer                    mTimer;
   int                          mBPM = 107;
@@ -362,6 +366,15 @@ void CouleursApp::keyDown( KeyEvent event )
     CI_LOG_I( "Resetting params" );
     mParams.reload();
   }
+  else if ( event.getCode() == KeyEvent::KEY_t ) {
+    mTimeStopped = !mTimeStopped;
+  }
+  else if ( event.getCode() == KeyEvent::KEY_RIGHTBRACKET ) {
+    mTime += .1f;
+  }
+  else if ( event.getCode() == KeyEvent::KEY_LEFTBRACKET ) {
+    mTime -= .1f;
+  }
 }
 
 void CouleursApp::update()
@@ -563,7 +576,10 @@ void CouleursApp::bindCommonUniforms( gl::GlslProgRef shader )
   auto contentScale = mSceneWindow->getContentScale();
   vec2 resolution = mSceneWindow->getSize() * ivec2( contentScale, contentScale );
   shader->uniform( "u_resolution", resolution );
-  shader->uniform( "u_time", (float)getElapsedSeconds() );
+  if (!mTimeStopped) {
+    mTime = (float)getElapsedSeconds();
+  }
+  shader->uniform( "u_time", mTime );
   shader->uniform( "u_tick", mTick );
   shader->uniform( "u_section", mSection );
     

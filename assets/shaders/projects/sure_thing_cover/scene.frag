@@ -78,7 +78,11 @@ vec4 particles() {
     depth += particleDepthLayerIncrement;
 	}
   float particleVisibility = mix(.3, .4, u_particleVisibility);
-  return vec4(color, 1.) * particleVisibility;
+  vec2 uv = rotate(vTexCoord0, HALF_PI);
+  float l = pow(clamp(mix(0., 1., uv.x * .5 + uv.y * .5 + .0), 0., 1.), .3);
+  // l = 1.;
+  // float l = mix(0., 1., vTexCoord0.x * .5 + vTexCoord0.y * .5);
+  return vec4(color, 1.) * particleVisibility * l * 1.;
 }
 
 void main() {
