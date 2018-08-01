@@ -17,7 +17,7 @@
         },
         {
             "taskName": "make",
-            "args": ["make -j4 && ./Debug/Couleurs/Couleurs.app/Contents/MacOS/Couleurs"],
+            "args": ["make -j4 && open ./Debug/Couleurs/Couleurs.app"],
             "isBuildCommand": true            
         }
     ]
