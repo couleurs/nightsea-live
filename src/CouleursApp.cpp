@@ -3,7 +3,7 @@
 #include "cinder/app/RendererGl.h"
 #include "cinder/gl/gl.h"
 #include "cinder/Log.h"
-#include "cinder/qtime/AvfWriter.h"
+// #include "cinder/qtime/AvfWriter.h"
 #include "cinder/Timer.h"
 #include "cinder/audio/Voice.h"
 #include "cinder/CinderMath.h"
@@ -14,7 +14,7 @@
 #include "MidiIn.h"
 #include "MidiMessage.h"
 #include "MidiConstants.h"
-#include "Watchdog.h"
+// #include "Watchdog.h"
 
 // C
 #include <ctime>
@@ -65,14 +65,14 @@ private:
   // Setup
   void setupUI();
   void setupScene();
-  void setupMovieWriter();
+//  void setupMovieWriter();
   void setupMidi();
   
   // Update
   void updateOSC();
   void updateUI();
   void updateShaders();
-  void updateMovieWriter();
+  // void updateMovieWriter();
   void updateTimer();
   
   void drawUI();
@@ -92,7 +92,7 @@ private:
   Parameters                   mParams;
   int                          mNumSections;
   
-  qtime::MovieWriterRef        mMovieWriter;
+  // qtime::MovieWriterRef        mMovieWriter;
   std::vector<File>            mShaderFiles;
   bool                         mSceneIsSetup = false;
   
@@ -160,7 +160,7 @@ void CouleursApp::setup()
 {
   setupUI();
   setupScene();
-  setupMovieWriter();
+//  setupMovieWriter();
   mTimer.start();
 }
 
@@ -203,17 +203,17 @@ void CouleursApp::setupScene()
   mSceneIsSetup = true;
 }
 
-void CouleursApp::setupMovieWriter()
-{
-  if (RECORD) {
-    fs::path path = getSaveFilePath();
-    if ( !path.empty() ) {
-      //    auto format = qtime::MovieWriter::Format().codec( qtime::MovieWriter::H264 ).fileType( qtime::MovieWriter::QUICK_TIME_MOVIE )
-      //    .jpegQuality( 0.09f ).averageBitsPerSecond( 10000000 );
-      mMovieWriter = qtime::MovieWriter::create( path, getWindowWidth(), getWindowHeight() );
-    }
-  }
-}
+// void CouleursApp::setupMovieWriter()
+// {
+//   if (RECORD) {
+//     fs::path path = getSaveFilePath();
+//     if ( !path.empty() ) {
+//       //    auto format = qtime::MovieWriter::Format().codec( qtime::MovieWriter::H264 ).fileType( qtime::MovieWriter::QUICK_TIME_MOVIE )
+//       //    .jpegQuality( 0.09f ).averageBitsPerSecond( 10000000 );
+//       mMovieWriter = qtime::MovieWriter::create( path, getWindowWidth(), getWindowHeight() );
+//     }
+//   }
+// }
 
 void CouleursApp::setupMidi()
 {
@@ -382,7 +382,7 @@ void CouleursApp::update()
   updateOSC();
   updateUI();
   updateShaders();
-  updateMovieWriter();
+  // updateMovieWriter();
   updateTimer();
 }
 
@@ -468,14 +468,14 @@ void CouleursApp::updateShaders()
   if ( shadersNeedReload ) loadShaders();
 }
 
-void CouleursApp::updateMovieWriter()
-{
-  if ( mMovieWriter && RECORD && getElapsedFrames() > 1 && getElapsedFrames() < NUM_FRAMES )
-    mMovieWriter->addFrame( copyWindowSurface() );
-  else if ( mMovieWriter && getElapsedFrames() >= NUM_FRAMES ) {
-    mMovieWriter->finish();
-  }
-}
+// void CouleursApp::updateMovieWriter()
+// {
+//   if ( mMovieWriter && RECORD && getElapsedFrames() > 1 && getElapsedFrames() < NUM_FRAMES )
+//     mMovieWriter->addFrame( copyWindowSurface() );
+//   else if ( mMovieWriter && getElapsedFrames() >= NUM_FRAMES ) {
+//     mMovieWriter->finish();
+//   }
+// }
 
 void CouleursApp::updateTimer()
 {

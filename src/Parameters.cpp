@@ -1,4 +1,5 @@
 #include "Parameters.hpp"
+#include "cinder/app/App.h"
 
 using namespace ci;
 

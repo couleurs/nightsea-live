@@ -6,8 +6,8 @@
 #define PROJECT_NAME "sure_thing_cover"
 
 // Dimensions
-#define SCENE_WIDTH 850 //2560x1440
-#define SCENE_HEIGHT 850
+#define SCENE_WIDTH 820 //2560x1440
+#define SCENE_HEIGHT 340
 #define UI_WIDTH 600
 #define UI_HEIGHT 600
 #define WINDOW_PADDING 20

@@ -1,0 +1,26 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/../cinder_master/include",
+                "${workspaceFolder}/../cinder_master/blocks/OSC/src/cinder/osc",
+                "${workspaceFolder}/../cinder_master/blocks/Cinder-ImGui/include",
+                "${workspaceFolder}/../cinder_master/blocks/Cinder-ImGui/lib/imgui",
+                "${workspaceFolder}/../cinder_master/blocks/Cinder-MIDI2/include",
+                "${workspaceFolder}/../cinder_master/blocks/Cinder-MIDI2/lib"
+            ],
+            "defines": [],
+            "macFrameworkPath": [
+                "/System/Library/Frameworks",
+                "/Library/Frameworks"
+            ],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "clang-x64"
+        }
+    ],
+    "version": 4
+}
