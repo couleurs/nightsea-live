@@ -18,7 +18,7 @@ void MultipassShader::allocate( int width, int height ) {
     }
 }
 
-void MultipassShader::load( const DataSourceRef &fragDataSource, std::function<void ( gl::GlslProgRef )> &setUniforms, std::function<void ()> &cleanUp ) {
+void MultipassShader::load( const DataSourceRef &fragDataSource, const std::function<void ( gl::GlslProgRef )> &setUniforms, const std::function<void ()> &cleanUp ) {
     auto format = gl::GlslProg::Format().version( 330 )
                                         .vertex( app::loadAsset( vertPath ) )
                                         .fragment( fragDataSource );
@@ -29,6 +29,10 @@ void MultipassShader::load( const DataSourceRef &fragDataSource, std::function<v
 
     mFbos.clear();
     mShaders.clear();
+    updateBuffers();
+}
+
+void MultipassShader::reload() {
     updateBuffers();
 }
 
@@ -44,9 +48,9 @@ void MultipassShader::draw() {
 
 void MultipassShader::drawShaderInFBO( const gl::GlslProgRef &shader, const gl::FboRef &fbo, int index ) {
     if ( fbo != nullptr ) {
-        gl::ScopedFramebuffer scopedFbo( fbo );
+        fbo->bindFramebuffer();
     }
-    gl::ScopedGlslProg shader( shader );
+    gl::ScopedGlslProg scopedShader( shader );
             
     // Bind textures from other buffers
     int textureIndex = 1;
@@ -65,13 +69,16 @@ void MultipassShader::drawShaderInFBO( const gl::GlslProgRef &shader, const gl::
     Rectf drawRect = Rectf( 0.f, 0.f, mWidth, mHeight );
     gl::drawSolidRect( drawRect );
 
-    // Unbind textures
+    // Unbind textures & FBO
     for (unsigned int j = 0; j < mFbos.size(); j++) {
         if (index != j) {
             mFbos[j]->getColorTexture()->unbind();
         }
     }
     mCleanUp();
+    if ( fbo != nullptr ) {
+        fbo->unbindFramebuffer();
+    }
 }
 
 void MultipassShader::updateBuffers() {
@@ -83,7 +90,8 @@ void MultipassShader::updateBuffers() {
 
         for (int i = 0; i < bufferCount; i++) {
             // New FBO
-            gl::Fbo::create( mWidth, mHeight );
+            auto fbo = gl::Fbo::create( mWidth, mHeight );
+            mFbos.push_back( fbo );
 
             // New SHADER
             auto shader = gl::GlslProg::create( gl::GlslProg::Format().version( 330 )
@@ -94,13 +102,14 @@ void MultipassShader::updateBuffers() {
         }
 
     }
-
-    for (unsigned int i = 0; i < mShaders.size(); i++) {
-        mShaders[i] = gl::GlslProg::create( gl::GlslProg::Format().version( 330 )
-                                                                            .vertex( app::loadAsset( vertPath ) )
-                                                                            .fragment( mMainFragSource )
-                                                                            .define( "BUFFER_" + std::to_string( i ) ) );
-    }    
+    else {
+        for (unsigned int i = 0; i < mShaders.size(); i++) {
+            mShaders[i] = gl::GlslProg::create( gl::GlslProg::Format().version( 330 )
+                                                                                .vertex( app::loadAsset( vertPath ) )
+                                                                                .fragment( mMainFragSource )
+                                                                                .define( "BUFFER_" + std::to_string( i ) ) );
+        }
+    }
 }
 
 int MultipassShader::getBufferCount() {

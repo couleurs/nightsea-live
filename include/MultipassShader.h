@@ -10,7 +10,8 @@ class MultipassShader {
         MultipassShader();
         ~MultipassShader();
         void allocate( int width, int height );
-        void load( const DataSourceRef &fragDataSource, std::function<void ( gl::GlslProgRef )> &setUniforms, std::function<void ()> &cleanUp );
+        void load( const DataSourceRef &fragDataSource, const std::function<void ( gl::GlslProgRef )> &setUniforms, const std::function<void ()> &cleanUp );
+        void reload();
         void draw();
 
     private:

@@ -57,6 +57,7 @@ public:
   void setup() override;
   void update() override;
   void keyDown( KeyEvent event ) override;
+  void mouseMove( MouseEvent event ) override;
   
 private:
   void initShaderWatching();
@@ -100,6 +101,9 @@ private:
   float                        mTime = 0;
   bool                         mTimeStopped = false;
   
+  // Mouse
+  ivec2                        mMousePosition;
+
   // AV Sync
   ci::Timer                    mTimer;
   int                          mBPM = 107;
@@ -125,6 +129,8 @@ private:
   int                          mNumPostProcessors;
   int                          mPostProcessingFboCount = 0;
   float                        mGrainAmount = 0.051f;
+
+  MultipassShader               mMultipassShader;
   
   // Window Management
   ci::app::WindowRef       mUIWindow, mSceneWindow;
@@ -162,6 +168,15 @@ void CouleursApp::setup()
   setupScene();
 //  setupMovieWriter();
   mTimer.start();
+
+  mMultipassShader.allocate( mSceneWindow->getWidth(), mSceneWindow->getHeight() );
+  fs::path multipassExample1Path = string( SHADER_FOLDER ) + string( "multipass/grayscott.frag" );
+//   mMultipassShader.load( app::loadAsset( multipassExample1Path ),
+  //                         [&] (gl::GlslProgRef shader) { return; },
+  //                         [] () { return; } );
+mMultipassShader.load( app::loadAsset( multipassExample1Path ),
+                      [&] (gl::GlslProgRef shader) { bindCommonUniforms( shader ); },
+                      [] () { return; } );
 }
 
 void CouleursApp::setupUI()
@@ -351,6 +366,11 @@ void CouleursApp::loadShaders()
   }
 }
 
+void CouleursApp::mouseMove( MouseEvent event )
+{
+    mMousePosition = glm::clamp(event.getPos(), ivec2( 0., 0. ), mSceneWindow->getSize() );
+}
+
 void CouleursApp::keyDown( KeyEvent event )
 {
   if ( event.getCode() == KeyEvent::KEY_s ) {
@@ -495,6 +515,11 @@ void CouleursApp::drawUI()
 void CouleursApp::drawScene()
 {
   if ( !mSceneIsSetup ) return;
+
+    if (true) {
+     mMultipassShader.draw();
+     return;
+    }
   
   {
     Rectf drawRect = Rectf( 0.f, 0.f, mSceneWindow->getWidth(), mSceneWindow->getHeight() );
@@ -582,6 +607,7 @@ void CouleursApp::bindCommonUniforms( gl::GlslProgRef shader )
   shader->uniform( "u_time", mTime );
   shader->uniform( "u_tick", mTick );
   shader->uniform( "u_section", mSection );
+  shader->uniform( "u_mouse", (vec2)mMousePosition );
     
   auto params = mParams.get();
   for (auto it = params.begin(); it != params.end(); it++ ) {
@@ -597,5 +623,5 @@ void CouleursApp::clearFBO( gl::FboRef fbo )
 }
 
 CINDER_APP( CouleursApp, RendererGl, [&]( App::Settings *settings ) {
-  settings->setHighDensityDisplayEnabled();
+  // settings->setHighDensityDisplayEnabled();
 })

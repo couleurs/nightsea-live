@@ -23,6 +23,10 @@
             "taskName": "Build & Run",
             "args": ["make -j4 && make run"],
             "isBuildCommand": true            
+        },
+        {
+            "taskName": "Run",
+            "args": ["make run"]
         }
     ]
 }

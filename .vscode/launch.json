@@ -8,13 +8,13 @@
             "name": "(lldb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceRoot}/build/Debug/Couleurs/Couleurs.app/Contents/MacOS/Couleurs",
+            "program": "${workspaceRoot}/build/Debug/CouleursApp/CouleursApp.app/Contents/MacOS/CouleursApp",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": true,
-            "MIMode": "lldb"
+            "environment": [],            
+            "MIMode": "lldb",
+            "externalConsole": false
         }
     ]
 }
