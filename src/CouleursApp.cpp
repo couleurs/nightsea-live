@@ -23,7 +23,7 @@
 // Couleurs
 #include "Parameters.hpp"
 #include "Constants.h"
-
+#include "MultipassShader.h"
 
 namespace cinder {
   namespace gl {
@@ -597,5 +597,5 @@ void CouleursApp::clearFBO( gl::FboRef fbo )
 }
 
 CINDER_APP( CouleursApp, RendererGl, [&]( App::Settings *settings ) {
-//  settings->setHighDensityDisplayEnabled();
+  settings->setHighDensityDisplayEnabled();
 })

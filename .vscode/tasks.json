@@ -16,7 +16,11 @@
             "args": ["cmake ../proj/cmake"]     
         },
         {
-            "taskName": "make",
+            "taskName": "Build",
+            "args": ["make -j4"],          
+        },
+        {
+            "taskName": "Build & Run",
             "args": ["make -j4 && make run"],
             "isBuildCommand": true            
         }
