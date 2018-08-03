@@ -62,17 +62,17 @@ void MultipassShader::reload() {
     }
 }
 
-void MultipassShader::draw() {
+void MultipassShader::draw( const Rectf &r ) {
     // Intermediary passes
     for (unsigned int i = 0; i < mFbos.size(); i++) {
-        drawShaderInFBO( mShaders[i], mFbos[i], i );
+        drawShaderInFBO( r, mShaders[i], mFbos[i], i );
     }
 
     // Final pass
-    drawShaderInFBO( mMainShader, nullptr, -1 );
+    drawShaderInFBO( r, mMainShader, nullptr, -1 );
 }
 
-void MultipassShader::drawShaderInFBO( const gl::GlslProgRef &shader, const gl::FboRef &fbo, int index ) {
+void MultipassShader::drawShaderInFBO( const Rectf &r, const gl::GlslProgRef &shader, const gl::FboRef &fbo, int index ) {
     if ( fbo != nullptr ) {
         fbo->bindFramebuffer();
     }
@@ -92,8 +92,7 @@ void MultipassShader::drawShaderInFBO( const gl::GlslProgRef &shader, const gl::
     mSetUniforms( shader );
 
     // Draw
-    Rectf drawRect = Rectf( 0.f, 0.f, mWidth, mHeight );
-    gl::drawSolidRect( drawRect );
+    gl::drawSolidRect( r );
 
     // Unbind textures & FBO
     for (unsigned int j = 0; j < mFbos.size(); j++) {

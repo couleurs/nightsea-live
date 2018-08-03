@@ -16,7 +16,7 @@ void main() {
     vec3 diff = vec3( vec2(1.0) / u_resolution.xy, 0.0);
     vec2 mouse_uv = u_mouse.xy / u_resolution.xy;
     float mouse_pointer = smoothstep(1.5, 0.5, length((mouse_uv - uv) * u_resolution) );
-//    oColor = vec4(mouse_uv.x, mouse_uv.y, 0., 1.);
+//    oColor = vec4(uv.x, uv.y, 0., 1.);
 #ifdef BUFFER_0
     // Ping
     vec4 center = texture(u_buffer1, uv);
@@ -27,11 +27,11 @@ void main() {
 
     float red = -(center.g - 0.5) * 2.0 + (top + left + right + bottom - 2.0);
     red += mouse_pointer; // mouse
-    red *= 0.98; // damping
+    red *= 0.95; // damping
     red *= step(0.1, u_time); // hacky way of clearing the buffer
     red = 0.5 + red * 0.5;
     red = clamp(red, 0., 1.);
-    oColor = vec4(red, center.r, 0.0, 0.0);
+    oColor = vec4(red, center.r, 0.0, 1.0);
 
 #elif defined( BUFFER_1 )
     // Pong

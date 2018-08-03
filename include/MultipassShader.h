@@ -12,7 +12,7 @@ class MultipassShader {
         void allocate( int width, int height );
         void load( const fs::path &fragPath, const std::function<void ( gl::GlslProgRef )> &setUniforms, const std::function<void ()> &cleanUp );
         void reload();
-        void draw();
+        void draw( const Rectf &r );
 
         bool                     mShaderCompilationFailed = false;
         std::string              mShaderCompileErrorMessage;
@@ -20,7 +20,7 @@ class MultipassShader {
     private:
         int getBufferCount();
         void updateBuffers();
-        void drawShaderInFBO( const gl::GlslProgRef &shader, const gl::FboRef &fbo, int index );
+        void drawShaderInFBO( const Rectf &r, const gl::GlslProgRef &shader, const gl::FboRef &fbo, int index );
         void shaderError( const char *msg );
 
         std::function<void ( gl::GlslProgRef )> mSetUniforms;

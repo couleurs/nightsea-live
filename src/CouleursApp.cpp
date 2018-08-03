@@ -107,7 +107,7 @@ private:
   MultipassShader              mMultipassShader;
   
   // Window Management
-  ci::app::WindowRef       mUIWindow, mSceneWindow;
+  ci::app::WindowRef           mUIWindow, mSceneWindow;
 };
 
 CouleursApp::CouleursApp() :
@@ -122,17 +122,20 @@ CouleursApp::CouleursApp() :
   mUIWindow->getSignalDraw().connect( bind( &CouleursApp::drawUI, this ) );
   mUIWindow->setPos( WINDOW_PADDING, 3. * WINDOW_PADDING );
   mUIWindow->setSize( UI_WIDTH, UI_HEIGHT );
-  
+  console() << "UI Window content scale: " << mUIWindow->getContentScale() << endl;
+    
   mSceneWindow = createWindow( Window::Format().size( SCENE_WIDTH, SCENE_HEIGHT ) );
   mSceneWindow->setTitle( "Couleurs: Render" );
   mSceneWindow->getSignalDraw().connect( bind( &CouleursApp::drawScene, this ) );
   mSceneWindow->getSignalResize().connect( bind( &CouleursApp::resizeScene, this ) );
+  console() << "Scene Window content scale: " << mSceneWindow->getContentScale() << endl;
+  
 //  mSceneWindow->setFullScreen();
   
   setupMidi();
 }
 
-static fs::path fragPath = string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( "/example_1.frag" );
+static fs::path fragPath = string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( "/ripples.frag" );
 
 void CouleursApp::setup()
 {
@@ -154,8 +157,9 @@ void CouleursApp::setupUI()
                  .color( ImGuiCol_Header, ImVec4( color.x, color.y, color.z, .76f ) )
                  .color( ImGuiCol_HeaderHovered, ImVec4( color.x, color.y, color.z, .86f ) )
                  .color( ImGuiCol_HeaderActive, ImVec4( color.x, color.y, color.z, 1.f ) )
-                 .color( ImGuiCol_ButtonHovered, ImVec4( color.x, color.y, color.z, .86f ) )
+                 .color( ImGuiCol_ButtonHovered, ImVec4( color.x, color.y, color.z, .86f ) )                 
                 );
+  
 }
 
 void CouleursApp::setupScene()
@@ -164,7 +168,7 @@ void CouleursApp::setupScene()
   
   // Shaders
   initShaderWatching();
-  mMultipassShader.allocate( mSceneWindow->getWidth(), mSceneWindow->getHeight() );  
+  mMultipassShader.allocate( toPixels( mSceneWindow->getWidth() ), toPixels( mSceneWindow->getHeight() ) );
   mMultipassShader.load( fragPath,
                         [&] (gl::GlslProgRef shader) { bindCommonUniforms( shader ); },
                         [] () { return; } );
@@ -228,8 +232,8 @@ void CouleursApp::abletonMidiListener( midi::Message msg )
 }
 
 void CouleursApp::resizeScene() {
-  auto w = mSceneWindow->getWidth();
-  auto h = mSceneWindow->getHeight();  
+  auto w = toPixels( mSceneWindow->getWidth() );
+  auto h = toPixels( mSceneWindow->getHeight() );
   mMultipassShader.allocate( w, h );
 }
 
@@ -240,7 +244,8 @@ void CouleursApp::initShaderWatching() {
 
 void CouleursApp::mouseMove( MouseEvent event )
 {
-    mMousePosition = glm::clamp(event.getPos(), ivec2( 0., 0. ), mSceneWindow->getSize() );
+    mMousePosition = toPixels( glm::clamp( event.getPos(), ivec2( 0., 0. ), mSceneWindow->getSize() ) );
+    console() << "mouse x: " << mMousePosition.x << " mouse y: " << mMousePosition.y << endl;
 }
 
 void CouleursApp::keyDown( KeyEvent event )
@@ -380,14 +385,16 @@ void CouleursApp::drawUI()
 void CouleursApp::drawScene()
 {
   if ( !mSceneIsSetup ) return;
-  mMultipassShader.draw();
+  Rectf rect = Rectf( 0.f, 0.f, mSceneWindow->getWidth(), mSceneWindow->getHeight() );
+  mMultipassShader.draw( rect );
   gl::printError();
 }
 
 void CouleursApp::bindCommonUniforms( gl::GlslProgRef shader )
 {
-  auto contentScale = mSceneWindow->getContentScale();
-  vec2 resolution = mSceneWindow->getSize() * ivec2( contentScale, contentScale );
+//  auto contentScale = mSceneWindow->getContentScale();
+  vec2 resolution = toPixels( mSceneWindow->getSize() ); // * ivec2( contentScale, contentScale );
+//  console() << "resolution x: " << resolution.x << " resolution y: " << resolution.y << endl;
   shader->uniform( "u_resolution", resolution );
   if (!mTimeStopped) {
     mTime = (float)getElapsedSeconds();
@@ -395,7 +402,7 @@ void CouleursApp::bindCommonUniforms( gl::GlslProgRef shader )
   shader->uniform( "u_time", mTime );
   shader->uniform( "u_tick", mTick );
   shader->uniform( "u_section", mSection );
-  shader->uniform( "u_mouse", (vec2)mMousePosition );
+  shader->uniform( "u_mouse", vec2( mMousePosition.x, toPixels( mSceneWindow->getHeight() ) - mMousePosition.y ) );
     
   auto params = mParams.get();
   for (auto it = params.begin(); it != params.end(); it++ ) {
@@ -411,5 +418,5 @@ void CouleursApp::clearFBO( gl::FboRef fbo )
 }
 
 CINDER_APP( CouleursApp, RendererGl, [&]( App::Settings *settings ) {
-  // settings->setHighDensityDisplayEnabled();
+   settings->setHighDensityDisplayEnabled();
 })

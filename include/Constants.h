@@ -6,8 +6,8 @@
 #define PROJECT_NAME "multipass"
 
 // Dimensions
-#define SCENE_WIDTH 600 //2560x1440
-#define SCENE_HEIGHT 600
+#define SCENE_WIDTH 960 //2560x1440
+#define SCENE_HEIGHT 960
 #define UI_WIDTH 600
 #define UI_HEIGHT 600
 #define WINDOW_PADDING 20
