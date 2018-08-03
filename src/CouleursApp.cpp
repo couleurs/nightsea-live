@@ -129,6 +129,8 @@ CouleursApp::CouleursApp() :
   mSceneWindow->getSignalDraw().connect( bind( &CouleursApp::drawScene, this ) );
   mSceneWindow->getSignalResize().connect( bind( &CouleursApp::resizeScene, this ) );
   console() << "Scene Window content scale: " << mSceneWindow->getContentScale() << endl;
+
+  console() << "High Display: " << isHighDensityDisplayEnabled() << endl; 
   
 //  mSceneWindow->setFullScreen();
   

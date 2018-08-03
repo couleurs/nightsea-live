@@ -26,6 +26,8 @@
 	<string>Copyright © 2015 __MyCompanyName__. All rights reserved.</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
+	<key>NSHighResolutionCapable</key>
+	<string>True</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 </dict>

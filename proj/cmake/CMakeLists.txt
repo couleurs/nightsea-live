@@ -17,6 +17,11 @@ ci_make_app(
     BLOCKS      Cinder-ImGui Cinder-MIDI2 OSC
 )
 
+set_target_properties( 
+    ${APP_NAME} PROPERTIES
+    MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/../../xcode/Info.plist"
+)
+
 get_target_property( OUTPUT_DIR ${APP_NAME} RUNTIME_OUTPUT_DIRECTORY )
 
 add_custom_target( run
