@@ -13,7 +13,7 @@ void main() {
     // vec2 mouse_uv = u_mouse.xy / u_resolution.xy;
 
 #ifdef BUFFER_0
-    oColor = vec4(1. * (sin(u_time) + 1.) / 2., 0., 0., 1.);
+    oColor = vec4(1. * (sin(u_time / .3) + 1.) / 2., 0., 0., 1.);
 #elif defined( BUFFER_1 )
     oColor = vec4(0., 1., 0., 1.);
 #elif defined( BUFFER_2 )

@@ -3,7 +3,7 @@
 #define CI_MIN_LOG_LEVEL 0
 
 // Project
-#define PROJECT_NAME "sure_thing_cover"
+#define PROJECT_NAME "multipass"
 
 // Dimensions
 #define SCENE_WIDTH 600 //2560x1440

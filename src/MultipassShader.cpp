@@ -18,22 +18,48 @@ void MultipassShader::allocate( int width, int height ) {
     }
 }
 
-void MultipassShader::load( const DataSourceRef &fragDataSource, const std::function<void ( gl::GlslProgRef )> &setUniforms, const std::function<void ()> &cleanUp ) {
+void MultipassShader::load( const fs::path &fragPath, const std::function<void ( gl::GlslProgRef )> &setUniforms, const std::function<void ()> &cleanUp ) {
     auto format = gl::GlslProg::Format().version( 330 )
                                         .vertex( app::loadAsset( vertPath ) )
-                                        .fragment( fragDataSource );
-    mMainFragSource = format.getFragment();
-    mMainShader = gl::GlslProg::create( format );
-    mSetUniforms = setUniforms;
-    mCleanUp = cleanUp;
+                                        .fragment( app::loadAsset( fragPath) );        
+    try {
+        mMainShader = gl::GlslProg::create( format );
+        mFragPath = fragPath;
+        mMainFragSource = format.getFragment();
+        mSetUniforms = setUniforms;
+        mCleanUp = cleanUp;
+        mShaderCompilationFailed = false;
 
-    mFbos.clear();
-    mShaders.clear();
-    updateBuffers();
+        mFbos.clear();
+        mShaders.clear();
+        updateBuffers();        
+    }
+
+    catch ( const std::exception &e ) {
+        shaderError( e.what() );
+    }
+}
+
+void MultipassShader::shaderError(const char *msg) {
+    // console() << "Shader exception: " << msg << std::endl;
+    mShaderCompilationFailed = true;
+    mShaderCompileErrorMessage = std::string( msg );
 }
 
 void MultipassShader::reload() {
-    updateBuffers();
+    auto format = gl::GlslProg::Format().version( 330 )
+                                        .vertex( app::loadAsset( vertPath ) )
+                                        .fragment( app::loadAsset( mFragPath) );    
+    try {
+        mMainShader = gl::GlslProg::create( format );
+        mMainFragSource = format.getFragment(); 
+        mShaderCompilationFailed = false;   
+        updateBuffers();
+    }
+
+    catch ( const std::exception &e ) {
+        shaderError( e.what() );
+    }
 }
 
 void MultipassShader::draw() {
