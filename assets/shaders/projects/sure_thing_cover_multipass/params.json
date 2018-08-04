@@ -1,0 +1,62 @@
+{
+   "params" : [
+      {
+         "max" : 1,
+         "midi" : 77,
+         "min" : 0,
+         "name" : "u_feedbackAmount",
+         "value" : 0.85799999999999998
+      },
+      {
+         "max" : 1,
+         "midi" : 78,
+         "min" : 0,
+         "name" : "u_particleBaseTranslateYSpeed",
+         "value" : 1
+      },
+      {
+         "max" : 1,
+         "midi" : 79,
+         "min" : 0,
+         "name" : "u_saturation",
+         "value" : 1
+      },
+      {
+         "max" : 1,
+         "midi" : 80,
+         "min" : 0,
+         "name" : "u_particleVisibility",
+         "value" : 1
+      },
+      {
+         "max" : 0.20000000000000001,
+         "min" : 0,
+         "name" : "u_grainAmount",
+         "value" : 0.103937
+      },
+      {
+         "max" : 1,
+         "min" : 0,
+         "name" : "u_lutMix",
+         "value" : 1
+      },
+      {
+         "max" : 1,
+         "min" : 0,
+         "name" : "u_particleSpeed",
+         "value" : 0
+      },
+      {
+         "max" : 1,
+         "min" : 0,
+         "name" : "u_particlePreScale",
+         "value" : 0
+      },
+      {
+         "max" : 1,
+         "min" : 0,
+         "name" : "u_feedbackScale",
+         "value" : 0.79800000000000004
+      }
+   ]
+}

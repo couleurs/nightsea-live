@@ -14,9 +14,9 @@
 #include "MidiMessage.h"
 #include "MidiConstants.h"
 
-// C
+// C++
 #include <ctime>
-//#include <stdlib.h>
+#include <boost/filesystem.hpp>
 
 // Couleurs
 #include "Parameters.hpp"
@@ -64,6 +64,7 @@ private:
   void setupUI();
   void setupScene();
   void setupMidi();
+  void loadTextures();
   
   // Update
   void updateOSC();
@@ -73,7 +74,8 @@ private:
   
   void drawUI();
   void drawScene();
-  void bindCommonUniforms( gl::GlslProgRef shader );
+  void bindUniforms( gl::GlslProgRef shader, int textureIndex );
+  void unbindTextureUniforms();
   
   void resizeScene();
   
@@ -104,15 +106,15 @@ private:
   float                        mTick; //[0 - 1]
   int                          mSection = 0;  
 
-  MultipassShader              mMultipassShader;
+  MultipassShader               mMultipassShader;
+  map<string, gl::Texture2dRef> mTextures;
   
   // Window Management
   ci::app::WindowRef           mUIWindow, mSceneWindow;
 };
 
 CouleursApp::CouleursApp() :
-  mParams( string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( PARAMS_FILE ) )
-{
+  mParams( string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( PARAMS_FILE ) ) {
   // OSC
 //  mOSCIn.setup( OSC_PORT );
   
@@ -128,26 +130,21 @@ CouleursApp::CouleursApp() :
   mSceneWindow->setTitle( "Couleurs: Render" );
   mSceneWindow->getSignalDraw().connect( bind( &CouleursApp::drawScene, this ) );
   mSceneWindow->getSignalResize().connect( bind( &CouleursApp::resizeScene, this ) );
-  console() << "Scene Window content scale: " << mSceneWindow->getContentScale() << endl;
-
-  console() << "High Display: " << isHighDensityDisplayEnabled() << endl; 
-  
-//  mSceneWindow->setFullScreen();
+  console() << "Scene Window content scale: " << mSceneWindow->getContentScale() << endl;  
   
   setupMidi();
 }
 
-static fs::path fragPath = string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( "/ripples.frag" );
+static fs::path projectPath = string( SHADER_FOLDER ) + string( PROJECT_NAME ); 
+static fs::path fragPath = string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( MAIN_SHADER_FILE );
 
-void CouleursApp::setup()
-{
+void CouleursApp::setup() {
   setupUI();
   setupScene();
   mTimer.start();  
 }
 
-void CouleursApp::setupUI()
-{
+void CouleursApp::setupUI() {
   mUIWindow->getRenderer()->makeCurrentContext();
   
   // UI
@@ -164,16 +161,18 @@ void CouleursApp::setupUI()
   
 }
 
-void CouleursApp::setupScene()
-{
+void CouleursApp::setupScene() {
   mSceneWindow->getRenderer()->makeCurrentContext();
   
   // Shaders
   initShaderWatching();
   mMultipassShader.allocate( toPixels( mSceneWindow->getWidth() ), toPixels( mSceneWindow->getHeight() ) );
   mMultipassShader.load( fragPath,
-                        [&] (gl::GlslProgRef shader) { bindCommonUniforms( shader ); },
-                        [] () { return; } );
+                        [&] ( gl::GlslProgRef shader, int textureIndex ) { bindUniforms( shader, textureIndex ); },
+                        [&] () { unbindTextureUniforms(); } );
+
+  // Textures
+  loadTextures();
   
   // GL State
   gl::disableDepthRead();
@@ -244,13 +243,34 @@ void CouleursApp::initShaderWatching() {
   mShaderFiles.push_back( { getAssetPath( fragPath ), now } );
 }
 
-void CouleursApp::mouseMove( MouseEvent event )
+void CouleursApp::loadTextures() 
+{
+  vector<fs::path> imageNames;
+
+  // Iterate through project directory to detect images
+  for ( auto &p: boost::filesystem::directory_iterator( getAssetPath( projectPath ) ) ) {
+    auto extension = p.path().extension();
+    if ( extension == ".jpg" || extension == ".png" ) {
+      imageNames.push_back( p.path().filename() );
+    }
+  }    
+
+  // Create textures
+  for ( int i = 0; i < imageNames.size(); i++ ) {
+    auto assetPath = projectPath / imageNames[i];
+    auto nameWithoutExtension = imageNames[i].replace_extension( "" );
+    mTextures[ nameWithoutExtension.string() ] = gl::Texture2d::create( loadImage( app::loadAsset( assetPath ) ) );
+  }
+
+}
+
+void CouleursApp::mouseMove( MouseEvent event ) 
 {
     mMousePosition = toPixels( glm::clamp( event.getPos(), ivec2( 0., 0. ), mSceneWindow->getSize() ) );
     console() << "mouse x: " << mMousePosition.x << " mouse y: " << mMousePosition.y << endl;
 }
 
-void CouleursApp::keyDown( KeyEvent event )
+void CouleursApp::keyDown( KeyEvent event ) 
 {
   if ( event.getCode() == KeyEvent::KEY_s ) {
     CI_LOG_I( "Saving config file" );
@@ -392,11 +412,10 @@ void CouleursApp::drawScene()
   gl::printError();
 }
 
-void CouleursApp::bindCommonUniforms( gl::GlslProgRef shader )
+void CouleursApp::bindUniforms( gl::GlslProgRef shader, int textureIndex )
 {
-//  auto contentScale = mSceneWindow->getContentScale();
-  vec2 resolution = toPixels( mSceneWindow->getSize() ); // * ivec2( contentScale, contentScale );
-//  console() << "resolution x: " << resolution.x << " resolution y: " << resolution.y << endl;
+  // Common Uniforms
+  vec2 resolution = toPixels( mSceneWindow->getSize() ); 
   shader->uniform( "u_resolution", resolution );
   if (!mTimeStopped) {
     mTime = (float)getElapsedSeconds();
@@ -405,15 +424,29 @@ void CouleursApp::bindCommonUniforms( gl::GlslProgRef shader )
   shader->uniform( "u_tick", mTick );
   shader->uniform( "u_section", mSection );
   shader->uniform( "u_mouse", vec2( mMousePosition.x, toPixels( mSceneWindow->getHeight() ) - mMousePosition.y ) );
-    
+  
+  // Parameters
   auto params = mParams.get();
-  for (auto it = params.begin(); it != params.end(); it++ ) {
+  for ( auto it = params.begin(); it != params.end(); it++ ) {
       shader->uniform( (*it)->name, (*it)->value );
+  }
+
+  // Textures  
+  for ( auto it = mTextures.begin(); it != mTextures.end(); it++ ) {    
+    it->second->bind( textureIndex );
+    shader->uniform( "u_" + it->first, textureIndex );
+    textureIndex++;
   }
 }
 
-void CouleursApp::clearFBO( gl::FboRef fbo )
+void CouleursApp::unbindTextureUniforms()
 {
+  for ( auto it = mTextures.begin(); it != mTextures.end(); it++ ) {    
+    it->second->unbind();    
+  }
+}
+
+void CouleursApp::clearFBO( gl::FboRef fbo ) {
   gl::ScopedFramebuffer scopedFramebuffer( fbo );
   gl::ScopedViewport scopedViewport( ivec2( 0 ), fbo->getSize() );
   gl::clear();

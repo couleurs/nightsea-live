@@ -10,7 +10,7 @@ class MultipassShader {
         MultipassShader();
         ~MultipassShader();
         void allocate( int width, int height );
-        void load( const fs::path &fragPath, const std::function<void ( gl::GlslProgRef )> &setUniforms, const std::function<void ()> &cleanUp );
+        void load( const fs::path &fragPath, const std::function<void ( gl::GlslProgRef, int )> &setUniforms, const std::function<void ()> &cleanUp );
         void reload();
         void draw( const Rectf &r );
 
@@ -23,7 +23,7 @@ class MultipassShader {
         void drawShaderInFBO( const Rectf &r, const gl::GlslProgRef &shader, const gl::FboRef &fbo, int index );
         void shaderError( const char *msg );
 
-        std::function<void ( gl::GlslProgRef )> mSetUniforms;
+        std::function<void ( gl::GlslProgRef, int )> mSetUniforms;
         std::function<void () > mCleanUp;
         std::vector<gl::FboRef> mFbos;
         std::vector<gl::Texture2dRef> mTextures; 

@@ -18,7 +18,7 @@ void MultipassShader::allocate( int width, int height ) {
     }
 }
 
-void MultipassShader::load( const fs::path &fragPath, const std::function<void ( gl::GlslProgRef )> &setUniforms, const std::function<void ()> &cleanUp ) {
+void MultipassShader::load( const fs::path &fragPath, const std::function<void ( gl::GlslProgRef, int )> &setUniforms, const std::function<void ()> &cleanUp ) {
     auto format = gl::GlslProg::Format().version( 330 )
                                         .vertex( app::loadAsset( vertPath ) )
                                         .fragment( app::loadAsset( fragPath) );        
@@ -89,7 +89,7 @@ void MultipassShader::drawShaderInFBO( const Rectf &r, const gl::GlslProgRef &sh
     }
 
     // Set uniforms, including external textures
-    mSetUniforms( shader );
+    mSetUniforms( shader, textureIndex );
 
     // Draw
     gl::drawSolidRect( r );

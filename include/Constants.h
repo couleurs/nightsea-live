@@ -3,7 +3,7 @@
 #define CI_MIN_LOG_LEVEL 0
 
 // Project
-#define PROJECT_NAME "multipass"
+#define PROJECT_NAME "sure_thing_cover_multipass"
 
 // Dimensions
 #define SCENE_WIDTH 960 //2560x1440
@@ -14,9 +14,7 @@
 
 // Shaders
 #define SHADER_FOLDER "shaders/projects/"
-#define SCENE_SHADER "/scene.frag"
-#define FEEDBACK_SHADER "/feedback.frag"
-#define POST_PROCESSING_SHADER "/post_processing_"
+#define MAIN_SHADER_FILE "/shader.frag"
 
 // Assets
 #define INPUT_TEXTURE "images/inputs/archilect_1.png"
@@ -24,11 +22,7 @@
 #define POST_PROCESSING_LUT "images/LUTs/lookup_couleurs_bw.png"
 
 // Config
-#define PARAMS_FILE "/params.json"
-
-// Recording
-#define RECORD false
-#define NUM_FRAMES 1000
+#define PARAMS_FILE "/params.json"  
 
 // OSC
 #define OSC_PORT 9001
