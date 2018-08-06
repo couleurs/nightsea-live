@@ -114,7 +114,7 @@ private:
 };
 
 CouleursApp::CouleursApp() :
-  mParams( string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( PARAMS_FILE ) ) {
+  mParams( string( PATCHES_FOLDER ) + string( PATCH_NAME ) + string( PARAMS_FILE ) ) {
   // OSC
 //  mOSCIn.setup( OSC_PORT );
   
@@ -135,8 +135,8 @@ CouleursApp::CouleursApp() :
   setupMidi();
 }
 
-static fs::path projectPath = string( SHADER_FOLDER ) + string( PROJECT_NAME ); 
-static fs::path fragPath = string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( MAIN_SHADER_FILE );
+static fs::path projectPath = string( PATCHES_FOLDER ) + string( PATCH_NAME ); 
+static fs::path fragPath = string( PATCHES_FOLDER ) + string( PATCH_NAME ) + string( MAIN_SHADER_FILE );
 
 void CouleursApp::setup() {
   setupUI();
