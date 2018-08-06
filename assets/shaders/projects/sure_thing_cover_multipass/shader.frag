@@ -7,6 +7,7 @@ uniform sampler2D u_buffer1;
 uniform sampler2D u_buffer2;
 uniform sampler2D u_texRandom;
 uniform sampler2D u_lookup_couleurs_bw;
+uniform sampler2D u_archilect_1;
 
 in vec2  vTexCoord0;
 out vec4 oColor;
@@ -23,6 +24,6 @@ void main() {
     oColor = vec4(0., 0., 1., 1.);
 #else
     // oColor = texture(u_buffer0, uv) + texture(u_buffer1, uv) + texture(u_buffer2, uv);
-   oColor = texture(u_lookup_couleurs_bw, vTexCoord0);
+   oColor = texture(u_archilect_1, vTexCoord0);
 #endif
 }

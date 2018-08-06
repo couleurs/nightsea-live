@@ -386,6 +386,7 @@ void CouleursApp::updateShaders()
   
   if ( shadersNeedReload ) {
     mMultipassShader.reload();
+    loadTextures();
   }
 }
 
