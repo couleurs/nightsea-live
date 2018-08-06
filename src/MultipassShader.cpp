@@ -121,7 +121,7 @@ void MultipassShader::updateBuffers() {
             // New SHADER
             auto shader = gl::GlslProg::create( gl::GlslProg::Format().version( 330 )
                                                                       .vertex( app::loadAsset( vertPath ) )
-                                                                      .fragment( mMainFragSource )
+                                                                      .fragment( app::loadAsset( mFragPath ) )
                                                                       .define( "BUFFER_" + std::to_string( i ) ) );
             mShaders.push_back( shader );
         }
@@ -131,7 +131,7 @@ void MultipassShader::updateBuffers() {
         for (unsigned int i = 0; i < mShaders.size(); i++) {
             mShaders[i] = gl::GlslProg::create( gl::GlslProg::Format().version( 330 )
                                                                                 .vertex( app::loadAsset( vertPath ) )
-                                                                                .fragment( mMainFragSource )
+                                                                                .fragment( app::loadAsset( mFragPath ) )
                                                                                 .define( "BUFFER_" + std::to_string( i ) ) );
         }
     }
