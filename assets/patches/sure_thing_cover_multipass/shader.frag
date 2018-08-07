@@ -1,5 +1,5 @@
 #include "pass0.glsl"
-// #include "../../shaders/fb_lib/space/ratio.glsl"
+#include "postProcess.glsl"
 
 uniform vec2 u_resolution;
 uniform float u_time;
@@ -14,18 +14,16 @@ in vec2  vTexCoord0;
 out vec4 oColor;
 
 void main() {
-    vec2 uv = gl_FragCoord.xy / u_resolution.xy;
-    // vec2 mouse_uv = u_mouse.xy / u_resolution.xy;
-
 #ifdef BUFFER_0
-    oColor = pass0(vTexCoord0, u_resolution, u_time);
-    // oColor = vec4(1., 0., 0., 1.);
+    oColor = pass0(vTexCoord0, u_resolution, u_time);    
 #elif defined( BUFFER_1 )
-    oColor = vec4(0., 1., 0., 1.);
+    vec4 source = texture(u_buffer0, vTexCoord0);
+    vec4 feedback = texture(u_buffer2, vTexCoord0);
+    oColor = mix(source, feedback, u_feedbackAmount);  
 #elif defined( BUFFER_2 )
-    oColor = vec4(0., 0., 1., 1.);
+    oColor = texture(u_buffer1, vTexCoord0);
 #else
-    // oColor = texture(u_buffer0, uv) + texture(u_buffer1, uv) + texture(u_buffer2, uv);
-   oColor = texture(u_buffer0, vTexCoord0);
+    oColor = postProcess(u_buffer2, u_lookup_couleurs_bw, vTexCoord0, u_resolution, u_time);        
+    // oColor = texture(u_buffer2, vTexCoord0);
 #endif
 }

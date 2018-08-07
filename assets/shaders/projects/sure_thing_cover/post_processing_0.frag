@@ -1,5 +1,3 @@
-#version 330
-
 #include "../../headers/post_processing_header.glsl"
 
 #include "../../fb_lib/color/contrast.glsl"
