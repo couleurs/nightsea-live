@@ -240,7 +240,16 @@ void CouleursApp::resizeScene() {
 
 void CouleursApp::initShaderWatching() {
   time_t now = time( 0 );
-  mShaderFiles.push_back( { getAssetPath( fragPath ), now } );
+  
+  // Iterate through project directory to shader files
+  for ( auto &p: boost::filesystem::directory_iterator( getAssetPath( projectPath ) ) ) {
+    auto extension = p.path().extension();
+    if ( extension == ".frag" || extension == ".glsl" ) {
+      console() << p.path().filename() << endl;
+      auto assetPath = projectPath / p.path().filename();
+      mShaderFiles.push_back( { getAssetPath( assetPath ), now } );
+    }
+  }  
 }
 
 void CouleursApp::loadTextures() 
