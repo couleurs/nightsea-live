@@ -4,7 +4,7 @@ from pprint import pprint
 
 SHADERS_FOLDER = '../assets/shaders/'
 TEMPLATE_FOLDER = SHADERS_FOLDER + 'template'
-PROJECTS_FOLDER = SHADERS_FOLDER + 'projects/'
+PROJECTS_FOLDER = '../assets/patches/'
 
 if len(sys.argv) > 1:
     project_name = sys.argv[1]

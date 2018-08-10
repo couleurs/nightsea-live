@@ -11,7 +11,7 @@
 
 // Patches
 #define PATCHES_FOLDER "patches/"
-#define PATCH_NAME "sure_thing_cover_multipass"
+#define PATCH_NAME "solis_multipass"
 #define MAIN_SHADER_FILE "/shader.frag"
 #define PARAMS_FILE "/params.json"  
 

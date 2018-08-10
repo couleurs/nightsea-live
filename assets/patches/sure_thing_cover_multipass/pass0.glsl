@@ -74,7 +74,7 @@ vec4 particles(vec2 uv, vec2 resolution, float t) {
     color += smoothstep(particleSmoothstepLeftEdge, particleSmoothstepRightEdge, p);
     depth += particleDepthLayerIncrement;
 	}
-  float particleVisibility = mix(.3, .4, u_particleVisibility);
+  float particleVisibility = mix(.3, .5, u_particleVisibility);
   vec2 rot_uv = rotate(uv, HALF_PI);
   float l = pow(clamp(mix(0., 1., rot_uv.x * .5 + rot_uv.y * .5 + .0), 0., 1.), .3);
   // l = 1.;
