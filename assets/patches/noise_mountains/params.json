@@ -1,0 +1,16 @@
+{
+   "params" : [
+      {
+         "max" : 0.29999999999999999,
+         "min" : 0,
+         "name" : "u_noiseAmplitude",
+         "value" : 0.10000000000000001
+      },
+      {
+         "max" : 20,
+         "min" : 0,
+         "name" : "u_blurRadius",
+         "value" : 10.041
+      }
+   ]
+}

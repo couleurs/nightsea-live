@@ -1,6 +1,6 @@
 #pragma once
 
-#define CI_MIN_LOG_LEVEL 0
+#define PATCH_NAME "noise_mountains"
 
 // Dimensions
 #define SCENE_WIDTH 960 //2560x1440
@@ -11,7 +11,6 @@
 
 // Patches
 #define PATCHES_FOLDER "patches/"
-#define PATCH_NAME "dust"
 #define MAIN_SHADER_FILE "/shader.frag"
 #define PARAMS_FILE "/params.json"  
 
@@ -20,3 +19,5 @@
 
 // MIDI
 #define MIDI_CONTROLLER_PORT 2
+
+#define CI_MIN_LOG_LEVEL 0
