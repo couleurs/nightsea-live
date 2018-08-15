@@ -4,13 +4,37 @@
          "max" : 0.29999999999999999,
          "min" : 0,
          "name" : "u_noiseAmplitude",
-         "value" : 0.10000000000000001
+         "value" : 0.033000000000000002
+      },
+      {
+         "max" : 100,
+         "min" : 0,
+         "name" : "u_noiseScale",
+         "value" : 5.7300000000000004
       },
       {
          "max" : 20,
          "min" : 0,
          "name" : "u_blurRadius",
-         "value" : 10.041
+         "value" : 0
+      },
+      {
+         "max" : 1,
+         "min" : 0,
+         "name" : "u_bottomWhiteMix",
+         "value" : 0.71999999999999997
+      },
+      {
+         "max" : 1,
+         "min" : 0,
+         "name" : "u_topWhiteMix",
+         "value" : 0.94099999999999995
+      },
+      {
+         "max" : 1,
+         "min" : 0,
+         "name" : "u_lutMix",
+         "value" : 1
       }
    ]
 }
