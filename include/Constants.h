@@ -1,6 +1,6 @@
 #pragma once
 
-#define PATCH_NAME "noise_mountains"
+#define PATCH_NAME "rot_feedback"
 
 // Dimensions
 #define SCENE_WIDTH 960 //2560x1440

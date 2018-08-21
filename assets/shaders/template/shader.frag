@@ -8,5 +8,12 @@ void main() {
 // #ifdef BUFFER_0
 // #elif defined( BUFFER_1 )
 // #else
-  oColor = vec4(1., 0., 0., 1.);
+// #endif
+  
+  vec2 uv = vTexCoord0;
+  vec3 color = vec3(0.);
+
+  // CODE HERE :)
+
+  oColor = vec4(color, 1.);
 }

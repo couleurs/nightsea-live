@@ -1,0 +1,34 @@
+{
+   "params" : [
+      {
+         "max" : 1,
+         "min" : 0,
+         "name" : "u_feedbackAmount",
+         "value" : 0.93000000000000005
+      },
+      {
+         "max" : 1,
+         "min" : 0,
+         "name" : "u_feedbackScale",
+         "value" : 0.95499999999999996
+      },
+      {
+         "max" : 1,
+         "min" : 0,
+         "name" : "u_randomAmount",
+         "value" : 0.029999999999999999
+      },
+      {
+         "max" : 1,
+         "min" : 0,
+         "name" : "u_contrast",
+         "value" : 0.19600000000000001
+      },
+      {
+         "max" : 1,
+         "min" : 0,
+         "name" : "u_lutMix",
+         "value" : 0.71999999999999997
+      }
+   ]
+}
