@@ -1,6 +1,6 @@
 #pragma once
 
-#define PATCH_NAME "rot_feedback"
+#define PATCH_NAME "hue_feedback"
 
 // Dimensions
 #define SCENE_WIDTH 960 //2560x1440
