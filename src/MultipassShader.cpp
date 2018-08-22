@@ -18,35 +18,65 @@ void MultipassShader::allocate( int width, int height ) {
     }
 }
 
-void MultipassShader::load( const DataSourceRef &fragDataSource, std::function<void ( gl::GlslProgRef )> &setUniforms, std::function<void ()> &cleanUp ) {
+void MultipassShader::load( const fs::path &fragPath, const std::function<void ( gl::GlslProgRef, int )> &setUniforms, const std::function<void ()> &cleanUp ) {
     auto format = gl::GlslProg::Format().version( 330 )
                                         .vertex( app::loadAsset( vertPath ) )
-                                        .fragment( fragDataSource );
-    mMainFragSource = format.getFragment();
-    mMainShader = gl::GlslProg::create( format );
-    mSetUniforms = setUniforms;
-    mCleanUp = cleanUp;
+                                        .fragment( app::loadAsset( fragPath) );        
+    try {
+        mMainShader = gl::GlslProg::create( format );
+        mFragPath = fragPath;
+        mMainFragSource = format.getFragment();
+        mSetUniforms = setUniforms;
+        mCleanUp = cleanUp;
+        mShaderCompilationFailed = false;
 
-    mFbos.clear();
-    mShaders.clear();
-    updateBuffers();
+        mFbos.clear();
+        mShaders.clear();
+        updateBuffers();        
+    }
+
+    catch ( const std::exception &e ) {
+        shaderError( e.what() );
+    }
 }
 
-void MultipassShader::draw() {
+void MultipassShader::shaderError(const char *msg) {
+    // console() << "Shader exception: " << msg << std::endl;
+    mShaderCompilationFailed = true;
+    mShaderCompileErrorMessage = std::string( msg );
+}
+
+void MultipassShader::reload() {
+    auto format = gl::GlslProg::Format().version( 330 )
+                                        .vertex( app::loadAsset( vertPath ) )
+                                        .fragment( app::loadAsset( mFragPath) );    
+    try {
+        mMainShader = gl::GlslProg::create( format );
+        mMainFragSource = format.getFragment(); 
+        mShaderCompilationFailed = false;   
+        updateBuffers();
+    }
+
+    catch ( const std::exception &e ) {
+        shaderError( e.what() );
+    }
+}
+
+void MultipassShader::draw( const Rectf &r ) {
     // Intermediary passes
     for (unsigned int i = 0; i < mFbos.size(); i++) {
-        drawShaderInFBO( mShaders[i], mFbos[i], i );
+        drawShaderInFBO( r, mShaders[i], mFbos[i], i );
     }
 
     // Final pass
-    drawShaderInFBO( mMainShader, nullptr, -1 );
+    drawShaderInFBO( r, mMainShader, nullptr, -1 );
 }
 
-void MultipassShader::drawShaderInFBO( const gl::GlslProgRef &shader, const gl::FboRef &fbo, int index ) {
+void MultipassShader::drawShaderInFBO( const Rectf &r, const gl::GlslProgRef &shader, const gl::FboRef &fbo, int index ) {
     if ( fbo != nullptr ) {
-        gl::ScopedFramebuffer scopedFbo( fbo );
+        fbo->bindFramebuffer();
     }
-    gl::ScopedGlslProg shader( shader );
+    gl::ScopedGlslProg scopedShader( shader );
             
     // Bind textures from other buffers
     int textureIndex = 1;
@@ -59,19 +89,21 @@ void MultipassShader::drawShaderInFBO( const gl::GlslProgRef &shader, const gl::
     }
 
     // Set uniforms, including external textures
-    mSetUniforms( shader );
+    mSetUniforms( shader, textureIndex );
 
     // Draw
-    Rectf drawRect = Rectf( 0.f, 0.f, mWidth, mHeight );
-    gl::drawSolidRect( drawRect );
+    gl::drawSolidRect( r );
 
-    // Unbind textures
+    // Unbind textures & FBO
     for (unsigned int j = 0; j < mFbos.size(); j++) {
         if (index != j) {
             mFbos[j]->getColorTexture()->unbind();
         }
     }
     mCleanUp();
+    if ( fbo != nullptr ) {
+        fbo->unbindFramebuffer();
+    }
 }
 
 void MultipassShader::updateBuffers() {
@@ -83,24 +115,26 @@ void MultipassShader::updateBuffers() {
 
         for (int i = 0; i < bufferCount; i++) {
             // New FBO
-            gl::Fbo::create( mWidth, mHeight );
+            auto fbo = gl::Fbo::create( mWidth, mHeight );
+            mFbos.push_back( fbo );
 
             // New SHADER
             auto shader = gl::GlslProg::create( gl::GlslProg::Format().version( 330 )
                                                                       .vertex( app::loadAsset( vertPath ) )
-                                                                      .fragment( mMainFragSource )
+                                                                      .fragment( app::loadAsset( mFragPath ) )
                                                                       .define( "BUFFER_" + std::to_string( i ) ) );
             mShaders.push_back( shader );
         }
 
     }
-
-    for (unsigned int i = 0; i < mShaders.size(); i++) {
-        mShaders[i] = gl::GlslProg::create( gl::GlslProg::Format().version( 330 )
-                                                                            .vertex( app::loadAsset( vertPath ) )
-                                                                            .fragment( mMainFragSource )
-                                                                            .define( "BUFFER_" + std::to_string( i ) ) );
-    }    
+    else {
+        for (unsigned int i = 0; i < mShaders.size(); i++) {
+            mShaders[i] = gl::GlslProg::create( gl::GlslProg::Format().version( 330 )
+                                                                                .vertex( app::loadAsset( vertPath ) )
+                                                                                .fragment( app::loadAsset( mFragPath ) )
+                                                                                .define( "BUFFER_" + std::to_string( i ) ) );
+        }
+    }
 }
 
 int MultipassShader::getBufferCount() {

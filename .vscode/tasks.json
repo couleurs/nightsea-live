@@ -16,6 +16,10 @@
             "args": ["cmake ../proj/cmake"]     
         },
         {
+            "taskName": "cmake clean",
+            "args": ["cd .. && rm -rf build && mkdir build"]     
+        },
+        {
             "taskName": "Build",
             "args": ["make -j4"],          
         },
@@ -23,6 +27,10 @@
             "taskName": "Build & Run",
             "args": ["make -j4 && make run"],
             "isBuildCommand": true            
+        },
+        {
+            "taskName": "Run",
+            "args": ["make run"]
         }
     ]
 }

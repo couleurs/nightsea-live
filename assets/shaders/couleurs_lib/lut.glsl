@@ -1,3 +1,5 @@
+#define LUT_FLIP_Y
+
 vec4 lut( vec4 texture_color, sampler2D lookup_table ) {
 #ifndef LUT_NO_CLAMP
   texture_color = clamp( texture_color, 0.0, 1.0 );

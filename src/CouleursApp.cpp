@@ -3,7 +3,6 @@
 #include "cinder/app/RendererGl.h"
 #include "cinder/gl/gl.h"
 #include "cinder/Log.h"
-// #include "cinder/qtime/AvfWriter.h"
 #include "cinder/Timer.h"
 #include "cinder/audio/Voice.h"
 #include "cinder/CinderMath.h"
@@ -14,11 +13,10 @@
 #include "MidiIn.h"
 #include "MidiMessage.h"
 #include "MidiConstants.h"
-// #include "Watchdog.h"
 
-// C
+// C++
 #include <ctime>
-//#include <stdlib.h>
+#include <boost/filesystem.hpp>
 
 // Couleurs
 #include "Parameters.hpp"
@@ -57,27 +55,27 @@ public:
   void setup() override;
   void update() override;
   void keyDown( KeyEvent event ) override;
+  void mouseMove( MouseEvent event ) override;
   
 private:
   void initShaderWatching();
-  void loadShaders();
   
   // Setup
   void setupUI();
   void setupScene();
-//  void setupMovieWriter();
   void setupMidi();
+  void loadTextures();
   
   // Update
   void updateOSC();
   void updateUI();
   void updateShaders();
-  // void updateMovieWriter();
   void updateTimer();
   
   void drawUI();
   void drawScene();
-  void bindCommonUniforms( gl::GlslProgRef shader );
+  void bindUniforms( gl::GlslProgRef shader, int textureIndex );
+  void unbindTextureUniforms();
   
   void resizeScene();
   
@@ -91,8 +89,7 @@ private:
   
   Parameters                   mParams;
   int                          mNumSections;
-  
-  // qtime::MovieWriterRef        mMovieWriter;
+    
   std::vector<File>            mShaderFiles;
   bool                         mSceneIsSetup = false;
   
@@ -100,43 +97,24 @@ private:
   float                        mTime = 0;
   bool                         mTimeStopped = false;
   
+  // Mouse
+  ivec2                        mMousePosition;
+
   // AV Sync
   ci::Timer                    mTimer;
   int                          mBPM = 107;
   float                        mTick; //[0 - 1]
-  int                          mSection = 0;
-  
-  // Scene
-  ci::gl::Texture2dRef         mRandomTexture, mInputTexture;
-  gl::FboRef                   mSceneFbo;
-  gl::GlslProgRef              mSceneShader;
-  float                        mSmooth = .058f;
-  float                        mSpeed = .1f;
-  
-  // Feedback
-  gl::FboRef                   mFeedbackFbo1, mFeedbackFbo2;
-  gl::GlslProgRef              mFeedbackShader;
-  int                          mFeedbackFboCount = 0;
-  
-  // Post-Processing
-  ci::gl::Texture2dRef         mColorPaletteLUT, mPostProcessingLUT;
-  gl::FboRef                   mPostProcessingFbo1, mPostProcessingFbo2;
-  std::vector<gl::GlslProgRef> mPostProcessingShaders;
-  int                          mNumPostProcessors;
-  int                          mPostProcessingFboCount = 0;
-  float                        mGrainAmount = 0.051f;
+  int                          mSection = 0;  
+
+  MultipassShader               mMultipassShader;
+  map<string, gl::Texture2dRef> mTextures;
   
   // Window Management
-  ci::app::WindowRef       mUIWindow, mSceneWindow;
-  
-  // Error Handling
-  bool                     mShaderCompilationFailed = false;
-  std::string              mShaderCompileErrorMessage;
+  ci::app::WindowRef           mUIWindow, mSceneWindow;
 };
 
 CouleursApp::CouleursApp() :
-  mParams( string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( PARAMS_FILE ) )
-{
+  mParams( string( PATCHES_FOLDER ) + string( PATCH_NAME ) + string( PARAMS_FILE ) ) {
   // OSC
 //  mOSCIn.setup( OSC_PORT );
   
@@ -146,26 +124,27 @@ CouleursApp::CouleursApp() :
   mUIWindow->getSignalDraw().connect( bind( &CouleursApp::drawUI, this ) );
   mUIWindow->setPos( WINDOW_PADDING, 3. * WINDOW_PADDING );
   mUIWindow->setSize( UI_WIDTH, UI_HEIGHT );
-  
+  console() << "UI Window content scale: " << mUIWindow->getContentScale() << endl;
+    
   mSceneWindow = createWindow( Window::Format().size( SCENE_WIDTH, SCENE_HEIGHT ) );
   mSceneWindow->setTitle( "Couleurs: Render" );
   mSceneWindow->getSignalDraw().connect( bind( &CouleursApp::drawScene, this ) );
   mSceneWindow->getSignalResize().connect( bind( &CouleursApp::resizeScene, this ) );
-//  mSceneWindow->setFullScreen();
+  console() << "Scene Window content scale: " << mSceneWindow->getContentScale() << endl;  
   
   setupMidi();
 }
 
-void CouleursApp::setup()
-{
+static fs::path projectPath = string( PATCHES_FOLDER ) + string( PATCH_NAME ); 
+static fs::path fragPath = string( PATCHES_FOLDER ) + string( PATCH_NAME ) + string( MAIN_SHADER_FILE );
+
+void CouleursApp::setup() {
   setupUI();
   setupScene();
-//  setupMovieWriter();
-  mTimer.start();
+  mTimer.start();  
 }
 
-void CouleursApp::setupUI()
-{
+void CouleursApp::setupUI() {
   mUIWindow->getRenderer()->makeCurrentContext();
   
   // UI
@@ -177,24 +156,23 @@ void CouleursApp::setupUI()
                  .color( ImGuiCol_Header, ImVec4( color.x, color.y, color.z, .76f ) )
                  .color( ImGuiCol_HeaderHovered, ImVec4( color.x, color.y, color.z, .86f ) )
                  .color( ImGuiCol_HeaderActive, ImVec4( color.x, color.y, color.z, 1.f ) )
-                 .color( ImGuiCol_ButtonHovered, ImVec4( color.x, color.y, color.z, .86f ) )
+                 .color( ImGuiCol_ButtonHovered, ImVec4( color.x, color.y, color.z, .86f ) )                 
                 );
+  
 }
 
-void CouleursApp::setupScene()
-{
+void CouleursApp::setupScene() {
   mSceneWindow->getRenderer()->makeCurrentContext();
   
   // Shaders
-  loadShaders();
   initShaderWatching();
-  
-  // FBOs & Textures
-  resizeScene();
-  mColorPaletteLUT = gl::Texture2d::create( loadImage( app::loadAsset( COLOR_PALETTE_LUT ) ) );
-  mPostProcessingLUT = gl::Texture2d::create( loadImage( app::loadAsset( POST_PROCESSING_LUT ) ) );
-  mRandomTexture = gl::Texture2d::create( loadImage( app::loadAsset( "images/generative/texRandom.png" ) ) );
-  mInputTexture = gl::Texture2d::create( loadImage( app::loadAsset( INPUT_TEXTURE ) ) );
+  mMultipassShader.allocate( toPixels( mSceneWindow->getWidth() ), toPixels( mSceneWindow->getHeight() ) );
+  mMultipassShader.load( fragPath,
+                        [&] ( gl::GlslProgRef shader, int textureIndex ) { bindUniforms( shader, textureIndex ); },
+                        [&] () { unbindTextureUniforms(); } );
+
+  // Textures
+  loadTextures();
   
   // GL State
   gl::disableDepthRead();
@@ -202,18 +180,6 @@ void CouleursApp::setupScene()
   
   mSceneIsSetup = true;
 }
-
-// void CouleursApp::setupMovieWriter()
-// {
-//   if (RECORD) {
-//     fs::path path = getSaveFilePath();
-//     if ( !path.empty() ) {
-//       //    auto format = qtime::MovieWriter::Format().codec( qtime::MovieWriter::H264 ).fileType( qtime::MovieWriter::QUICK_TIME_MOVIE )
-//       //    .jpegQuality( 0.09f ).averageBitsPerSecond( 10000000 );
-//       mMovieWriter = qtime::MovieWriter::create( path, getWindowWidth(), getWindowHeight() );
-//     }
-//   }
-// }
 
 void CouleursApp::setupMidi()
 {
@@ -266,92 +232,54 @@ void CouleursApp::abletonMidiListener( midi::Message msg )
   }
 }
 
-void CouleursApp::resizeScene()
-{
-  auto w = mSceneWindow->getWidth();
-  auto h = mSceneWindow->getHeight();
-  
-  mSceneFbo = gl::Fbo::create( w, h );
-  mFeedbackFbo1 = gl::Fbo::create( w, h );
-  mFeedbackFbo2 = gl::Fbo::create( w, h );
-  mPostProcessingFbo1 = gl::Fbo::create( w, h );
-  mPostProcessingFbo2 = gl::Fbo::create( w, h );
-  
-  clearFBO( mSceneFbo );
-  clearFBO( mFeedbackFbo1 );
-  clearFBO( mFeedbackFbo2 );
-  clearFBO( mPostProcessingFbo1 );
-  clearFBO( mPostProcessingFbo2 );
+void CouleursApp::resizeScene() {
+  auto w = toPixels( mSceneWindow->getWidth() );
+  auto h = toPixels( mSceneWindow->getHeight() );
+  mMultipassShader.allocate( w, h );
 }
 
-// Shader paths
-static fs::path scenePath          = string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( SCENE_SHADER );
-static fs::path feedbackPath       = string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( FEEDBACK_SHADER );
-static fs::path postProcessingPath = string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( POST_PROCESSING_SHADER );
-static fs::path vertPath           = "shaders/vertex/passthrough.vert";
-
-void CouleursApp::initShaderWatching() //TODO: replace this by watchdog?
-{
+void CouleursApp::initShaderWatching() {
   time_t now = time( 0 );
-  mShaderFiles.push_back( { getAssetPath( scenePath ), now } );
-  mShaderFiles.push_back( { getAssetPath( feedbackPath ), now } );
   
-  for ( int i = 0; i < mNumPostProcessors; i++ ) {
-    auto path = string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( POST_PROCESSING_SHADER ) + to_string( i ) + ".frag";
-    mShaderFiles.push_back( { getAssetPath( path ), now } );
-  }
-  
-  mShaderFiles.push_back( { getAssetPath( vertPath ), now } );
-}
-
-void CouleursApp::loadShaders()
-{
-  DataSourceRef vert = app::loadAsset( vertPath );
-  DataSourceRef sceneFrag = app::loadAsset( scenePath );
-  DataSourceRef feedbackFrag = app::loadAsset( feedbackPath );
-  
-  try {
-    mSceneShader = gl::GlslProg::create( gl::GlslProg::Format()
-                                        .version( 330 )
-                                        .vertex( vert )
-                                        .fragment( sceneFrag ) );
-    mFeedbackShader = gl::GlslProg::create( gl::GlslProg::Format()
-                                           .version( 330 )
-                                           .vertex( vert )
-                                           .fragment( feedbackFrag ) );
-    mPostProcessingShaders.clear();
-        
-    int count = 0;
-    while ( true ) {
-      auto path = string( SHADER_FOLDER ) + string( PROJECT_NAME ) + string( POST_PROCESSING_SHADER ) + to_string( count ) + ".frag";
-      auto fullPath = getAssetPath( path );
-      if ( fs::exists( fullPath ) ) {
-        auto postProcessingFrag = app::loadAsset( path );
-        auto shader = gl::GlslProg::create( gl::GlslProg::Format()
-                                           .version( 330 )
-                                           .vertex( vert )
-                                           .fragment( postProcessingFrag )
-                                           .define( "LUT_FLIP_Y" ) );
-        mPostProcessingShaders.push_back( shader );
-        count++;
-      }
-      else {
-        mNumPostProcessors = count;
-        break;
-      }
+  // Iterate through project directory to shader files
+  for ( auto &p: boost::filesystem::directory_iterator( getAssetPath( projectPath ) ) ) {
+    auto extension = p.path().extension();
+    if ( extension == ".frag" || extension == ".glsl" ) {
+      console() << p.path().filename() << endl;
+      auto assetPath = projectPath / p.path().filename();
+      mShaderFiles.push_back( { getAssetPath( assetPath ), now } );
     }
-    
-    mShaderCompilationFailed = false;
-  }
-  
-  catch ( const std::exception &e ) {
-    console() << "Shader exception: " << e.what() << std::endl;
-    mShaderCompilationFailed = true;
-    mShaderCompileErrorMessage = string( e.what() );
-  }
+  }  
 }
 
-void CouleursApp::keyDown( KeyEvent event )
+void CouleursApp::loadTextures() 
+{
+  vector<fs::path> imageNames;
+
+  // Iterate through project directory to detect images
+  for ( auto &p: boost::filesystem::directory_iterator( getAssetPath( projectPath ) ) ) {
+    auto extension = p.path().extension();
+    if ( extension == ".jpg" || extension == ".png" ) {
+      imageNames.push_back( p.path().filename() );
+    }
+  }    
+
+  // Create textures
+  for ( int i = 0; i < imageNames.size(); i++ ) {
+    auto assetPath = projectPath / imageNames[i];
+    auto nameWithoutExtension = imageNames[i].replace_extension( "" );
+    mTextures[ nameWithoutExtension.string() ] = gl::Texture2d::create( loadImage( app::loadAsset( assetPath ) ) );
+  }
+
+}
+
+void CouleursApp::mouseMove( MouseEvent event ) 
+{
+    mMousePosition = toPixels( glm::clamp( event.getPos(), ivec2( 0., 0. ), mSceneWindow->getSize() ) );
+    console() << "mouse x: " << mMousePosition.x << " mouse y: " << mMousePosition.y << endl;
+}
+
+void CouleursApp::keyDown( KeyEvent event ) 
 {
   if ( event.getCode() == KeyEvent::KEY_s ) {
     CI_LOG_I( "Saving config file" );
@@ -382,7 +310,6 @@ void CouleursApp::update()
   updateOSC();
   updateUI();
   updateShaders();
-  // updateMovieWriter();
   updateTimer();
 }
 
@@ -443,10 +370,11 @@ void CouleursApp::updateUI()
   }
   
   {
-    if ( mShaderCompilationFailed ) {
+    if ( mMultipassShader.mShaderCompilationFailed ) {
       ui::ScopedStyleColor color( ImGuiCol_TitleBgActive, ImVec4( .9f, .1f, .1f, .85f ) );
       ui::ScopedWindow win( "Debug" );      
-      ui::Text( "%s", mShaderCompileErrorMessage.c_str() );
+      ui::Text( "%s", mMultipassShader.mShaderCompileErrorMessage.c_str() );
+      console() << "Shader exception: " << mMultipassShader.mShaderCompileErrorMessage << std::endl;      
     }
   }
 }
@@ -465,17 +393,11 @@ void CouleursApp::updateShaders()
     }
   }
   
-  if ( shadersNeedReload ) loadShaders();
+  if ( shadersNeedReload ) {
+    mMultipassShader.reload();
+    loadTextures();
+  }
 }
-
-// void CouleursApp::updateMovieWriter()
-// {
-//   if ( mMovieWriter && RECORD && getElapsedFrames() > 1 && getElapsedFrames() < NUM_FRAMES )
-//     mMovieWriter->addFrame( copyWindowSurface() );
-//   else if ( mMovieWriter && getElapsedFrames() >= NUM_FRAMES ) {
-//     mMovieWriter->finish();
-//   }
-// }
 
 void CouleursApp::updateTimer()
 {
@@ -495,86 +417,15 @@ void CouleursApp::drawUI()
 void CouleursApp::drawScene()
 {
   if ( !mSceneIsSetup ) return;
-  
-  {
-    Rectf drawRect = Rectf( 0.f, 0.f, mSceneWindow->getWidth(), mSceneWindow->getHeight() );
-    
-    {
-      // Scene
-      gl::ScopedFramebuffer scopedFBO( mSceneFbo );
-      gl::ScopedGlslProg shader( mSceneShader );
-      gl::ScopedTextureBind lookupTable( mRandomTexture, 0 );
-      gl::ScopedTextureBind inputTexture( mInputTexture, 1 );
-      mSceneShader->uniform( "u_texRandom", 0 );
-      mSceneShader->uniform( "u_texInput", 1 );
-      bindCommonUniforms( mSceneShader );
-      gl::drawSolidRect( drawRect );
-    }
-    
-    {
-      // Feedback
-      bool feedbackFBOSwap = ( mFeedbackFboCount % 2 == 0 );
-      auto feedbackFBOOut = feedbackFBOSwap ? mFeedbackFbo1 : mFeedbackFbo2;
-      auto feedbackFBOIn =  feedbackFBOSwap ? mFeedbackFbo2 : mFeedbackFbo1;
-      
-      {
-        gl::ScopedFramebuffer scopedFBO( feedbackFBOOut );
-        gl::ScopedGlslProg shader( mFeedbackShader );
-        gl::ScopedTextureBind sourceTexture( mSceneFbo->getColorTexture(), 0 );
-        gl::ScopedTextureBind feedbackTexture( feedbackFBOIn->getColorTexture(), 1 );
-        mFeedbackShader->uniform( "u_texSource", 0 );
-        mFeedbackShader->uniform( "u_texFeedback", 1 );
-        bindCommonUniforms( mFeedbackShader );
-        gl::drawSolidRect( drawRect );
-        mFeedbackFboCount++;
-      }
-      
-      // Post-Processing
-      auto input = feedbackFBOOut->getColorTexture();
-      auto numPPs = mPostProcessingShaders.size();
-      for ( int i = 0; i < numPPs; i++ ) {
-        bool isLastPass = ( i == numPPs - 1 );
-        bool ppFBOSwap = ( mPostProcessingFboCount % 2 == 0 );
-        auto ppFBOOut = ppFBOSwap ? mPostProcessingFbo1 : mPostProcessingFbo2;
-        auto ppFBOIn =  ppFBOSwap ? mPostProcessingFbo2 : mPostProcessingFbo1;
-        
-        // Input: feed result of last pass into next one, except for the first one
-        if ( i > 0 ) {
-          input = ppFBOIn->getColorTexture();
-        }
-        
-        // Output: last pass draws to screen
-        if ( !isLastPass ) {
-          ppFBOOut->bindFramebuffer();
-        }
-        
-        // Draw
-        auto postProcessingShader = mPostProcessingShaders[ i ];
-        gl::ScopedGlslProg shader( postProcessingShader );
-        gl::ScopedTextureBind inputTexture( input, 0 );
-        gl::ScopedTextureBind lookupTable( mPostProcessingLUT, 1 );
-        gl::ScopedTextureBind colorTable1( mColorPaletteLUT, 2 );
-        postProcessingShader->uniform( "u_texInput", 0 );
-        postProcessingShader->uniform( "u_texLUT", 1 );
-        postProcessingShader->uniform( "u_texColors", 2 );        
-        bindCommonUniforms( postProcessingShader );
-        gl::drawSolidRect( drawRect );
-        mPostProcessingFboCount++;
-        
-        if ( !isLastPass ) {
-          ppFBOOut->unbindFramebuffer();
-        }
-      }
-    }
-  }
-  
+  Rectf rect = Rectf( 0.f, 0.f, mSceneWindow->getWidth(), mSceneWindow->getHeight() );
+  mMultipassShader.draw( rect );
   gl::printError();
 }
 
-void CouleursApp::bindCommonUniforms( gl::GlslProgRef shader )
+void CouleursApp::bindUniforms( gl::GlslProgRef shader, int textureIndex )
 {
-  auto contentScale = mSceneWindow->getContentScale();
-  vec2 resolution = mSceneWindow->getSize() * ivec2( contentScale, contentScale );
+  // Common Uniforms
+  vec2 resolution = toPixels( mSceneWindow->getSize() ); 
   shader->uniform( "u_resolution", resolution );
   if (!mTimeStopped) {
     mTime = (float)getElapsedSeconds();
@@ -582,20 +433,35 @@ void CouleursApp::bindCommonUniforms( gl::GlslProgRef shader )
   shader->uniform( "u_time", mTime );
   shader->uniform( "u_tick", mTick );
   shader->uniform( "u_section", mSection );
-    
+  shader->uniform( "u_mouse", vec2( mMousePosition.x, toPixels( mSceneWindow->getHeight() ) - mMousePosition.y ) );
+  
+  // Parameters
   auto params = mParams.get();
-  for (auto it = params.begin(); it != params.end(); it++ ) {
+  for ( auto it = params.begin(); it != params.end(); it++ ) {
       shader->uniform( (*it)->name, (*it)->value );
+  }
+
+  // Textures  
+  for ( auto it = mTextures.begin(); it != mTextures.end(); it++ ) {    
+    it->second->bind( textureIndex );
+    shader->uniform( "u_" + it->first, textureIndex );
+    textureIndex++;
   }
 }
 
-void CouleursApp::clearFBO( gl::FboRef fbo )
+void CouleursApp::unbindTextureUniforms()
 {
+  for ( auto it = mTextures.begin(); it != mTextures.end(); it++ ) {    
+    it->second->unbind();    
+  }
+}
+
+void CouleursApp::clearFBO( gl::FboRef fbo ) {
   gl::ScopedFramebuffer scopedFramebuffer( fbo );
   gl::ScopedViewport scopedViewport( ivec2( 0 ), fbo->getSize() );
   gl::clear();
 }
 
 CINDER_APP( CouleursApp, RendererGl, [&]( App::Settings *settings ) {
-  settings->setHighDensityDisplayEnabled();
+   settings->setHighDensityDisplayEnabled();
 })
