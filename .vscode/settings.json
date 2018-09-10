@@ -33,6 +33,7 @@
         "algorithm": "cpp",
         "cfenv": "cpp",
         "regex": "cpp",
-        "functional": "cpp"
+        "functional": "cpp",
+        "ostream": "cpp"
     }
 }

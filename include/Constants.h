@@ -1,6 +1,6 @@
 #pragma once
 
-#define PATCH_NAME "hue_feedback"
+#define PATCH_NAME "mult_circles"
 
 // Dimensions
 #define SCENE_WIDTH 960 //2560x1440

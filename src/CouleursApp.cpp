@@ -287,8 +287,10 @@ void CouleursApp::keyDown( KeyEvent event )
   }
   else if ( event.getCode() == KeyEvent::KEY_f ) {
     CI_LOG_I( "Saving screenshot" );
-    const char *homeDir = getenv( "HOME" );    
-    writeImage( string( homeDir ) + string( "/Desktop/screenshot_" ) + to_string( getElapsedSeconds() ) + string( ".png" ), copyWindowSurface() );
+    const char *homeDir = getenv( "HOME" );
+    auto path = string( homeDir ) + string( "/Desktop/screenshot_" ) + to_string( getElapsedSeconds() );    
+    writeImage( path + string( ".png" ), copyWindowSurface() );
+    mParams.write( path + string( ".json" ) );
   }
   else if ( event.getCode() == KeyEvent::KEY_r ) {
     CI_LOG_I( "Resetting params" );

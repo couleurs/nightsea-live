@@ -14,6 +14,7 @@ public:
   ~Parameters();
   void save();
   void reload();
+  void write( const ci::fs::path &exportPath );
   
   std::vector<Param *>& get() { return mParameters; }
   Param* getParamForMidiNumber( int number );
@@ -24,4 +25,5 @@ private:
   ci::fs::path             mPath;
   
   void init();
+  void updateJsonTree( ci::JsonTree &oldTree );
 };

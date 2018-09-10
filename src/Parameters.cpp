@@ -34,15 +34,27 @@ void Parameters::init()
 
 void Parameters::save()
 {
-  JsonTree params = mJson.getChild( "params" );
+  updateJsonTree( mJson );
+  mJson.write( app::getAssetPath( mPath ) );
+}
+
+void Parameters::write( const ci::fs::path &exportPath )
+{
+  auto newJson = JsonTree( mJson );
+  updateJsonTree( newJson );
+  newJson.write( exportPath );  
+}
+
+void Parameters::updateJsonTree( ci::JsonTree &oldTree )
+{
+  JsonTree params = oldTree.getChild( "params" );
   for ( size_t i = 0; i < mParameters.size(); i++ ) {
     auto param = mParameters[ i ];
     auto tree = params.getChild( i );
     tree.addChild( JsonTree( "value", param->value ) );
     params.replaceChild( i, tree );
   }
-  mJson.getChild( "params" ) = params;
-  mJson.write( app::getAssetPath( mPath ) );
+  oldTree.getChild( "params" ) = params;
 }
 
 void Parameters::reload()

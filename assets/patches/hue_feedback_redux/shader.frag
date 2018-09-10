@@ -1,6 +1,7 @@
 #include "../../shaders/fb_lib/color/space/hsv2rgb.glsl"
 #include "../../shaders/fb_lib/color/space/rgb2hsv.glsl"
 #include "../../shaders/fb_lib/color/desaturate.glsl"
+#include "../../shaders/fb_lib/color/contrast.glsl"
 #include "../../shaders/fb_lib/space/scale.glsl"
 #include "../../shaders/fb_lib/space/rotate.glsl"
 #include "../../shaders/fb_lib/space/cartesian2polar.glsl"
@@ -32,6 +33,7 @@ uniform float u_randomAmount;
 uniform float u_hueShift;
 uniform float u_saturation;
 uniform float u_lutMix;
+uniform float u_contrast;
 
 float hash( float n ) {
     return fract(sin(n) * 43758.5453123);
@@ -100,9 +102,9 @@ void main() {
 #ifdef BUFFER_0
   
   vec3 color = vec3(0.);
-  vec2 st = scale(uv, 8.5); // 80 for new version
+  vec2 st = scale(uv, u_circleSize);
   color = vec3(pow(length(st - .5), .11));
-  color = smoothstep(u_circleSize, u_circleSize + 1., color);  
+  color = smoothstep(0., 1., color);  
   color = 1. - color;
   // color = texture(u_input, uv).rgb;
 
@@ -120,7 +122,7 @@ void main() {
   float c1 = smoothstep(uv.y - .1, uv.y, uv.x);
   float c2 = smoothstep(uv.y, uv.y + .1, uv.x);
   float r = 1. - (c1 - c2);  
-  // r = 1.; 
+  r = 1.; 
   
   vec2 uv_n = vec2(cos(angle), sin(angle)) * ll + .5;
   vec3 c_fb = texture(u_buffer1, uv_n + (random(uv) - .5) * r * u_randomAmount).rgb;
@@ -136,10 +138,11 @@ void main() {
 
 #else
 
-  vec4 color = texture(u_buffer1, rotate(uv, 0.));
+  vec4 color = texture(u_buffer1, rotate(uv, 0. * -PI/4.));
   color = desaturate(color, -u_saturation);  
   vec4 lut_color = lut(color, u_lookup);
-  color = mix(color, lut_color, u_lutMix);  
+  color = mix(color, lut_color, u_lutMix);
+  color = contrast(color, u_contrast);
   oColor = color;  
 
 #endif
