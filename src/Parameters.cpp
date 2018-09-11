@@ -20,9 +20,24 @@ void Parameters::init()
   for ( auto it = params.begin(); it != params.end(); it++ ) {
     auto param = new Param();
     param->name = (*it)["name"].getValue();
-    param->min = (*it)["min"].getValue<float>();
-    param->max = (*it)["max"].getValue<float>();
     param->value = (*it)["value"].getValue<float>();
+
+    // Defaults to 0 if min not specified
+    try {
+      param->min = (*it)["min"].getValue<float>();
+    }
+    catch ( const JsonTree::ExcChildNotFound &e ) {
+      param->min = 0;
+    }
+    
+    // Defaults to 1 if max not specified
+    try {
+      param->max = (*it)["max"].getValue<float>();
+    }
+    catch ( const JsonTree::ExcChildNotFound &e ) {
+      param->max = 1;
+    }
+
     try {
       param->midiNumber = (*it)["midi"].getValue<int>();
     }
