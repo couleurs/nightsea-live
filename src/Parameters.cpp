@@ -1,5 +1,6 @@
 #include "Parameters.hpp"
 #include "cinder/app/App.h"
+#include "cinder/Log.h"
 
 using namespace ci;
 
@@ -38,11 +39,11 @@ void Parameters::save()
   mJson.write( app::getAssetPath( mPath ) );
 }
 
-void Parameters::write( const ci::fs::path &exportPath )
+void Parameters::writeTo( const ci::fs::path &path )
 {
   auto newJson = JsonTree( mJson );
   updateJsonTree( newJson );
-  newJson.write( exportPath );  
+  newJson.write( path );  
 }
 
 void Parameters::updateJsonTree( ci::JsonTree &oldTree )
@@ -55,6 +56,17 @@ void Parameters::updateJsonTree( ci::JsonTree &oldTree )
     params.replaceChild( i, tree );
   }
   oldTree.getChild( "params" ) = params;
+}
+
+void Parameters::load( const ci::fs::path &path )
+{
+  try {
+    mJson = JsonTree( ci::loadFile( path ) );
+    init();
+  }
+  catch( Exception &exc ) {  
+    CI_LOG_EXCEPTION( "Failed to load parameters: " << path, exc );
+  }
 }
 
 void Parameters::reload()

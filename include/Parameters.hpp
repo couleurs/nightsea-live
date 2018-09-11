@@ -14,7 +14,8 @@ public:
   ~Parameters();
   void save();
   void reload();
-  void write( const ci::fs::path &exportPath );
+  void writeTo( const ci::fs::path &path );
+  void load( const ci::fs::path &path );
   
   std::vector<Param *>& get() { return mParameters; }
   Param* getParamForMidiNumber( int number );

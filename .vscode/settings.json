@@ -34,6 +34,8 @@
         "cfenv": "cpp",
         "regex": "cpp",
         "functional": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "typeindex": "cpp",
+        "__bit_reference": "cpp"
     }
 }

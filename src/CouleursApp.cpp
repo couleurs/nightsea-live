@@ -56,6 +56,7 @@ public:
   void update() override;
   void keyDown( KeyEvent event ) override;
   void mouseMove( MouseEvent event ) override;
+  void fileDrop( FileDropEvent event ) override;
   
 private:
   void initShaderWatching();
@@ -273,10 +274,16 @@ void CouleursApp::loadTextures()
 
 }
 
+void CouleursApp::fileDrop( FileDropEvent event )
+{
+  auto path = event.getFile( 0 );
+  mParams.load( path );
+}
+
 void CouleursApp::mouseMove( MouseEvent event ) 
 {
-    mMousePosition = toPixels( glm::clamp( event.getPos(), ivec2( 0., 0. ), mSceneWindow->getSize() ) );
-    console() << "mouse x: " << mMousePosition.x << " mouse y: " << mMousePosition.y << endl;
+  mMousePosition = toPixels( glm::clamp( event.getPos(), ivec2( 0., 0. ), mSceneWindow->getSize() ) );
+  console() << "mouse x: " << mMousePosition.x << " mouse y: " << mMousePosition.y << endl;
 }
 
 void CouleursApp::keyDown( KeyEvent event ) 
@@ -290,7 +297,7 @@ void CouleursApp::keyDown( KeyEvent event )
     const char *homeDir = getenv( "HOME" );
     auto path = string( homeDir ) + string( "/Desktop/screenshot_" ) + to_string( getElapsedSeconds() );    
     writeImage( path + string( ".png" ), copyWindowSurface() );
-    mParams.write( path + string( ".json" ) );
+    mParams.writeTo( path + string( ".json" ) );
   }
   else if ( event.getCode() == KeyEvent::KEY_r ) {
     CI_LOG_I( "Resetting params" );
