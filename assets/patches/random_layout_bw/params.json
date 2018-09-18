@@ -1,0 +1,36 @@
+{
+   "params" : [
+      {
+         "name" : "u_noiseMax",
+         "value" : 1
+      },
+      {
+         "name" : "u_bgIntensity",
+         "value" : 1
+      },
+      {
+         "name" : "u_smallBlueSize",
+         "value" : 1
+      },
+      {
+         "name" : "u_smallRedSize",
+         "value" : 1
+      },
+      {
+         "name" : "u_xOffset",
+         "value" : 0.188
+      },
+      {
+         "name" : "u_yOffset",
+         "value" : 0.71199999999999997
+      },
+      {
+         "name" : "u_saturation",
+         "value" : 0.079000000000000001
+      },
+      {
+         "name" : "u_contrast",
+         "value" : 0.17999999999999999
+      }
+   ]
+}

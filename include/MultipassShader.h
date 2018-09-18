@@ -16,6 +16,7 @@ class MultipassShader {
 
         bool                     mShaderCompilationFailed = false;
         std::string              mShaderCompileErrorMessage;
+        gl::FboRef               mMainFbo;
 
     private:
         int getBufferCount();
@@ -28,8 +29,7 @@ class MultipassShader {
         std::vector<gl::FboRef> mFbos;
         std::vector<gl::Texture2dRef> mTextures; 
         std::vector<gl::GlslProgRef> mShaders;
-        gl::GlslProgRef mMainShader;
-        gl::FboRef mMainFbo;
+        gl::GlslProgRef mMainShader, mFinalShader;        
         std::string mMainFragSource;
         fs::path mFragPath;
         int mWidth, mHeight;

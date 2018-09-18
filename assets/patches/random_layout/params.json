@@ -1,0 +1,28 @@
+{
+   "params" : [
+      {
+         "name" : "u_noiseMax",
+         "value" : 0.216
+      },
+      {
+         "name" : "u_bgIntensity",
+         "value" : 0.20999999999999999
+      },
+      {
+         "name" : "u_smallBlueSize",
+         "value" : 0.39800000000000002
+      },
+      {
+         "name" : "u_smallRedSize",
+         "value" : 0.34699999999999998
+      },
+      {
+          "name": "u_xOffset",
+          "value": 0
+      },
+      {
+        "name": "u_yOffset",
+        "value": 0
+      }
+   ]
+}

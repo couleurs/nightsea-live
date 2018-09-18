@@ -178,6 +178,7 @@ void CouleursApp::setupScene() {
   // GL State
   gl::disableDepthRead();
   gl::disableDepthWrite();
+  gl::disableBlending();  
   
   mSceneIsSetup = true;
 }
@@ -295,8 +296,10 @@ void CouleursApp::keyDown( KeyEvent event )
   else if ( event.getCode() == KeyEvent::KEY_f ) {
     CI_LOG_I( "Saving screenshot" );
     const char *homeDir = getenv( "HOME" );
-    auto path = string( homeDir ) + string( "/Desktop/screenshot_" ) + to_string( getElapsedSeconds() );    
-    writeImage( path + string( ".png" ), copyWindowSurface() );
+    auto path = string( homeDir ) + string( "/Desktop/screenshot_" ) + to_string( getElapsedSeconds() );
+    auto surface = Surface8u( mMultipassShader.mMainFbo->getColorTexture()->createSource() );
+    console() << "surface color: " << surface.getPixel( ivec2( 500, 500 ) ) << endl;
+    writeImage( path + string( ".png" ), surface );
     mParams.writeTo( path + string( ".json" ) );
   }
   else if ( event.getCode() == KeyEvent::KEY_r ) {
@@ -426,8 +429,18 @@ void CouleursApp::drawUI()
 void CouleursApp::drawScene()
 {
   if ( !mSceneIsSetup ) return;
+  
+  // Draw patch
   Rectf rect = Rectf( 0.f, 0.f, mSceneWindow->getWidth(), mSceneWindow->getHeight() );
   mMultipassShader.draw( rect );
+
+  // Draw red rect if error
+  if ( mMultipassShader.mShaderCompilationFailed ) {
+    gl::ScopedColor c( Color( 1.f, 0.f, 0.f ) );    
+    float h = 20.f;
+    gl::drawSolidRect( Rectf( 0.f, mSceneWindow->getHeight() - h, mSceneWindow->getWidth(), mSceneWindow->getHeight() ) );
+  }
+
   gl::printError();
 }
 

@@ -13,6 +13,9 @@ void MultipassShader::allocate( int width, int height ) {
     mWidth = width;
     mHeight = height;
     mMainFbo = gl::Fbo::create( width, height );
+    mFinalShader = gl::GlslProg::create( gl::GlslProg::Format().version( 330 )
+                                                               .vertex( app::loadAsset( vertPath ) )
+                                                               .fragment( app::loadAsset( "shaders/vertex/passthrough.frag" ) ) );
     for (unsigned int i = 0; i < mFbos.size(); i++) {
         mFbos[i] = gl::Fbo::create( width, height );
     }
@@ -69,7 +72,15 @@ void MultipassShader::draw( const Rectf &r ) {
     }
 
     // Final pass
-    drawShaderInFBO( r, mMainShader, nullptr, -1 );
+    drawShaderInFBO( r, mMainShader, mMainFbo, -1 );
+
+    // Draw on screen
+    {
+        gl::ScopedGlslProg scopedShader( mFinalShader );
+        gl::ScopedTextureBind scopedTexture( mMainFbo->getColorTexture(), 0 );
+        mFinalShader->uniform( "u_tex", 0 );
+        gl::drawSolidRect( r );
+    }
 }
 
 void MultipassShader::drawShaderInFBO( const Rectf &r, const gl::GlslProgRef &shader, const gl::FboRef &fbo, int index ) {
