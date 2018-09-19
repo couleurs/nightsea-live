@@ -20,6 +20,7 @@ uniform float u_xOffset;
 uniform float u_yOffset;
 uniform float u_saturation;
 uniform float u_contrast;
+uniform float u_bigBlueStep;
 
 float sizes[NUM_LAYERS] = float[NUM_LAYERS](30.,
                                             30.,
@@ -28,12 +29,12 @@ float sizes[NUM_LAYERS] = float[NUM_LAYERS](30.,
                                             55.,
                                             55.);
 
-const float steps[NUM_LAYERS] = float[NUM_LAYERS](.81,
-                                                  .81,
-                                                  .964,
-                                                  .965,
-                                                  .995,
-                                                  .995);
+float steps[NUM_LAYERS] = float[NUM_LAYERS](u_bigBlueStep,
+                                            .65,
+                                            .964,
+                                            .965,
+                                            .995,
+                                            .995);
 
 const vec3 colors[NUM_LAYERS] = vec3[NUM_LAYERS](vec3(.169, .318, .752), 
                                                  vec3(.778, .272, .299), 

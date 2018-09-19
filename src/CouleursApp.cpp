@@ -436,7 +436,7 @@ void CouleursApp::drawScene()
 
   // Draw red rect if error
   if ( mMultipassShader.mShaderCompilationFailed ) {
-    gl::ScopedColor c( Color( 1.f, 0.f, 0.f ) );    
+    gl::ScopedColor red( Color( 1.f, 0.f, 0.f ) );    
     float h = 20.f;
     gl::drawSolidRect( Rectf( 0.f, mSceneWindow->getHeight() - h, mSceneWindow->getWidth(), mSceneWindow->getHeight() ) );
   }

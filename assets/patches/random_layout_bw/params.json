@@ -31,6 +31,10 @@
       {
          "name" : "u_contrast",
          "value" : 0.17999999999999999
+      },
+      {
+        "name" : "u_bigBlueStep",
+        "value" : 0.61
       }
    ]
 }
