@@ -1,6 +1,6 @@
 #pragma once
 
-#define PATCH_NAME "random_layout_bw"
+#define PATCH_NAME "random_transformed"
 
 // Dimensions
 #define SCENE_WIDTH 960 //2560x1440
