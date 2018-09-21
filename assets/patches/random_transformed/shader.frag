@@ -4,6 +4,8 @@
 #include "../../shaders/fb_lib/space/scale.glsl"
 #include "../../shaders/fb_lib/math/const.glsl"
 #include "../../shaders/fb_lib/color/contrast.glsl"
+#include "../../shaders/fb_lib/color/luma.glsl"
+#include "../../shaders/couleurs_lib/grain.glsl"
 
 #define GAUSSIANBLUR1D_SAMPLER_FNC(POS_UV) texture(tex, POS_UV)
 #include "../../shaders/fb_lib/filter/gaussianBlur/1D.glsl"
@@ -24,6 +26,7 @@ uniform float u_bigStep;
 uniform float u_size;
 uniform float u_blur;
 uniform float u_contrast;
+uniform float u_whiteMix;
 
 void main() {
   vec2 uv = vTexCoord0;
@@ -63,9 +66,16 @@ void main() {
   c = contrast(c, 1. + u_contrast * 2.);
   vec3 c1 = vec3(0.173, 0.165, 0.161); 
   vec3 c2 = vec3(0.859, 0.847, 0.820);
-  vec3 color = mix(c1, c2, c);
+  c1 = vec3(0.847, 0.392, 0.569);
+  c2 = vec3(0.976, 0.275, 0.357);
+
+  // vec3(0.988, 0.980, 0.973)
+
+  vec3 color = mix(c1, c2, c * 1.);  
+  float g = grain(uv, u_resolution / 2.5, 0., 10.);
+  color += g * mix(.1, .3, 1. - r);
   // color = vec3(c);
-  // color = mix(color, vec3(1.), .45);
+  color = mix(color, vec3(1.), u_whiteMix);
   oColor = vec4(color, 1.);
   // oColor = vec4(vec3(c), 1.);
 

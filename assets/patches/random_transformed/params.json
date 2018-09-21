@@ -6,7 +6,7 @@
       },
       {
          "name" : "u_bigStep",
-         "value" : 0.54300000000000004
+         "value" : 0.34399999999999997
       },
       {
          "name" : "u_size",
@@ -19,6 +19,10 @@
       {
          "name" : "u_contrast",
          "value" : 0.67400000000000004
+      },
+      {
+         "name" : "u_whiteMix",
+         "value" : 0.156
       }
    ]
 }
