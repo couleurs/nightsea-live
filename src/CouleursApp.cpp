@@ -121,14 +121,14 @@ CouleursApp::CouleursApp() :
   
   // Window Management
   mUIWindow = getWindow();
-  mUIWindow->setTitle( "Couleurs: UI" );
+  mUIWindow->setTitle( "Couleurs: Parameters" );
   mUIWindow->getSignalDraw().connect( bind( &CouleursApp::drawUI, this ) );
   mUIWindow->setPos( WINDOW_PADDING, 3. * WINDOW_PADDING );
   mUIWindow->setSize( UI_WIDTH, UI_HEIGHT );
   console() << "UI Window content scale: " << mUIWindow->getContentScale() << endl;
     
   mSceneWindow = createWindow( Window::Format().size( SCENE_WIDTH, SCENE_HEIGHT ) );
-  mSceneWindow->setTitle( "Couleurs: Render" );
+  mSceneWindow->setTitle( "Couleurs: Render (" + string( PATCH_NAME ) + ")" );
   mSceneWindow->getSignalDraw().connect( bind( &CouleursApp::drawScene, this ) );
   mSceneWindow->getSignalResize().connect( bind( &CouleursApp::resizeScene, this ) );
   console() << "Scene Window content scale: " << mSceneWindow->getContentScale() << endl;  
