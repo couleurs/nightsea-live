@@ -36,6 +36,14 @@
         "functional": "cpp",
         "ostream": "cpp",
         "typeindex": "cpp",
-        "__bit_reference": "cpp"
+        "__bit_reference": "cpp",
+        "__functional_base": "cpp",
+        "future": "cpp",
+        "istream": "cpp",
+        "locale": "cpp",
+        "thread": "cpp",
+        "tuple": "cpp",
+        "__locale": "cpp",
+        "ios": "cpp"
     }
 }

@@ -15,6 +15,7 @@ Parameters::~Parameters()
 
 void Parameters::init()
 {
+  // SCALAR PARAMS
   JsonTree params = mJson.getChild( "params" );
   mParameters.clear();
   for ( auto it = params.begin(); it != params.end(); it++ ) {
@@ -46,6 +47,20 @@ void Parameters::init()
     }
     mParameters.push_back( param );
   }
+
+  // COLOR PARAMS
+  JsonTree colorParams = mJson.getChild( "colorParams" );
+  mColorParameters.clear();
+  for ( auto it = colorParams.begin(); it != colorParams.end(); it++ ) {
+    auto colorParam = new ColorParam();
+    colorParam->name = (*it)["name"].getValue();
+    float r = (*it)["r"].getValue<float>();
+    float g = (*it)["g"].getValue<float>();
+    float b = (*it)["b"].getValue<float>();
+    colorParam->value = Colorf( r, g, b );
+    mColorParameters.push_back( colorParam );
+  }
+
 }
 
 void Parameters::save()
@@ -71,6 +86,17 @@ void Parameters::updateJsonTree( ci::JsonTree &oldTree )
     params.replaceChild( i, tree );
   }
   oldTree.getChild( "params" ) = params;
+
+  JsonTree colorParams = oldTree.getChild( "colorParams" );
+  for ( size_t i = 0; i < mColorParameters.size(); i++ ) {
+    auto colorParam = mColorParameters[ i ];
+    auto tree = colorParams.getChild( i );
+    tree.addChild( JsonTree( "r", colorParam->value.r ) );
+    tree.addChild( JsonTree( "g", colorParam->value.g ) );
+    tree.addChild( JsonTree( "b", colorParam->value.b ) );
+    colorParams.replaceChild( i, tree );
+  }
+  oldTree.getChild( "colorParams" ) = colorParams;
 }
 
 void Parameters::load( const ci::fs::path &path )

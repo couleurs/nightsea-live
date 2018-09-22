@@ -105,7 +105,7 @@ private:
   ci::Timer                    mTimer;
   int                          mBPM = 107;
   float                        mTick; //[0 - 1]
-  int                          mSection = 0;  
+  int                          mSection = 0;    
 
   MultipassShader               mMultipassShader;
   map<string, gl::Texture2dRef> mTextures;
@@ -363,6 +363,12 @@ void CouleursApp::updateUI()
       auto param = *it;
       ui::SliderFloat( param->name.c_str(), &param->value, param->min, param->max );
     }
+
+    auto colorParams = mParams.getColors();
+    for (auto it = colorParams.begin(); it != colorParams.end(); it++ ) {
+      auto colorParam = *it;
+      ui::ColorEdit3( colorParam->name.c_str(), &(colorParam->value.r) );
+    }    
   }
   
   {
@@ -457,10 +463,17 @@ void CouleursApp::bindUniforms( gl::GlslProgRef shader, int textureIndex )
   shader->uniform( "u_section", mSection );
   shader->uniform( "u_mouse", vec2( mMousePosition.x, toPixels( mSceneWindow->getHeight() ) - mMousePosition.y ) );
   
-  // Parameters
+  // Scalar Parameters
   auto params = mParams.get();
   for ( auto it = params.begin(); it != params.end(); it++ ) {
       shader->uniform( (*it)->name, (*it)->value );
+  }
+
+  // Color Parameters
+  auto colorParams = mParams.getColors();
+  for ( auto it = colorParams.begin(); it != colorParams.end(); it++ ) {
+      Colorf value = (*it)->value;
+      shader->uniform( (*it)->name, vec3( value.r, value.g, value.b ) );
   }
 
   // Textures  

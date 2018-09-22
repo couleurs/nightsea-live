@@ -27,6 +27,12 @@ uniform float u_size;
 uniform float u_blur;
 uniform float u_contrast;
 uniform float u_whiteMix;
+uniform float u_r1Seed;
+uniform float u_r2Seed;
+
+// Colors
+uniform vec3 u_c1;
+uniform vec3 u_c2;
 
 void main() {
   vec2 uv = vTexCoord0;
@@ -35,8 +41,8 @@ void main() {
 
   vec3 color = vec3(0.);
   
-  float r1 = random(vec3(floor(uv * .2 * 100.), 1.));
-  float r2 = random(vec3(floor(uv * .1 * 100.), 1.));
+  float r1 = random(vec3(floor(uv * .2 * 100.), u_r1Seed));
+  float r2 = random(vec3(floor(uv * .1 * 100.), u_r2Seed));
 
   float r = mix(r1, r2, step(u_bigStep, r2));
   float r_step = step(u_step, r);
@@ -64,14 +70,12 @@ void main() {
   float c = gaussianBlur1D(u_buffer2, uv, vec2(0., r * u_blur * 1000. / u_resolution.y ), 20).r;
   
   c = contrast(c, 1. + u_contrast * 2.);
-  vec3 c1 = vec3(0.173, 0.165, 0.161); 
-  vec3 c2 = vec3(0.859, 0.847, 0.820);
-  c1 = vec3(0.847, 0.392, 0.569);
-  c2 = vec3(0.976, 0.275, 0.357);
 
-  // vec3(0.988, 0.980, 0.973)
+  // Blue tones
+  // c1 = vec3(0.576, 0.690, 0.714);
+  // c2 = vec3(0.459, 0.592, 0.714);
 
-  vec3 color = mix(c1, c2, c * 1.);  
+  vec3 color = mix(u_c1, u_c2, c * 1.);  
   float g = grain(uv, u_resolution / 2.5, 0., 10.);
   color += g * mix(.1, .3, 1. - r);
   // color = vec3(c);
