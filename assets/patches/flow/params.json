@@ -1,4 +1,13 @@
 {
-   "params" : [],
-   "colorParams" : []
+   "colorParams" : "",
+   "params" : [
+      {
+         "name" : "u_speed",
+         "value" : 0.075999999999999998
+      },
+      {
+          "name": "u_strength",
+          "value": 0.2
+      }
+   ]
 }
