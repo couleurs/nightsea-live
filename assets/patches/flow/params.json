@@ -1,13 +1,36 @@
 {
-   "colorParams" : "",
+   "colorParams" : [
+      {
+         "b" : 0.96470599999999995,
+         "g" : 1,
+         "name" : "u_bg",
+         "r" : 0.98712800000000001
+      }
+   ],
    "params" : [
       {
          "name" : "u_speed",
          "value" : 0.075999999999999998
       },
       {
-          "name": "u_strength",
-          "value": 0.2
+         "name" : "u_strength",
+         "value" : 0.20000000000000001
+      },
+      {
+         "name" : "u_scaleX",
+         "value" : 0
+      },
+      {
+         "name" : "u_scaleY",
+         "value" : 0.442
+      },
+      {
+         "name" : "u_yOffset",
+         "value" : 0.191
+      },
+      {
+         "name" : "u_sineMix",
+         "value" : 0.44700000000000001
       }
    ]
 }
