@@ -5,6 +5,12 @@
          "g" : 1,
          "name" : "u_bg",
          "r" : 0.98712800000000001
+      },
+      {
+          "name": "u_fg",
+          "r": 0.976,
+          "g": 0.275, 
+          "b": 0.357
       }
    ],
    "params" : [
@@ -31,6 +37,14 @@
       {
          "name" : "u_sineMix",
          "value" : 0.44700000000000001
+      },
+      {
+          "name": "u_grainMix",
+          "value": 0.15
+      },
+      {
+          "name": "u_sdfContrast",
+          "value": 0.5
       }
    ]
 }
