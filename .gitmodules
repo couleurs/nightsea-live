@@ -1,0 +1,3 @@
+[submodule "assets/shaders/glslLib"]
+	path = assets/shaders/glslLib
+	url = https://github.com/patriciogonzalezvivo/glslLib.git

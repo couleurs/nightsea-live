@@ -88,7 +88,7 @@ void main() {
   float num_layers = 35.;
   sdf = floor(sdf * num_layers) / num_layers;
   sdf = mix(sdf, sineIn(sdf), u_sineMix);
-  sdf = mix(0., .75, sdf);   
+  sdf = mix(0., .5, sdf);   
   
   float grain_sdf = contrast(color, 2.).r;
   grain_sdf = smoothstep(.34, .7, grain_sdf);  
