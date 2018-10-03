@@ -8,6 +8,11 @@
 #include "../../shaders/fb_lib/animation/easing/sine.glsl"
 #include "../../shaders/fb_lib/animation/easing/quadratic.glsl"
 
+#define SHARPEN_KERNELSIZE 2
+#define SHARPEN_SAMPLER_FNC(POS_UV) texture(tex, POS_UV).rgb
+#define SHARPEN_TYPE vec3
+#include "../../shaders/glslLib/operation/sharpen.glsl"
+
 uniform vec2 u_resolution;
 uniform float u_time;
 
@@ -41,38 +46,6 @@ uniform float u_sdfContrast;
 uniform vec3 u_bg;
 uniform vec3 u_fg;
 
-#define KERNEL_SIZE 2
-// vec4 sharpen(in sampler2D tex, in vec2 coords, in vec2 renderSize) {
-//   float dx = 1.0 / renderSize.x;
-//   float dy = 1.0 / renderSize.y;
-//   vec4 sum = vec4(0.0);
-//   for (int i = 0; i < KERNEL_SIZE; i++) {
-//     float f_size = float(i) + 1.;
-//     sum += -1. * texture(tex, coords + vec2( -1.0 * dx , 0.0 * dy) * f_size);
-//     sum += -1. * texture(tex, coords + vec2( 0.0 * dx , -1.0 * dy) * f_size);
-//     sum += 5. * texture(tex, coords + vec2( 0.0 * dx , 0.0 * dy) * f_size);
-//     sum += -1. * texture(tex, coords + vec2( 0.0 * dx , 1.0 * dy) * f_size);
-//     sum += -1. * texture(tex, coords + vec2( 1.0 * dx , 0.0 * dy) * f_size);
-//   }
-//   return sum / float(KERNEL_SIZE);
-// }
-
-vec3 sharpen(in sampler2D tex, in vec2 coords, in vec2 renderSize) {
-  float dx = 1.0 / renderSize.x;
-  float dy = 1.0 / renderSize.y;
-  vec3 sum = vec3(0.0);
-  for (int i = 0; i < KERNEL_SIZE; i++) {
-    float f_size = float(i) + 1.;
-    sum += -1. * texture(tex, coords + vec2( -1.0 * dx , 0.0 * dy) * f_size).rgb;
-    sum += -1. * texture(tex, coords + vec2( 0.0 * dx , -1.0 * dy) * f_size).rgb;
-    sum += 5. * texture(tex, coords + vec2( 0.0 * dx , 0.0 * dy) * f_size).rgb;
-    sum += -1. * texture(tex, coords + vec2( 0.0 * dx , 1.0 * dy) * f_size).rgb;
-    sum += -1. * texture(tex, coords + vec2( 1.0 * dx , 0.0 * dy) * f_size).rgb;
-  }
-  return sum / float(KERNEL_SIZE);
-}
-
-
 void main() {
   vec2 uv = vTexCoord0;
 
@@ -88,7 +61,7 @@ void main() {
   float num_layers = 35.;
   sdf = floor(sdf * num_layers) / num_layers;
   sdf = mix(sdf, sineIn(sdf), u_sineMix);
-  sdf = mix(0., .5, sdf);   
+  sdf = mix(0., .75, sdf);   
   
   float grain_sdf = contrast(color, 2.).r;
   grain_sdf = smoothstep(.34, .7, grain_sdf);  
