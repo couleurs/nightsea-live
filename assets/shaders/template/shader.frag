@@ -1,3 +1,5 @@
+#define texture2D(A,B) texture(A,B)
+
 uniform vec2 u_resolution;
 uniform float u_time;
 

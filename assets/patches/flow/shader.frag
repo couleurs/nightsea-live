@@ -1,3 +1,5 @@
+#define texture2D(A,B) texture(A,B)
+
 #include "../../shaders/couleurs_lib/lut.glsl"
 #include "../../shaders/couleurs_lib/grain.glsl"
 #include "../../shaders/fb_lib/color/contrast.glsl"
@@ -9,7 +11,7 @@
 #include "../../shaders/fb_lib/animation/easing/quadratic.glsl"
 
 #define SHARPEN_KERNELSIZE 2
-#define SHARPEN_SAMPLER_FNC(POS_UV) texture(tex, POS_UV).rgb
+#define SHARPEN_SAMPLER_FNC(POS_UV) texture2D(tex, POS_UV).rgb
 #define SHARPEN_TYPE vec3
 #include "../../shaders/glslLib/operation/sharpen.glsl"
 

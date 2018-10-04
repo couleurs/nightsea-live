@@ -1,6 +1,6 @@
 #pragma once
 
-#define PATCH_NAME "flow"
+#define PATCH_NAME "radial"
 
 // Dimensions
 #define SCENE_WIDTH 960 //2560x1440

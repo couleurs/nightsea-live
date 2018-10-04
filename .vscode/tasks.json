@@ -2,35 +2,47 @@
     // See https://go.microsoft.com/fwlink/?LinkId=733558
     // for the documentation about the tasks.json format
     "version": "2.0.0",
-    "command": "sh",
-    "isShellCommand": true,
-    "args": ["-c"],
-    "showOutput": "always",
-    "suppressTaskName": true,
+    "command": "sh",    
+    "args": ["-c"],      
     "options": {
         "cwd": "${workspaceRoot}/build"
     },
     "tasks": [
         {
-            "taskName": "cmake",
-            "args": ["cmake ../proj/cmake"]     
+            "label": "cmake",
+            "command": "cmake ../proj/cmake",            
+            "type": "shell",
+            "problemMatcher": []
         },
         {
-            "taskName": "cmake clean",
-            "args": ["cd .. && rm -rf build && mkdir build"]     
+            "label": "cmake clean",
+            "command": "cd .. && rm -rf build && mkdir build",
+            "type": "shell",
+            "problemMatcher": []
         },
         {
-            "taskName": "Build",
-            "args": ["make -j4"],          
+            "label": "Build",
+            "command": "make -j4",            
+            "type": "shell",
+            "problemMatcher": []
         },
         {
-            "taskName": "Build & Run",
-            "args": ["make -j4 && make run"],
-            "isBuildCommand": true            
+            "label": "Build & Run",
+            "command": "make -j4 && make run",            
+            "presentation": {
+                "reveal": "always"
+            },
+            "type": "shell",
+            "problemMatcher": []
         },
         {
-            "taskName": "Run",
-            "args": ["make run"]
+            "label": "Run",
+            "command": "make run",
+            "presentation": {
+                "reveal": "always"
+            },
+            "type": "shell",
+            "problemMatcher": []
         }
     ]
 }
