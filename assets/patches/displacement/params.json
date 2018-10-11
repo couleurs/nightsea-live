@@ -1,0 +1,36 @@
+{
+   "colorParams" : [
+      {
+         "b" : 0.92420500000000005,
+         "g" : 0.87313099999999999,
+         "name" : "u_mainColor",
+         "r" : 0.381884
+      }
+   ],
+   "params" : [
+      {
+         "name" : "u_feedbackAmount",
+         "value" : 0.98199999999999998
+      },
+      {
+         "name" : "u_displacementAmount",
+         "value" : 0.059999999999999998
+      },
+      {
+         "name" : "u_hueBase",
+         "value" : 0.55700000000000005
+      },
+      {
+         "name" : "u_hueRange",
+         "value" : 0.035000000000000003
+      },
+      {
+         "name" : "u_saturation",
+         "value" : 0.64400000000000002
+      },
+      {
+         "name" : "u_size",
+         "value" : 0.63300000000000001
+      }
+   ]
+}

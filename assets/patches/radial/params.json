@@ -1,4 +1,36 @@
 {
-   "params" : [],
-   "colorParams": []
+   "colorParams" : [
+      {
+         "b" : 0.92420500000000005,
+         "g" : 0.87313099999999999,
+         "name" : "u_mainColor",
+         "r" : 0.381884
+      }
+   ],
+   "params" : [
+      {
+         "name" : "u_grainMix",
+         "value" : 0.28100000000000003
+      },
+      {
+         "name" : "u_hueShift",
+         "value" : 0.191
+      },
+      {
+         "name" : "u_size",
+         "value" : 0.36599999999999999
+      },
+      {
+         "name" : "u_smooth",
+         "value" : 0.25
+      },
+      {
+         "name" : "u_originalMix",
+         "value" : 0.10000000000000001
+      },
+      {
+         "name" : "u_radialStrength",
+         "value" : 0.499
+      }
+   ]
 }
