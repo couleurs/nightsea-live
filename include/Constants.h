@@ -1,6 +1,6 @@
 #pragma once
 
-#define PATCH_NAME "displacement"
+#define PATCH_NAME "hue_displacement"
 
 // Dimensions
 #define SCENE_WIDTH 960 //2560x1440
