@@ -26,7 +26,7 @@ class Modulator {
         float tickNoise( const double t );        
 
         ModulatorType mType;
-        float         mFrequency, mAmount, mValue;      
+        float         mFrequency, mAmount, mRandomValue;      
         ci::Perlin    mPerlin;
         ci::Rand      mRand;
 };

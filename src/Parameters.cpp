@@ -19,7 +19,7 @@ void Parameters::init()
   JsonTree params = mJson.getChild( "params" );
   mParameters.clear();
   for ( auto it = params.begin(); it != params.end(); it++ ) {
-    auto param = new Param();
+    auto param = std::make_shared<Param>();
     param->name = (*it)["name"].getValue();
     param->baseValue = (*it)["value"].getValue<float>();
     param->currentValue = (*it)["value"].getValue<float>();
@@ -67,7 +67,7 @@ void Parameters::init()
   JsonTree colorParams = mJson.getChild( "colorParams" );
   mColorParameters.clear();
   for ( auto it = colorParams.begin(); it != colorParams.end(); it++ ) {
-    auto colorParam = new ColorParam();
+    auto colorParam = std::make_shared<ColorParam>();
     colorParam->name = (*it)["name"].getValue();
     float r = (*it)["r"].getValue<float>();
     float g = (*it)["g"].getValue<float>();
@@ -131,7 +131,7 @@ void Parameters::reload()
   init();
 }
 
-Param* Parameters::getParamForMidiNumber( int number )
+std::shared_ptr<Param> Parameters::getParamForMidiNumber( int number )
 {
   for ( size_t i = 0; i < mParameters.size(); i++ ) {
     auto param = mParameters[ i ];

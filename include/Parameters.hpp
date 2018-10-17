@@ -32,13 +32,13 @@ public:
   void writeTo( const ci::fs::path &path );
   void load( const ci::fs::path &path );
   
-  std::vector<Param *>& get() { return mParameters; }
-  std::vector<ColorParam *>& getColors() { return mColorParameters; }
-  Param* getParamForMidiNumber( int number );
+  std::vector<std::shared_ptr<Param>>& get() { return mParameters; }
+  std::vector<std::shared_ptr<ColorParam>>& getColors() { return mColorParameters; }
+  std::shared_ptr<Param> getParamForMidiNumber( int number );
     
 private:
-  std::vector<Param *>     mParameters;
-  std::vector<ColorParam *> mColorParameters;
+  std::vector<std::shared_ptr<Param>>     mParameters;
+  std::vector<std::shared_ptr<ColorParam>> mColorParameters;
   ci::JsonTree             mJson;
   ci::fs::path             mPath;
   

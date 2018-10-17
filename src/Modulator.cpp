@@ -22,7 +22,6 @@ float Modulator::tick( const double t )
 
 float Modulator::tickRandom( const double t )
 {
-    // TODO: use frequency to do a stepped random
     return mAmount * ( mRand.nextFloat() * 2 - 1 );
 }
 
@@ -47,4 +46,5 @@ ModulatorType Modulator::stringToType( const std::string typeStr )
     else if ( typeStr == "sine" ) return SINE;
     else if ( typeStr == "triangle" ) return TRIANGLE;
     else if ( typeStr == "noise" ) return NOISE;
+    else return TRIANGLE;
 }
