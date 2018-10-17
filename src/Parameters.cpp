@@ -21,7 +21,8 @@ void Parameters::init()
   for ( auto it = params.begin(); it != params.end(); it++ ) {
     auto param = new Param();
     param->name = (*it)["name"].getValue();
-    param->value = (*it)["value"].getValue<float>();
+    param->baseValue = (*it)["value"].getValue<float>();
+    param->currentValue = (*it)["value"].getValue<float>();
 
     // Defaults to 0 if min not specified
     try {
@@ -45,6 +46,20 @@ void Parameters::init()
     catch ( const std::exception &e ) {
       cinder::app::console() << "No midi for param " << param->name << std::endl;
     }
+
+    try {
+      JsonTree modulatorTree = (*it).getChild( "modulator" );
+      float frequency = modulatorTree["frequency"].getValue<float>();
+      float amount = modulatorTree["amount"].getValue<float>();
+      std::string type = modulatorTree["type"].getValue();
+      ModulatorType modType = Modulator::stringToType( type );
+      param->modulator = std::make_unique<Modulator>( modType, frequency, amount );;
+      ci::app::console() << "type: " << type << " freq: " << frequency << " amount: " << amount << std::endl;
+    }
+    catch ( const std::exception &e ) {
+      param->modulator = nullptr;
+    }
+
     mParameters.push_back( param );
   }
 
@@ -82,7 +97,7 @@ void Parameters::updateJsonTree( ci::JsonTree &oldTree )
   for ( size_t i = 0; i < mParameters.size(); i++ ) {
     auto param = mParameters[ i ];
     auto tree = params.getChild( i );
-    tree.addChild( JsonTree( "value", param->value ) );
+    tree.addChild( JsonTree( "value", param->baseValue ) );
     params.replaceChild( i, tree );
   }
   oldTree.getChild( "params" ) = params;

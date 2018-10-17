@@ -2,11 +2,20 @@
 
 #include "cinder/Json.h"
 #include "cinder/Color.h"
+#include "Modulator.h"
+#include <memory>
 
 typedef struct {
-  float min, max, value;
+  float min, max, baseValue, currentValue;
   std::string name;
   int midiNumber = -1;
+  std::unique_ptr<Modulator> modulator;
+
+  void tick( const double t ) {    
+    if ( modulator != nullptr ) {
+      currentValue = baseValue + modulator->tick( t );
+    }
+  }
 } Param;
 
 typedef struct {

@@ -72,6 +72,7 @@ private:
   void updateUI();
   void updateShaders();
   void updateTimer();
+  void updateParams();
   
   void drawUI();
   void drawScene();
@@ -210,7 +211,7 @@ void CouleursApp::controllerMidiListener( midi::Message msg )
   auto param = mParams.getParamForMidiNumber( msg.control );
   if ( param != nullptr ) {
     console() << "found param: " << param->name << endl;
-    param->value = lmap( (float)msg.value, 0.f, 127.f, param->min, param->max );
+    param->baseValue = lmap( (float)msg.value, 0.f, 127.f, param->min, param->max );
   }
   console() << "msg value: " << msg.value << "|| msg control: " << msg.control << endl;
 }
@@ -284,7 +285,7 @@ void CouleursApp::fileDrop( FileDropEvent event )
 void CouleursApp::mouseMove( MouseEvent event ) 
 {
   mMousePosition = toPixels( glm::clamp( event.getPos(), ivec2( 0., 0. ), mSceneWindow->getSize() ) );
-  console() << "mouse x: " << mMousePosition.x << " mouse y: " << mMousePosition.y << endl;
+  // console() << "mouse x: " << mMousePosition.x << " mouse y: " << mMousePosition.y << endl;
 }
 
 void CouleursApp::keyDown( KeyEvent event ) 
@@ -323,6 +324,7 @@ void CouleursApp::update()
   updateUI();
   updateShaders();
   updateTimer();
+  updateParams();
 }
 
 void CouleursApp::updateOSC()
@@ -361,7 +363,7 @@ void CouleursApp::updateUI()
     auto params = mParams.get();
     for (auto it = params.begin(); it != params.end(); it++ ) {
       auto param = *it;
-      ui::SliderFloat( param->name.c_str(), &param->value, param->min, param->max );
+      ui::SliderFloat( param->name.c_str(), &param->currentValue, param->min, param->max );
     }
 
     auto colorParams = mParams.getColors();
@@ -425,6 +427,14 @@ void CouleursApp::updateTimer()
   mTick = ( fmod( t, beatLengthSeconds ) ) / beatLengthSeconds;
 }
 
+void CouleursApp::updateParams()
+{
+  auto params = mParams.get();
+  for ( auto it = params.begin(); it != params.end(); it++ ) {
+    (*it)->tick( getElapsedSeconds() );
+  }
+}
+
 void CouleursApp::drawUI()
 {
   gl::clear( ColorA( 0.f, 0.f, 0.05f, 1.f ) );
@@ -466,7 +476,7 @@ void CouleursApp::bindUniforms( gl::GlslProgRef shader, int textureIndex )
   // Scalar Parameters
   auto params = mParams.get();
   for ( auto it = params.begin(); it != params.end(); it++ ) {
-      shader->uniform( (*it)->name, (*it)->value );
+      shader->uniform( (*it)->name, (*it)->currentValue );
   }
 
   // Color Parameters
