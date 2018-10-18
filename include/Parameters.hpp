@@ -9,13 +9,29 @@ typedef struct {
   float min, max, baseValue, currentValue;
   std::string name;
   int midiNumber = -1;
-  std::unique_ptr<Modulator> modulator;
+  std::unique_ptr<Modulator> modulator = nullptr;
 
   void tick( const double t ) {    
     if ( modulator != nullptr ) {
       currentValue = baseValue + modulator->tick( t );
     }
   }
+
+  bool hasModulator() {
+    return ( modulator != nullptr );
+  }
+
+  void createModulator() {
+    if ( !hasModulator() ) {
+       modulator = std::make_unique<Modulator>();
+    }
+  }  
+
+  void deleteModulator() {
+    modulator = nullptr;
+    currentValue = baseValue;
+  }
+
 } Param;
 
 typedef struct {

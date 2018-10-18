@@ -5,9 +5,9 @@
 // Dimensions
 #define SCENE_WIDTH 960 //2560x1440
 #define SCENE_HEIGHT 960
-#define UI_WIDTH 600
-#define UI_HEIGHT 600
-#define WINDOW_PADDING 20
+#define UI_WIDTH 700
+#define UI_HEIGHT 700
+#define WINDOW_PADDING 15
 
 // Patches
 #define PATCHES_FOLDER "patches/"

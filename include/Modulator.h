@@ -11,13 +11,16 @@ enum ModulatorType {
 };
 
 class Modulator {    
-    public:
-        Modulator( ModulatorType type, float frequency, float amount );
+    public:        
+        Modulator( ModulatorType type = SINE, float frequency = 1.f, float amount = 0.f );
         ~Modulator();
 
         float tick( const double t );
 
         static ModulatorType stringToType( const std::string typeStr );
+        
+        float  mFrequency, mAmount;
+        ModulatorType mType;
 
     private:
         float tickRandom( const double t );
@@ -25,8 +28,7 @@ class Modulator {
         float tickTriangle( const double t );
         float tickNoise( const double t );        
 
-        ModulatorType mType;
-        float         mFrequency, mAmount, mRandomValue;      
+        float mRandomValue;      
         ci::Perlin    mPerlin;
         ci::Rand      mRand;
 };

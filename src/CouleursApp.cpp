@@ -124,7 +124,7 @@ CouleursApp::CouleursApp() :
   mUIWindow = getWindow();
   mUIWindow->setTitle( "Couleurs: Parameters" );
   mUIWindow->getSignalDraw().connect( bind( &CouleursApp::drawUI, this ) );
-  mUIWindow->setPos( WINDOW_PADDING, 3. * WINDOW_PADDING );
+  mUIWindow->setPos( WINDOW_PADDING, WINDOW_PADDING );
   mUIWindow->setSize( UI_WIDTH, UI_HEIGHT );
   console() << "UI Window content scale: " << mUIWindow->getContentScale() << endl;
     
@@ -132,6 +132,7 @@ CouleursApp::CouleursApp() :
   mSceneWindow->setTitle( "Couleurs: Render (" + string( PATCH_NAME ) + ")" );
   mSceneWindow->getSignalDraw().connect( bind( &CouleursApp::drawScene, this ) );
   mSceneWindow->getSignalResize().connect( bind( &CouleursApp::resizeScene, this ) );
+  mSceneWindow->setPos( UI_WIDTH + WINDOW_PADDING, WINDOW_PADDING );
   console() << "Scene Window content scale: " << mSceneWindow->getContentScale() << endl;  
   
   setupMidi();
@@ -361,9 +362,41 @@ void CouleursApp::updateUI()
   {
     ui::ScopedWindow win( "Parameters" );
     auto params = mParams.get();
-    for (auto it = params.begin(); it != params.end(); it++ ) {
+    int id = 0;
+    for (auto it = params.begin(); it != params.end(); it++ ) {      
       auto param = *it;
-      ui::SliderFloat( param->name.c_str(), &param->currentValue, param->min, param->max );
+      ui::ScopedId scopedId( id );
+      ui::SliderFloat( param->name.c_str(), &param->currentValue, param->min, param->max, "%.2f" );
+      ui::SameLine();      
+      if ( ui::Button( "Modulation" ) ) {
+        if ( !param->hasModulator() ) {
+          param->createModulator();
+        } else {
+          param->deleteModulator();
+        }
+      }
+      if ( param->hasModulator() ) {
+        ui::ScopedItemWidth scopedWidth( ImGui::GetWindowWidth() * .2f );
+        ui::ListBoxHeader( "Waveform", vec2( 0, ui::GetTextLineHeightWithSpacing() * 4 ) );
+			  if ( ui::Selectable( "Sine", param->modulator->mType == SINE ) ) {
+          param->modulator->mType = SINE;
+        }
+			  if ( ui::Selectable( "Random", param->modulator->mType == RANDOM ) ) {
+          param->modulator->mType = RANDOM;
+        }
+        if ( ui::Selectable( "Triangle", param->modulator->mType == TRIANGLE ) ) {
+          param->modulator->mType = TRIANGLE;
+        }
+			  if ( ui::Selectable( "Noise", param->modulator->mType == NOISE ) ) {
+          param->modulator->mType = NOISE;
+        }
+			  ui::ListBoxFooter();
+        ui::SameLine();
+        ui::SliderFloat( "Frequency", &param->modulator->mFrequency, 0, 10, "%.2f" );
+        ui::SameLine();
+        ui::SliderFloat( "Amount", &param->modulator->mAmount, 0, param->max / 2.f, "%.2f" );        
+      }
+      id++;
     }
 
     auto colorParams = mParams.getColors();

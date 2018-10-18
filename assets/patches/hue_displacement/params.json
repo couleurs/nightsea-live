@@ -9,12 +9,7 @@
          "max" : 50,
          "min" : 1,
          "name" : "u_size",
-         "value" : 15,
-         "modulator": {
-            "type": "random",
-            "frequency": 1,
-            "amount": 10
-         }
+         "value" : 15         
       }
    ]
 }
