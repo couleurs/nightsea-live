@@ -2,14 +2,16 @@
    "colorParams" : "",
    "params" : [
       {
+         "modulator" : null,
          "name" : "u_blackStep",
          "value" : 0.76700000000000002
       },
       {
          "max" : 50,
          "min" : 1,
+         "modulator" : null,
          "name" : "u_size",
-         "value" : 15         
+         "value" : 15
       }
    ]
 }

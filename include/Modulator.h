@@ -18,6 +18,7 @@ class Modulator {
         float tick( const double t );
 
         static ModulatorType stringToType( const std::string typeStr );
+        static std::string typeToString( const ModulatorType type );
         
         float  mFrequency, mAmount;
         ModulatorType mType;

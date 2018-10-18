@@ -46,5 +46,16 @@ ModulatorType Modulator::stringToType( const std::string typeStr )
     else if ( typeStr == "sine" ) return SINE;
     else if ( typeStr == "triangle" ) return TRIANGLE;
     else if ( typeStr == "noise" ) return NOISE;
-    else return TRIANGLE;
+    else return SINE;
+}
+
+std::string Modulator::typeToString( const ModulatorType type )
+{
+    switch (type) {
+        case RANDOM: return "random";
+        case SINE: return "sine";
+        case TRIANGLE: return "triangle";
+        case NOISE: return "noise";
+        default: return "sine";
+    }
 }

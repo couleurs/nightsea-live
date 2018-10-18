@@ -368,7 +368,7 @@ void CouleursApp::updateUI()
       ui::ScopedId scopedId( id );
       ui::SliderFloat( param->name.c_str(), &param->currentValue, param->min, param->max, "%.2f" );
       ui::SameLine();      
-      if ( ui::Button( "Modulation" ) ) {
+      if ( ui::Button( "Modulate" ) ) {
         if ( !param->hasModulator() ) {
           param->createModulator();
         } else {

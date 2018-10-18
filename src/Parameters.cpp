@@ -57,6 +57,7 @@ void Parameters::init()
       ci::app::console() << "type: " << type << " freq: " << frequency << " amount: " << amount << std::endl;
     }
     catch ( const std::exception &e ) {
+      ci::app::console() << "NO MODULATOR" << std::endl;
       param->modulator = nullptr;
     }
 
@@ -98,6 +99,19 @@ void Parameters::updateJsonTree( ci::JsonTree &oldTree )
     auto param = mParameters[ i ];
     auto tree = params.getChild( i );
     tree.addChild( JsonTree( "value", param->baseValue ) );
+    if ( param->hasModulator() ) {      
+      tree.addChild( JsonTree::makeObject( "modulator" ) );
+      auto modTree = tree.getChild( "modulator" );      
+      modTree.addChild( JsonTree( "type", Modulator::typeToString( param->modulator->mType ) ) );
+      modTree.addChild( JsonTree( "frequency", param->modulator->mFrequency ) );
+      modTree.addChild( JsonTree( "amount", param->modulator->mAmount ) );
+      tree.addChild( modTree );      
+    }
+    else {
+      if ( tree.hasChild( "modulator" ) ) {
+        tree.addChild( JsonTree::makeObject( "modulator" ) );
+      }
+    }
     params.replaceChild( i, tree );
   }
   oldTree.getChild( "params" ) = params;
