@@ -367,14 +367,16 @@ void CouleursApp::updateUI()
       auto param = *it;
       ui::ScopedId scopedId( id );
       ui::SliderFloat( param->name.c_str(), &param->currentValue, param->min, param->max, "%.2f" );
-      ui::SameLine();      
-      if ( ui::Button( "Modulate" ) ) {
+      ui::SameLine();
+ 
+      if ( ui::Button( "Mod" ) ) {
         if ( !param->hasModulator() ) {
           param->createModulator();
         } else {
-          param->deleteModulator();
+          param->deleteModulator();          
         }
-      }
+      }      
+      
       if ( param->hasModulator() ) {
         ui::ScopedItemWidth scopedWidth( ImGui::GetWindowWidth() * .2f );
         ui::ListBoxHeader( "Waveform", vec2( 0, ui::GetTextLineHeightWithSpacing() * 4 ) );
@@ -402,7 +404,7 @@ void CouleursApp::updateUI()
     auto colorParams = mParams.getColors();
     for (auto it = colorParams.begin(); it != colorParams.end(); it++ ) {
       auto colorParam = *it;
-      ui::ColorEdit3( colorParam->name.c_str(), &(colorParam->value.r) );
+      ui::ColorEdit3( colorParam->name.c_str(), &( colorParam->value.r ) );
     }    
   }
   

@@ -98,7 +98,7 @@ void Parameters::updateJsonTree( ci::JsonTree &oldTree )
   for ( size_t i = 0; i < mParameters.size(); i++ ) {
     auto param = mParameters[ i ];
     auto tree = params.getChild( i );
-    tree.addChild( JsonTree( "value", param->baseValue ) );
+    tree.addChild( JsonTree( "value", param->hasModulator() ? param->baseValue : param->currentValue ) );
     if ( param->hasModulator() ) {      
       tree.addChild( JsonTree::makeObject( "modulator" ) );
       auto modTree = tree.getChild( "modulator" );      

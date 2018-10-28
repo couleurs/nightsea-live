@@ -1,0 +1,29 @@
+{
+   "colorParams" : "",
+   "params" : [
+      {
+         "modulator" : null,
+         "name" : "u_blackStep",
+         "value" : 0.97999999999999998
+      },
+      {
+         "max" : 50,
+         "min" : 1,
+         "modulator" : null,
+         "name" : "u_size",
+         "value" : 50
+      },
+      {
+         "name" : "u_radial",
+         "value" : 0.59999999999999998
+      },
+      {
+         "name" : "u_saturation",
+         "value" : 0.44
+      },
+      {
+          "name": "u_contrast",
+          "value": 0.5
+      }
+   ]
+}
