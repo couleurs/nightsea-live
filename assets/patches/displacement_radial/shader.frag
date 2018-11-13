@@ -26,7 +26,7 @@ void main() {
 #ifdef BUFFER_0
 
   // Code here :)
-  color = vec3(1.);
+  color = vec3(1., 0., 0.);
 
 #else
 
