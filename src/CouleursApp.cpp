@@ -272,7 +272,10 @@ void CouleursApp::loadTextures()
   for ( int i = 0; i < imageNames.size(); i++ ) {
     auto assetPath = projectPath / imageNames[i];
     auto nameWithoutExtension = imageNames[i].replace_extension( "" );
-    mTextures[ nameWithoutExtension.string() ] = gl::Texture2d::create( loadImage( app::loadAsset( assetPath ) ) );
+    gl::Texture::Format textureFormat;    
+    // textureFormat.setMinFilter( GL_LINEAR );
+    // textureFormat.setMagFilter( GL_LINEAR );
+    mTextures[ nameWithoutExtension.string() ] = gl::Texture2d::create( loadImage( app::loadAsset( assetPath ) ), textureFormat );
   }
 
 }
@@ -298,7 +301,7 @@ void CouleursApp::keyDown( KeyEvent event )
   else if ( event.getCode() == KeyEvent::KEY_f ) {
     CI_LOG_I( "Saving screenshot" );
     const char *homeDir = getenv( "HOME" );
-    auto path = string( homeDir ) + string( "/Desktop/screenshot_" ) + to_string( getElapsedSeconds() );
+    auto path = string( homeDir ) + string( "/Desktop/screenshot_" ) + string( PATCH_NAME ) + string("_") + to_string( getElapsedSeconds() );
     auto surface = Surface8u( mMultipassShader.mMainFbo->getColorTexture()->createSource() );
     console() << "surface color: " << surface.getPixel( ivec2( 500, 500 ) ) << endl;
     writeImage( path + string( ".png" ), surface );
