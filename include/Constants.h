@@ -1,6 +1,10 @@
 #pragma once
 
-#define PATCH_NAME "displacement_radial"
+#define PATCH_NAME "displacement_radial_2"
+
+// Recording
+#define RECORD 0
+#define NUM_FRAMES 300 // 10 sec, 30fps
 
 // Dimensions
 #define SCENE_WIDTH 960 //2560x1440
@@ -20,4 +24,5 @@
 // MIDI
 #define MIDI_CONTROLLER_PORT 2
 
+// Log
 #define CI_MIN_LOG_LEVEL 0

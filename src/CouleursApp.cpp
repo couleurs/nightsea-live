@@ -6,6 +6,7 @@
 #include "cinder/Timer.h"
 #include "cinder/audio/Voice.h"
 #include "cinder/CinderMath.h"
+#include "cinder/qtime/AvfWriter.h"
 
 // Blocks
 #include "Osc.h"
@@ -65,12 +66,14 @@ private:
   void setupUI();
   void setupScene();
   void setupMidi();
+  void setupMovieWriter();
   void loadTextures();
   
   // Update
   void updateOSC();
   void updateUI();
   void updateShaders();
+  void updateMovieWriter();
   void updateTimer();
   void updateParams();
   
@@ -92,6 +95,7 @@ private:
   Parameters                   mParams;
   int                          mNumSections;
     
+  qtime::MovieWriterRef        mMovieWriter;
   std::vector<File>            mShaderFiles;
   bool                         mSceneIsSetup = false;
   
@@ -144,6 +148,7 @@ static fs::path fragPath = string( PATCHES_FOLDER ) + string( PATCH_NAME ) + str
 void CouleursApp::setup() {
   setupUI();
   setupScene();
+  setupMovieWriter();
   mTimer.start();  
 }
 
@@ -185,6 +190,17 @@ void CouleursApp::setupScene() {
   mSceneIsSetup = true;
 }
 
+void CouleursApp::setupMovieWriter() {	
+   if (RECORD) {	
+     fs::path path = getSaveFilePath();	
+     if ( !path.empty() ) {	
+       //    auto format = qtime::MovieWriter::Format().codec( qtime::MovieWriter::H264 ).fileType( qtime::MovieWriter::QUICK_TIME_MOVIE )	
+       //    .jpegQuality( 0.09f ).averageBitsPerSecond( 10000000 );	
+       mMovieWriter = qtime::MovieWriter::create( path, mSceneWindow->toPixels( mSceneWindow->getWidth() ), mSceneWindow->toPixels( mSceneWindow->getHeight() ) );	
+     }	
+   }	
+ }
+
 void CouleursApp::setupMidi()
 {
   if ( mAbletonMidiIn.getNumPorts() > 0 ) {
@@ -199,7 +215,6 @@ void CouleursApp::setupMidi()
   
   if ( mControllerMidiIn.getNumPorts() > MIDI_CONTROLLER_PORT ) {
     mControllerMidiIn.openPort( MIDI_CONTROLLER_PORT );
-//    cout << "Opening MIDI port 2" << endl;
     mControllerMidiIn.midiSignal.connect( bind( &CouleursApp::controllerMidiListener, this, placeholders::_1 ) );
   }
   else {
@@ -231,7 +246,6 @@ void CouleursApp::abletonMidiListener( midi::Message msg )
       mTimer.start();
       break;
     case MIDI_TIME_CLOCK:
-//      cout << "TIME CLOCK: " << msg.value << endl;  
       break;
   }
 }
@@ -272,9 +286,7 @@ void CouleursApp::loadTextures()
   for ( int i = 0; i < imageNames.size(); i++ ) {
     auto assetPath = projectPath / imageNames[i];
     auto nameWithoutExtension = imageNames[i].replace_extension( "" );
-    gl::Texture::Format textureFormat;    
-    // textureFormat.setMinFilter( GL_LINEAR );
-    // textureFormat.setMagFilter( GL_LINEAR );
+    gl::Texture::Format textureFormat;        
     mTextures[ nameWithoutExtension.string() ] = gl::Texture2d::create( loadImage( app::loadAsset( assetPath ) ), textureFormat );
   }
 
@@ -289,7 +301,6 @@ void CouleursApp::fileDrop( FileDropEvent event )
 void CouleursApp::mouseMove( MouseEvent event ) 
 {
   mMousePosition = toPixels( glm::clamp( event.getPos(), ivec2( 0., 0. ), mSceneWindow->getSize() ) );
-  // console() << "mouse x: " << mMousePosition.x << " mouse y: " << mMousePosition.y << endl;
 }
 
 void CouleursApp::keyDown( KeyEvent event ) 
@@ -328,6 +339,7 @@ void CouleursApp::update()
   updateUI();
   updateShaders();
   updateTimer();
+  updateMovieWriter();
   updateParams();
 }
 
@@ -472,6 +484,18 @@ void CouleursApp::updateParams()
     (*it)->tick( getElapsedSeconds() );
   }
 }
+
+void CouleursApp::updateMovieWriter()	{	
+   if ( mMovieWriter && RECORD && getElapsedFrames() > 1 && getElapsedFrames() < NUM_FRAMES ) {
+    //  auto surface = mSceneWindow->getRenderer()->copyWindowSurface( mSceneWindow->toPixels( mSceneWindow->getBounds() ), mSceneWindow->toPixels( mSceneWindow->getHeight() ) );
+     auto surface = Surface8u( mMultipassShader.mMainFbo->getColorTexture()->createSource() );
+     mMovieWriter->addFrame( surface );	
+   }
+   else if ( mMovieWriter && getElapsedFrames() >= NUM_FRAMES ) {	
+     mMovieWriter->finish();	
+     quit();
+   }	
+ }
 
 void CouleursApp::drawUI()
 {
