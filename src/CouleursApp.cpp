@@ -23,17 +23,7 @@
 #include "Parameters.hpp"
 #include "Constants.h"
 #include "MultipassShader.h"
-
-namespace cinder {
-  namespace gl {
-    void printError() {
-      GLenum errorFlag = getError();
-      if ( errorFlag != GL_NO_ERROR ) {
-        CI_LOG_E( "glGetError flag set: " << getErrorString( errorFlag ) );
-      }
-    }
-  }
-}
+#include "Utils.h"
 
 using namespace ci;
 using namespace ci::app;
@@ -43,12 +33,6 @@ typedef struct {
   fs::path path;
   time_t   modified;
 } File;
-
-typedef struct {
-  float feedbackAmount, feedbackScale;
-  float lutMix;
-  float grainAmount;
-} Parameter;
 
 class CouleursApp : public App {
 public:
@@ -108,7 +92,7 @@ private:
 
   // AV Sync
   ci::Timer                    mTimer;
-  int                          mBPM = 107;
+  int                          mBPM = 100;
   float                        mTick; //[0 - 1]
   int                          mSection = 0;    
 
@@ -224,7 +208,7 @@ void CouleursApp::setupMidi()
 
 void CouleursApp::controllerMidiListener( midi::Message msg )
 {
-  auto param = mParams.getParamForMidiNumber( msg.control );
+  auto param = mParams.getParameterForMidiNumber( msg.control );
   if ( param != nullptr ) {
     console() << "found param: " << param->name << endl;
     param->baseValue = lmap( (float)msg.value, 0.f, 127.f, param->min, param->max );
@@ -330,6 +314,14 @@ void CouleursApp::keyDown( KeyEvent event )
   }
   else if ( event.getCode() == KeyEvent::KEY_LEFTBRACKET ) {
     mTime -= .1f;
+  }
+  else if ( event.getCode() == KeyEvent::KEY_SPACE ) {
+    console() << "SPACE PRESSED" << endl;
+    auto anims = mParams.getAnimationsForMidiNumber( -1 );
+    for ( size_t i = 0; i < anims.size(); i++ ) {
+      console() << "TRIGGER ANIM" << endl;
+      anims[i]->trigger();
+    }
   }
 }
 
@@ -464,6 +456,7 @@ void CouleursApp::updateShaders()
   }
   
   if ( shadersNeedReload ) {
+    console() << "Shader needs reload" << std::endl;      
     mMultipassShader.reload();
     loadTextures();
   }
@@ -487,7 +480,6 @@ void CouleursApp::updateParams()
 
 void CouleursApp::updateMovieWriter()	{	
    if ( mMovieWriter && RECORD && getElapsedFrames() > 1 && getElapsedFrames() < NUM_FRAMES ) {
-    //  auto surface = mSceneWindow->getRenderer()->copyWindowSurface( mSceneWindow->toPixels( mSceneWindow->getBounds() ), mSceneWindow->toPixels( mSceneWindow->getHeight() ) );
      auto surface = Surface8u( mMultipassShader.mMainFbo->getColorTexture()->createSource() );
      mMovieWriter->addFrame( surface );	
    }
@@ -501,7 +493,7 @@ void CouleursApp::drawUI()
 {
   gl::clear( ColorA( 0.f, 0.f, 0.05f, 1.f ) );
   gl::color( ColorAf::white() );
-  gl::printError();
+  gl::printError( "drawUI" );
 }
 
 void CouleursApp::drawScene()
@@ -519,7 +511,7 @@ void CouleursApp::drawScene()
     gl::drawSolidRect( Rectf( 0.f, mSceneWindow->getHeight() - h, mSceneWindow->getWidth(), mSceneWindow->getHeight() ) );
   }
 
-  gl::printError();
+  gl::printError( "drawScene" );
 }
 
 void CouleursApp::bindUniforms( gl::GlslProgRef shader, int textureIndex )

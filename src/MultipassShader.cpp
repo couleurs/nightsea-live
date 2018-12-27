@@ -1,6 +1,7 @@
 #include "MultipassShader.h"
 #include "cinder/Utilities.h"
 #include <regex>
+#include "Utils.h"
 
 using namespace ci;
 
@@ -86,6 +87,7 @@ void MultipassShader::draw( const Rectf &r ) {
 void MultipassShader::drawShaderInFBO( const Rectf &r, const gl::GlslProgRef &shader, const gl::FboRef &fbo, int index ) {
     if ( fbo != nullptr ) {
         fbo->bindFramebuffer();
+        gl::printError( "bindFBO" );
     }
     gl::ScopedGlslProg scopedShader( shader );
             
@@ -94,6 +96,8 @@ void MultipassShader::drawShaderInFBO( const Rectf &r, const gl::GlslProgRef &sh
     for (unsigned int j = 0; j < mFbos.size(); j++) {
         if (index != j) {
             mFbos[j]->getColorTexture()->bind( textureIndex );
+            gl::printError( "bindTexture" );
+
             shader->uniform( "u_buffer" + std::to_string( j ), textureIndex );                
             textureIndex++;
         }
@@ -101,20 +105,24 @@ void MultipassShader::drawShaderInFBO( const Rectf &r, const gl::GlslProgRef &sh
 
     // Set uniforms, including external textures
     mSetUniforms( shader, textureIndex );
+    gl::printError( "setUniforms" );
 
     // Draw
     gl::drawSolidRect( r );
+    gl::printError( "drawSolidRect" );
 
     // Unbind textures & FBO
     for (unsigned int j = 0; j < mFbos.size(); j++) {
         if (index != j) {
             mFbos[j]->getColorTexture()->unbind();
+            gl::printError( "unbindTexture" );
         }
     }
     mCleanUp();
     if ( fbo != nullptr ) {
         fbo->unbindFramebuffer();
-    }
+        gl::printError( "unbindFBO" );
+    }     
 }
 
 void MultipassShader::updateBuffers() {
@@ -146,6 +154,8 @@ void MultipassShader::updateBuffers() {
                                                                                 .define( "BUFFER_" + std::to_string( i ) ) );
         }
     }
+
+    gl::printError( "updateBuffers" );
 }
 
 int MultipassShader::getBufferCount() {

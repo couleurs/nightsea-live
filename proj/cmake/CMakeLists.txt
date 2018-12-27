@@ -12,7 +12,7 @@ include( "${CINDER_PATH}/proj/cmake/modules/cinderMakeApp.cmake" )
 ci_make_app(
 	APP_NAME    ${APP_NAME}
 	CINDER_PATH ${CINDER_PATH}
-	SOURCES     ${APP_PATH}/src/CouleursApp.cpp ${APP_PATH}/src/Config.cpp ${APP_PATH}/src/Parameters.cpp ${APP_PATH}/src/MultipassShader.cpp ${APP_PATH}/src/Modulator.cpp
+	SOURCES     ${APP_PATH}/src/CouleursApp.cpp ${APP_PATH}/src/Parameters.cpp ${APP_PATH}/src/Parameter.cpp ${APP_PATH}/src/MultipassShader.cpp ${APP_PATH}/src/Modulator.cpp ${APP_PATH}/src/Utils.cpp ${APP_PATH}/src/Animation.cpp
 	INCLUDES    ${APP_PATH}/include ${CINDER_PATH}/blocks/OSC/src/cinder/osc ${CINDER_PATH}/blocks/Cinder-MIDI2/include ${CINDER_PATH}/blocks/Cinder-MIDI2/lib
     BLOCKS      Cinder-ImGui Cinder-MIDI2 OSC
 )
