@@ -1,20 +1,24 @@
 #pragma once
 
 #include "cinder/Timer.h"
+#include <map>
+#include <string>
 
 class Animation {
     public:
-        Animation( float targetValue, float duration, int midiMapping = -1 );
+        Animation();        
         ~Animation();
         void trigger();
         float tick(); 
 
         int mMidiMapping;
-        float mTargetValue;
+        float mTargetValue, mDuration;
+        std::string mCurve;
 
     private:
+        static std::map<std::string, std::function<float ( float )>> easingFunctionsMap;
+
         bool hasCompleted();
 
-        ci::Timer mTimer;
-        float mDuration;
+        ci::Timer mTimer;                            
 };

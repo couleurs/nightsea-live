@@ -66,16 +66,24 @@ void Parameters::init()
     try {
       JsonTree animations = (*it).getChild( "animations" );      
       for ( auto it = animations.begin(); it != animations.end(); it++ ) {
-        std::shared_ptr<Animation> animation;
-        float targetValue = (*it)["target"].getValue<float>();
-        float duration = (*it)["duration"].getValue<float>();        
+        auto animation = std::make_shared<Animation>();
+        animation->mTargetValue = (*it)["target"].getValue<float>();
+        animation->mDuration = (*it)["duration"].getValue<float>();    
+
         try {
-          int midiMapping = (*it)["midi"].getValue<int>();
-          animation = std::make_shared<Animation>( targetValue, duration, midiMapping );        
+          animation->mMidiMapping = (*it)["midi"].getValue<int>();
         }
         catch ( const std::exception &e ) {
-          animation = std::make_shared<Animation>( targetValue, duration );        
+          animation->mMidiMapping = -1;
         }
+
+        try {
+          animation->mCurve= (*it)["curve"].getValue();
+        }
+        catch ( const std::exception &e ) {
+          animation->mCurve = "linear";
+        }
+
         param->animations.push_back( animation );
       }
     }

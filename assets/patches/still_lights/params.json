@@ -23,7 +23,8 @@
          "animations" : [
             {
                "target": 1.75,
-               "duration": 10
+               "duration": 10,
+               "curve": "quad"               
             }
          ]
       }

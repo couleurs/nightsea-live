@@ -44,6 +44,7 @@
         "thread": "cpp",
         "tuple": "cpp",
         "__locale": "cpp",
-        "ios": "cpp"
+        "ios": "cpp",
+        "iosfwd": "cpp"
     }
 }
