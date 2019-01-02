@@ -9,14 +9,17 @@ Parameter::~Parameter()
 {
 }
 
-void Parameter::tick( const double t ) {    
+void Parameter::tick( const double t ) 
+{    
     if ( modulator != nullptr ) {
       currentValue = baseValue + modulator->tick( t );
     }
 
     for ( size_t i = 0; i < animations.size(); i++ ) {
       auto anim = animations[ i ];      
-      currentValue = ci::lerp( baseValue, anim->mTargetValue, anim->tick() );
+      if ( anim->isActive() ) {
+        currentValue = ci::lerp( baseValue, anim->mTargetValue, anim->tick() );
+      }
     }
   }
 

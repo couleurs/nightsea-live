@@ -42,6 +42,11 @@ float Animation::tick()
     }
 }
 
+bool Animation::isActive()
+{
+    return !mTimer.isStopped() || hasCompleted();
+}
+
 bool Animation::hasCompleted()
 {
     return mTimer.getSeconds() >= mDuration;

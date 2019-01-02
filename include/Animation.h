@@ -10,15 +10,16 @@ class Animation {
         ~Animation();
         void trigger();
         float tick(); 
+        bool isActive();
 
         int mMidiMapping;
         float mTargetValue, mDuration;
         std::string mCurve;
 
-    private:
-        static std::map<std::string, std::function<float ( float )>> easingFunctionsMap;
-
+    private:        
         bool hasCompleted();
 
         ci::Timer mTimer;                            
+
+        static std::map<std::string, std::function<float ( float )>> easingFunctionsMap;
 };

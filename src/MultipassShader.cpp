@@ -86,42 +86,36 @@ void MultipassShader::draw( const Rectf &r ) {
 
 void MultipassShader::drawShaderInFBO( const Rectf &r, const gl::GlslProgRef &shader, const gl::FboRef &fbo, int index ) {
     if ( fbo != nullptr ) {
-        fbo->bindFramebuffer();
-        gl::printError( "bindFBO" );
+        fbo->bindFramebuffer();        
     }
     gl::ScopedGlslProg scopedShader( shader );
             
     // Bind textures from other buffers
     int textureIndex = 1;
     for (unsigned int j = 0; j < mFbos.size(); j++) {
-        if (index != j) {
-            mFbos[j]->getColorTexture()->bind( textureIndex );
-            gl::printError( "bindTexture" );
-
+        if (j != index) {
+            mFbos[j]->getColorTexture()->bind( textureIndex );            
             shader->uniform( "u_buffer" + std::to_string( j ), textureIndex );                
             textureIndex++;
         }
     }
 
     // Set uniforms, including external textures
-    mSetUniforms( shader, textureIndex );
-    gl::printError( "setUniforms" );
+    mSetUniforms( shader, textureIndex );    
 
     // Draw
-    gl::drawSolidRect( r );
+    gl::drawSolidRect( r );    
     gl::printError( "drawSolidRect" );
 
     // Unbind textures & FBO
     for (unsigned int j = 0; j < mFbos.size(); j++) {
-        if (index != j) {
-            mFbos[j]->getColorTexture()->unbind();
-            gl::printError( "unbindTexture" );
+        if (j != index) {
+            mFbos[j]->getColorTexture()->unbind();            
         }
     }
     mCleanUp();
     if ( fbo != nullptr ) {
-        fbo->unbindFramebuffer();
-        gl::printError( "unbindFBO" );
+        fbo->unbindFramebuffer();        
     }     
 }
 
@@ -144,7 +138,6 @@ void MultipassShader::updateBuffers() {
                                                                       .define( "BUFFER_" + std::to_string( i ) ) );
             mShaders.push_back( shader );
         }
-
     }
     else {
         for (unsigned int i = 0; i < mShaders.size(); i++) {

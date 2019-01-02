@@ -7,6 +7,7 @@
 #include "cinder/audio/Voice.h"
 #include "cinder/CinderMath.h"
 #include "cinder/qtime/AvfWriter.h"
+#include "cinder/FileWatcher.h"
 
 // Blocks
 #include "Osc.h"
@@ -28,11 +29,6 @@
 using namespace ci;
 using namespace ci::app;
 using namespace std;
-
-typedef struct {
-  fs::path path;
-  time_t   modified;
-} File;
 
 class CouleursApp : public App {
 public:
@@ -80,7 +76,6 @@ private:
   int                          mNumSections;
     
   qtime::MovieWriterRef        mMovieWriter;
-  std::vector<File>            mShaderFiles;
   bool                         mSceneIsSetup = false;
   
   // Time
@@ -160,8 +155,8 @@ void CouleursApp::setupScene() {
   initShaderWatching();
   mMultipassShader.allocate( toPixels( mSceneWindow->getWidth() ), toPixels( mSceneWindow->getHeight() ) );
   mMultipassShader.load( fragPath,
-                        [&] ( gl::GlslProgRef shader, int textureIndex ) { bindUniforms( shader, textureIndex ); },
-                        [&] () { unbindTextureUniforms(); } );
+                        [this] ( gl::GlslProgRef shader, int textureIndex ) { bindUniforms( shader, textureIndex ); },
+                        [this] () { unbindTextureUniforms(); } );
 
   // Textures
   loadTextures();
@@ -241,17 +236,21 @@ void CouleursApp::resizeScene() {
 }
 
 void CouleursApp::initShaderWatching() {
-  time_t now = time( 0 );
-  
-  // Iterate through project directory to shader files
+  vector<fs::path> shaderPaths;
   for ( auto &p: boost::filesystem::directory_iterator( getAssetPath( projectPath ) ) ) {
     auto extension = p.path().extension();
     if ( extension == ".frag" || extension == ".glsl" ) {
       console() << p.path().filename() << endl;
       auto assetPath = projectPath / p.path().filename();
-      mShaderFiles.push_back( { getAssetPath( assetPath ), now } );
+      shaderPaths.push_back( getAssetPath( assetPath ) );
     }
   }  
+
+  FileWatcher::instance().watch( shaderPaths, [this]( const WatchEvent &event ) {
+    console() << "Shader needs reload" << std::endl;      
+    mMultipassShader.reload();
+    loadTextures();
+ 	} );
 }
 
 void CouleursApp::loadTextures() 
@@ -329,7 +328,6 @@ void CouleursApp::update()
 {
   updateOSC();
   updateUI();
-  updateShaders();
   updateTimer();
   updateMovieWriter();
   updateParams();
@@ -438,27 +436,6 @@ void CouleursApp::updateUI()
       ui::Text( "%s", mMultipassShader.mShaderCompileErrorMessage.c_str() );
       console() << "Shader exception: " << mMultipassShader.mShaderCompileErrorMessage << std::endl;      
     }
-  }
-}
-
-void CouleursApp::updateShaders()
-{
-  bool shadersNeedReload = false;
-  for (size_t i = 0; i < mShaderFiles.size(); i++) {
-    auto file = mShaderFiles[i];
-    time_t lastUpdate = fs::last_write_time( file.path );
-    if ( difftime( lastUpdate, file.modified ) > 0 ) {
-      // Shader has changed: reload shader and update File
-      file.modified = lastUpdate;
-      mShaderFiles[i] = file;
-      shadersNeedReload = true;
-    }
-  }
-  
-  if ( shadersNeedReload ) {
-    console() << "Shader needs reload" << std::endl;      
-    mMultipassShader.reload();
-    loadTextures();
   }
 }
 
