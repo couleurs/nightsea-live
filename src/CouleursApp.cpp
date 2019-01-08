@@ -21,7 +21,9 @@
 #include <boost/filesystem.hpp>
 
 // Couleurs
-#include "Parameters.hpp"
+#include "Parameters.h"
+#include "Performance.h"
+#include "Patch.h"
 #include "Constants.h"
 #include "MultipassShader.h"
 #include "Utils.h"
@@ -72,8 +74,9 @@ private:
 //  osc::Listener                mOSCIn;
   midi::Input                  mAbletonMidiIn, mControllerMidiIn;
   
-  Parameters                   mParams;
-  int                          mNumSections;
+  Performance                  mPerformance;
+  Patch&                       currentPatch() { return mPerformance.currentPatch(); };
+  Parameters&                  currentParams() { return currentPatch().params(); };
     
   qtime::MovieWriterRef        mMovieWriter;
   bool                         mSceneIsSetup = false;
@@ -87,9 +90,8 @@ private:
 
   // AV Sync
   ci::Timer                    mTimer;
-  int                          mBPM = 100;
-  float                        mTick; //[0 - 1]
-  int                          mSection = 0;    
+  int                          mBPM = 100, mSection = 0, mNumSections;
+  float                        mTick; //[0 - 1]      
 
   MultipassShader               mMultipassShader;
   map<string, gl::Texture2dRef> mTextures;
@@ -99,7 +101,7 @@ private:
 };
 
 CouleursApp::CouleursApp() :
-  mParams( string( PATCHES_FOLDER ) + string( PATCH_NAME ) + string( PARAMS_FILE ) ) {
+  mPerformance( { "still_lights" } ) {
   // OSC
 //  mOSCIn.setup( OSC_PORT );
   
@@ -203,7 +205,7 @@ void CouleursApp::setupMidi()
 
 void CouleursApp::controllerMidiListener( midi::Message msg )
 {
-  auto param = mParams.getParameterForMidiNumber( msg.control );
+  auto param = currentParams().getParameterForMidiNumber( msg.control );
   if ( param != nullptr ) {
     console() << "found param: " << param->name << endl;
     param->baseValue = lmap( (float)msg.value, 0.f, 127.f, param->min, param->max );
@@ -278,7 +280,7 @@ void CouleursApp::loadTextures()
 void CouleursApp::fileDrop( FileDropEvent event )
 {
   auto path = event.getFile( 0 );
-  mParams.load( path );
+  currentParams().load( path );
 }
 
 void CouleursApp::mouseMove( MouseEvent event ) 
@@ -290,7 +292,7 @@ void CouleursApp::keyDown( KeyEvent event )
 {
   if ( event.getCode() == KeyEvent::KEY_s ) {
     CI_LOG_I( "Saving config file" );
-    mParams.save();
+    currentParams().save();
   }
   else if ( event.getCode() == KeyEvent::KEY_f ) {
     CI_LOG_I( "Saving screenshot" );
@@ -299,11 +301,11 @@ void CouleursApp::keyDown( KeyEvent event )
     auto surface = Surface8u( mMultipassShader.mMainFbo->getColorTexture()->createSource() );
     console() << "surface color: " << surface.getPixel( ivec2( 500, 500 ) ) << endl;
     writeImage( path + string( ".png" ), surface );
-    mParams.writeTo( path + string( ".json" ) );
+    currentParams().writeTo( path + string( ".json" ) );
   }
   else if ( event.getCode() == KeyEvent::KEY_r ) {
     CI_LOG_I( "Resetting params" );
-    mParams.reload();
+    currentParams().reload();
   }
   else if ( event.getCode() == KeyEvent::KEY_t ) {
     mTimeStopped = !mTimeStopped;
@@ -316,7 +318,7 @@ void CouleursApp::keyDown( KeyEvent event )
   }
   else if ( event.getCode() == KeyEvent::KEY_SPACE ) {
     console() << "SPACE PRESSED" << endl;
-    auto anims = mParams.getAnimationsForMidiNumber( -1 );
+    auto anims = currentParams().getAnimationsForMidiNumber( -1 );
     for ( size_t i = 0; i < anims.size(); i++ ) {
       console() << "TRIGGER ANIM" << endl;
       anims[i]->trigger();
@@ -355,7 +357,7 @@ void CouleursApp::updateUI()
     
     if ( ui::BeginMenu( "Couleurs" ) ) {
       if ( ui::MenuItem( "Reset" ) ) {
-        mParams.reload();
+        currentParams().reload();
       }
       if ( ui::MenuItem( "QUIT" ) ) {
         quit();
@@ -366,7 +368,7 @@ void CouleursApp::updateUI()
   
   {
     ui::ScopedWindow win( "Parameters" );
-    auto params = mParams.get();
+    auto params = currentParams().get();
     int id = 0;
     for (auto it = params.begin(); it != params.end(); it++ ) {      
       auto param = *it;
@@ -406,7 +408,7 @@ void CouleursApp::updateUI()
       id++;
     }
 
-    auto colorParams = mParams.getColors();
+    auto colorParams = currentParams().getColors();
     for (auto it = colorParams.begin(); it != colorParams.end(); it++ ) {
       auto colorParam = *it;
       ui::ColorEdit3( colorParam->name.c_str(), &( colorParam->value.r ) );
@@ -449,7 +451,7 @@ void CouleursApp::updateTimer()
 
 void CouleursApp::updateParams()
 {
-  auto params = mParams.get();
+  auto params = currentParams().get();
   for ( auto it = params.begin(); it != params.end(); it++ ) {
     (*it)->tick( getElapsedSeconds() );
   }
@@ -505,13 +507,13 @@ void CouleursApp::bindUniforms( gl::GlslProgRef shader, int textureIndex )
   shader->uniform( "u_mouse", vec2( mMousePosition.x, toPixels( mSceneWindow->getHeight() ) - mMousePosition.y ) );
   
   // Scalar Parameters
-  auto params = mParams.get();
+  auto params = currentParams().get();
   for ( auto it = params.begin(); it != params.end(); it++ ) {
       shader->uniform( (*it)->name, (*it)->currentValue );
   }
 
   // Color Parameters
-  auto colorParams = mParams.getColors();
+  auto colorParams = currentParams().getColors();
   for ( auto it = colorParams.begin(); it != colorParams.end(); it++ ) {
       Colorf value = (*it)->value;
       shader->uniform( (*it)->name, vec3( value.r, value.g, value.b ) );

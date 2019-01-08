@@ -1,4 +1,4 @@
-#include "Parameters.hpp"
+#include "Parameters.h"
 #include "cinder/app/App.h"
 #include "cinder/Log.h"
 
