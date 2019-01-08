@@ -13,11 +13,6 @@
 #define UI_HEIGHT 700
 #define WINDOW_PADDING 15
 
-// Patches
-#define PATCHES_FOLDER "patches/"
-#define MAIN_SHADER_FILE "/shader.frag"
-#define PARAMS_FILE "/params.json"  
-
 // OSC
 #define OSC_PORT 9001
 

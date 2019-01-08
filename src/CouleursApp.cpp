@@ -101,9 +101,7 @@ private:
 };
 
 CouleursApp::CouleursApp() :
-  mPerformance( { "still_lights" } ) {
-  // OSC
-//  mOSCIn.setup( OSC_PORT );
+  mPerformance( { "still_lights" } ) {  
   
   // Window Management
   mUIWindow = getWindow();
@@ -114,17 +112,16 @@ CouleursApp::CouleursApp() :
   console() << "UI Window content scale: " << mUIWindow->getContentScale() << endl;
     
   mSceneWindow = createWindow( Window::Format().size( SCENE_WIDTH, SCENE_HEIGHT ) );
-  mSceneWindow->setTitle( "Couleurs: Render (" + string( PATCH_NAME ) + ")" );
+  mSceneWindow->setTitle( "Couleurs: Render (" + currentPatch().name() + ")" );
   mSceneWindow->getSignalDraw().connect( bind( &CouleursApp::drawScene, this ) );
   mSceneWindow->getSignalResize().connect( bind( &CouleursApp::resizeScene, this ) );
   mSceneWindow->setPos( UI_WIDTH + WINDOW_PADDING, WINDOW_PADDING );
   console() << "Scene Window content scale: " << mSceneWindow->getContentScale() << endl;  
   
+  // OSC
+//  mOSCIn.setup( OSC_PORT );
   setupMidi();
 }
-
-static fs::path projectPath = string( PATCHES_FOLDER ) + string( PATCH_NAME ); 
-static fs::path fragPath = string( PATCHES_FOLDER ) + string( PATCH_NAME ) + string( MAIN_SHADER_FILE );
 
 void CouleursApp::setup() {
   setupUI();
@@ -156,7 +153,7 @@ void CouleursApp::setupScene() {
   // Shaders
   initShaderWatching();
   mMultipassShader.allocate( toPixels( mSceneWindow->getWidth() ), toPixels( mSceneWindow->getHeight() ) );
-  mMultipassShader.load( fragPath,
+  mMultipassShader.load( currentPatch().shaderPath(),
                         [this] ( gl::GlslProgRef shader, int textureIndex ) { bindUniforms( shader, textureIndex ); },
                         [this] () { unbindTextureUniforms(); } );
 
@@ -239,11 +236,12 @@ void CouleursApp::resizeScene() {
 
 void CouleursApp::initShaderWatching() {
   vector<fs::path> shaderPaths;
-  for ( auto &p: boost::filesystem::directory_iterator( getAssetPath( projectPath ) ) ) {
+  auto patchPath = currentPatch().path();
+  for ( auto &p: boost::filesystem::directory_iterator( getAssetPath( patchPath ) ) ) {
     auto extension = p.path().extension();
     if ( extension == ".frag" || extension == ".glsl" ) {
       console() << p.path().filename() << endl;
-      auto assetPath = projectPath / p.path().filename();
+      auto assetPath = patchPath / p.path().filename();
       shaderPaths.push_back( getAssetPath( assetPath ) );
     }
   }  
@@ -258,9 +256,10 @@ void CouleursApp::initShaderWatching() {
 void CouleursApp::loadTextures() 
 {
   vector<fs::path> imageNames;
+  auto patchPath = currentPatch().path();
 
   // Iterate through project directory to detect images
-  for ( auto &p: boost::filesystem::directory_iterator( getAssetPath( projectPath ) ) ) {
+  for ( auto &p: boost::filesystem::directory_iterator( getAssetPath( patchPath ) ) ) {
     auto extension = p.path().extension();
     if ( extension == ".jpg" || extension == ".png" ) {
       imageNames.push_back( p.path().filename() );
@@ -269,7 +268,7 @@ void CouleursApp::loadTextures()
 
   // Create textures
   for ( int i = 0; i < imageNames.size(); i++ ) {
-    auto assetPath = projectPath / imageNames[i];
+    auto assetPath = patchPath / imageNames[i];
     auto nameWithoutExtension = imageNames[i].replace_extension( "" );
     gl::Texture::Format textureFormat;        
     mTextures[ nameWithoutExtension.string() ] = gl::Texture2d::create( loadImage( app::loadAsset( assetPath ) ), textureFormat );
@@ -297,7 +296,7 @@ void CouleursApp::keyDown( KeyEvent event )
   else if ( event.getCode() == KeyEvent::KEY_f ) {
     CI_LOG_I( "Saving screenshot" );
     const char *homeDir = getenv( "HOME" );
-    auto path = string( homeDir ) + string( "/Desktop/screenshot_" ) + string( PATCH_NAME ) + string("_") + to_string( getElapsedSeconds() );
+    auto path = string( homeDir ) + string( "/Desktop/screenshot_" ) + currentPatch().name() + string("_") + to_string( getElapsedSeconds() );
     auto surface = Surface8u( mMultipassShader.mMainFbo->getColorTexture()->createSource() );
     console() << "surface color: " << surface.getPixel( ivec2( 500, 500 ) ) << endl;
     writeImage( path + string( ".png" ), surface );

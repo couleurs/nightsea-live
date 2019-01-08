@@ -9,8 +9,12 @@ class Patch {
         ~Patch();
 
         Parameters& params();
+        const std::string& name() { return mName; };
+        const ci::fs::path& path() { return mFolderPath; };
+        const ci::fs::path& shaderPath() { return mShaderPath; };
 
     private:
-        std::string mName;
-        Parameters  mParams;
+        std::string   mName;
+        ci::fs::path  mFolderPath, mShaderPath;
+        Parameters    mParams;
 };

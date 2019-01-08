@@ -1,9 +1,16 @@
 #include "Patch.h"
-#include "Constants.h"
 
 using namespace std;
 
-Patch::Patch( string name ) : mName( name ), mParams( string( PATCHES_FOLDER ) + string( PATCH_NAME ) + string( PARAMS_FILE ) )
+const string patchFolder = "patches/";
+const string fragFilename = "/shader.frag";
+const string paramFilename = "/params.json";  
+
+Patch::Patch( string name ) : mName( name ), 
+                              mParams( patchFolder + name + paramFilename ), 
+                              mFolderPath( patchFolder + name ),
+                              mShaderPath( patchFolder + name + fragFilename )
+
 {
 }
 
