@@ -49,6 +49,7 @@ private:
   void setupScene();
   void setupMidi();
   void setupMovieWriter();
+  void loadCurrentPatch();
   void loadTextures();
   
   // Update
@@ -158,10 +159,7 @@ void CouleursApp::setupScene()
                          toPixels( mSceneWindow->getHeight() ),
                          [this] ( gl::GlslProgRef shader, int textureIndex ) { bindUniforms( shader, textureIndex ); },
                          [this] () { unbindTextureUniforms(); } );  
-  mMultipassShader.load( currentPatch().shaderPath() );
-
-  // Textures
-  loadTextures();
+  loadCurrentPatch();
   
   // GL State
   gl::disableDepthRead();
@@ -259,6 +257,12 @@ void CouleursApp::initShaderWatching()
  	} );
 }
 
+void CouleursApp::loadCurrentPatch()
+{
+  mMultipassShader.load( currentPatch().shaderPath() );
+  loadTextures();
+}
+
 void CouleursApp::loadTextures() 
 {
   vector<fs::path> imageNames;
@@ -330,15 +334,13 @@ void CouleursApp::keyDown( KeyEvent event )
   else if ( event.getCode() == KeyEvent::KEY_p ) {
     mPerformance.previous();
     dispatchAsync( [this] {
-      mMultipassShader.load( currentPatch().shaderPath() );
-      loadTextures();
+      loadCurrentPatch();
 		});
   }
   else if ( event.getCode() == KeyEvent::KEY_n ) {
     mPerformance.next();
     dispatchAsync( [this] {
-      mMultipassShader.load( currentPatch().shaderPath() );
-      loadTextures();
+      loadCurrentPatch();
 		});
   }
 }

@@ -19,6 +19,14 @@ Patch& Performance::currentPatch()
     return mPatches[ mCurrentPatchIndex ];
 }
 
+void Performance::goToPatch( int index )
+{
+    if ( index < 0 || index > mPatches.size() - 1 ) {
+        return;
+    }
+    mCurrentPatchIndex = index;    
+}
+
 void Performance::previous()
 {
     if ( mCurrentPatchIndex >= 1 ) {

@@ -12,8 +12,9 @@ class Performance {
         Patch& currentPatch();
         void previous();
         void next();
+        void goToPatch( int index );        
 
     private:
         std::vector<Patch> mPatches;
-        int mCurrentPatchIndex;
+        int mCurrentPatchIndex;        
 };
