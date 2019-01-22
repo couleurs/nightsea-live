@@ -9,8 +9,9 @@ class MultipassShader {
     public:
         MultipassShader();
         ~MultipassShader();
-        void allocate( int width, int height );
-        void load( const fs::path &fragPath, const std::function<void ( gl::GlslProgRef, int )> &setUniforms, const std::function<void ()> &cleanUp );
+        void init( int width, int height, const std::function<void ( gl::GlslProgRef, int )> &setUniforms, const std::function<void ()> &cleanUp );
+        void resize( int width, int height );
+        void load( const fs::path &fragPath );
         void reload();
         void draw( const Rectf &r );
 

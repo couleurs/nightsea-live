@@ -10,28 +10,35 @@ static fs::path vertPath = "shaders/vertex/passthrough.vert";
 MultipassShader::MultipassShader() {}
 MultipassShader::~MultipassShader() {}
 
-void MultipassShader::allocate( int width, int height ) {
-    mWidth = width;
-    mHeight = height;
-    mMainFbo = gl::Fbo::create( width, height );
+void MultipassShader::init( int width, int height, const std::function<void ( gl::GlslProgRef, int )> &setUniforms, const std::function<void ()> &cleanUp ) 
+{
+    mSetUniforms = setUniforms;
+    mCleanUp = cleanUp;
     mFinalShader = gl::GlslProg::create( gl::GlslProg::Format().version( 330 )
                                                                .vertex( app::loadAsset( vertPath ) )
                                                                .fragment( app::loadAsset( "shaders/vertex/passthrough.frag" ) ) );
+    resize( width, height );
+}
+
+void MultipassShader::resize( int width, int height ) 
+{
+    mWidth = width;
+    mHeight = height;
+    mMainFbo = gl::Fbo::create( width, height );
     for (unsigned int i = 0; i < mFbos.size(); i++) {
         mFbos[i] = gl::Fbo::create( width, height );
     }
 }
 
-void MultipassShader::load( const fs::path &fragPath, const std::function<void ( gl::GlslProgRef, int )> &setUniforms, const std::function<void ()> &cleanUp ) {
+void MultipassShader::load( const fs::path &fragPath ) 
+{
     auto format = gl::GlslProg::Format().version( 330 )
                                         .vertex( app::loadAsset( vertPath ) )
-                                        .fragment( app::loadAsset( fragPath) );        
+                                        .fragment( app::loadAsset( fragPath ) );        
     try {
         mMainShader = gl::GlslProg::create( format );
         mFragPath = fragPath;
-        mMainFragSource = format.getFragment();
-        mSetUniforms = setUniforms;
-        mCleanUp = cleanUp;
+        mMainFragSource = format.getFragment();        
         mShaderCompilationFailed = false;
 
         mFbos.clear();
@@ -44,16 +51,11 @@ void MultipassShader::load( const fs::path &fragPath, const std::function<void (
     }
 }
 
-void MultipassShader::shaderError(const char *msg) {
-    // console() << "Shader exception: " << msg << std::endl;
-    mShaderCompilationFailed = true;
-    mShaderCompileErrorMessage = std::string( msg );
-}
-
-void MultipassShader::reload() {
+void MultipassShader::reload() 
+{
     auto format = gl::GlslProg::Format().version( 330 )
                                         .vertex( app::loadAsset( vertPath ) )
-                                        .fragment( app::loadAsset( mFragPath) );    
+                                        .fragment( app::loadAsset( mFragPath ) );    
     try {
         mMainShader = gl::GlslProg::create( format );
         mMainFragSource = format.getFragment(); 
@@ -66,7 +68,8 @@ void MultipassShader::reload() {
     }
 }
 
-void MultipassShader::draw( const Rectf &r ) {
+void MultipassShader::draw( const Rectf &r ) 
+{
     // Intermediary passes
     for (unsigned int i = 0; i < mFbos.size(); i++) {
         drawShaderInFBO( r, mShaders[i], mFbos[i], i );
@@ -84,7 +87,16 @@ void MultipassShader::draw( const Rectf &r ) {
     }
 }
 
-void MultipassShader::drawShaderInFBO( const Rectf &r, const gl::GlslProgRef &shader, const gl::FboRef &fbo, int index ) {
+void MultipassShader::shaderError(const char *msg) 
+{    
+    mShaderCompilationFailed = true;
+    mShaderCompileErrorMessage = std::string( msg );
+}
+
+/* Privates */
+
+void MultipassShader::drawShaderInFBO( const Rectf &r, const gl::GlslProgRef &shader, const gl::FboRef &fbo, int index ) 
+{
     if ( fbo != nullptr ) {
         fbo->bindFramebuffer();        
     }
@@ -119,7 +131,8 @@ void MultipassShader::drawShaderInFBO( const Rectf &r, const gl::GlslProgRef &sh
     }     
 }
 
-void MultipassShader::updateBuffers() {
+void MultipassShader::updateBuffers() 
+{
     int bufferCount = getBufferCount();
     
     if ( bufferCount != mFbos.size() ) {
@@ -151,7 +164,8 @@ void MultipassShader::updateBuffers() {
     gl::printError( "updateBuffers" );
 }
 
-int MultipassShader::getBufferCount() {
+int MultipassShader::getBufferCount() 
+{
     std::vector<std::string> lines = split(mMainFragSource, '\n');
     std::vector<std::string> results;
 

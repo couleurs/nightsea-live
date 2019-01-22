@@ -18,3 +18,17 @@ Patch& Performance::currentPatch()
 {
     return mPatches[ mCurrentPatchIndex ];
 }
+
+void Performance::previous()
+{
+    if ( mCurrentPatchIndex >= 1 ) {
+        mCurrentPatchIndex--;
+    } 
+}
+
+void Performance::next()
+{
+    if ( mCurrentPatchIndex < mPatches.size() - 1 ) {
+        mCurrentPatchIndex++;
+    }
+}

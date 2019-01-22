@@ -100,9 +100,8 @@ private:
   ci::app::WindowRef           mUIWindow, mSceneWindow;
 };
 
-CouleursApp::CouleursApp() :
-  mPerformance( { "still_lights" } ) {  
-  
+CouleursApp::CouleursApp() : mPerformance( { "still_lights", "sure_thing_cover_multipass" } ) 
+{    
   // Window Management
   mUIWindow = getWindow();
   mUIWindow->setTitle( "Couleurs: Parameters" );
@@ -123,39 +122,43 @@ CouleursApp::CouleursApp() :
   setupMidi();
 }
 
-void CouleursApp::setup() {
+void CouleursApp::setup() 
+{
   setupUI();
   setupScene();
   setupMovieWriter();
   mTimer.start();  
 }
 
-void CouleursApp::setupUI() {
+void CouleursApp::setupUI() 
+{
   mUIWindow->getRenderer()->makeCurrentContext();
   
   // UI
   auto color = ImVec4( .85f, .87f, .92f, .76f );
-  ui::initialize( ui::Options()
-                 .window( mUIWindow )
-                 .frameRounding( 0.0f )
-                 .color( ImGuiCol_TitleBgActive, ImVec4( color.x, color.y, color.z, .76f ) )
-                 .color( ImGuiCol_Header, ImVec4( color.x, color.y, color.z, .76f ) )
-                 .color( ImGuiCol_HeaderHovered, ImVec4( color.x, color.y, color.z, .86f ) )
-                 .color( ImGuiCol_HeaderActive, ImVec4( color.x, color.y, color.z, 1.f ) )
-                 .color( ImGuiCol_ButtonHovered, ImVec4( color.x, color.y, color.z, .86f ) )                 
-                );
-  
+  ui::initialize( 
+    ui::Options()
+    .window( mUIWindow )
+    .frameRounding( 0.0f )
+    .color( ImGuiCol_TitleBgActive, ImVec4( color.x, color.y, color.z, .76f ) )
+    .color( ImGuiCol_Header, ImVec4( color.x, color.y, color.z, .76f ) )
+    .color( ImGuiCol_HeaderHovered, ImVec4( color.x, color.y, color.z, .86f ) )
+    .color( ImGuiCol_HeaderActive, ImVec4( color.x, color.y, color.z, 1.f ) )
+    .color( ImGuiCol_ButtonHovered, ImVec4( color.x, color.y, color.z, .86f ) )                 
+  );
 }
 
-void CouleursApp::setupScene() {
+void CouleursApp::setupScene() 
+{
   mSceneWindow->getRenderer()->makeCurrentContext();
   
   // Shaders
   initShaderWatching();
-  mMultipassShader.allocate( toPixels( mSceneWindow->getWidth() ), toPixels( mSceneWindow->getHeight() ) );
-  mMultipassShader.load( currentPatch().shaderPath(),
-                        [this] ( gl::GlslProgRef shader, int textureIndex ) { bindUniforms( shader, textureIndex ); },
-                        [this] () { unbindTextureUniforms(); } );
+  mMultipassShader.init( toPixels( mSceneWindow->getWidth() ), 
+                         toPixels( mSceneWindow->getHeight() ),
+                         [this] ( gl::GlslProgRef shader, int textureIndex ) { bindUniforms( shader, textureIndex ); },
+                         [this] () { unbindTextureUniforms(); } );  
+  mMultipassShader.load( currentPatch().shaderPath() );
 
   // Textures
   loadTextures();
@@ -168,7 +171,8 @@ void CouleursApp::setupScene() {
   mSceneIsSetup = true;
 }
 
-void CouleursApp::setupMovieWriter() {	
+void CouleursApp::setupMovieWriter() 
+{	
    if (RECORD) {	
      fs::path path = getSaveFilePath();	
      if ( !path.empty() ) {	
@@ -228,13 +232,15 @@ void CouleursApp::abletonMidiListener( midi::Message msg )
   }
 }
 
-void CouleursApp::resizeScene() {
+void CouleursApp::resizeScene() 
+{
   auto w = toPixels( mSceneWindow->getWidth() );
   auto h = toPixels( mSceneWindow->getHeight() );
-  mMultipassShader.allocate( w, h );
+  mMultipassShader.resize( w, h );
 }
 
-void CouleursApp::initShaderWatching() {
+void CouleursApp::initShaderWatching() 
+{
   vector<fs::path> shaderPaths;
   auto patchPath = currentPatch().path();
   for ( auto &p: boost::filesystem::directory_iterator( getAssetPath( patchPath ) ) ) {
@@ -267,13 +273,13 @@ void CouleursApp::loadTextures()
   }    
 
   // Create textures
+  mTextures.clear();
   for ( int i = 0; i < imageNames.size(); i++ ) {
     auto assetPath = patchPath / imageNames[i];
     auto nameWithoutExtension = imageNames[i].replace_extension( "" );
     gl::Texture::Format textureFormat;        
     mTextures[ nameWithoutExtension.string() ] = gl::Texture2d::create( loadImage( app::loadAsset( assetPath ) ), textureFormat );
   }
-
 }
 
 void CouleursApp::fileDrop( FileDropEvent event )
@@ -315,13 +321,25 @@ void CouleursApp::keyDown( KeyEvent event )
   else if ( event.getCode() == KeyEvent::KEY_LEFTBRACKET ) {
     mTime -= .1f;
   }
-  else if ( event.getCode() == KeyEvent::KEY_SPACE ) {
-    console() << "SPACE PRESSED" << endl;
+  else if ( event.getCode() == KeyEvent::KEY_SPACE ) {    
     auto anims = currentParams().getAnimationsForMidiNumber( -1 );
-    for ( size_t i = 0; i < anims.size(); i++ ) {
-      console() << "TRIGGER ANIM" << endl;
+    for ( size_t i = 0; i < anims.size(); i++ ) {      
       anims[i]->trigger();
     }
+  }
+  else if ( event.getCode() == KeyEvent::KEY_p ) {
+    mPerformance.previous();
+    dispatchAsync( [this] {
+      mMultipassShader.load( currentPatch().shaderPath() );
+      loadTextures();
+		});
+  }
+  else if ( event.getCode() == KeyEvent::KEY_n ) {
+    mPerformance.next();
+    dispatchAsync( [this] {
+      mMultipassShader.load( currentPatch().shaderPath() );
+      loadTextures();
+		});
   }
 }
 
@@ -456,7 +474,8 @@ void CouleursApp::updateParams()
   }
 }
 
-void CouleursApp::updateMovieWriter()	{	
+void CouleursApp::updateMovieWriter()	
+{	
    if ( mMovieWriter && RECORD && getElapsedFrames() > 1 && getElapsedFrames() < NUM_FRAMES ) {
      auto surface = Surface8u( mMultipassShader.mMainFbo->getColorTexture()->createSource() );
      mMovieWriter->addFrame( surface );	
@@ -533,12 +552,14 @@ void CouleursApp::unbindTextureUniforms()
   }
 }
 
-void CouleursApp::clearFBO( gl::FboRef fbo ) {
+void CouleursApp::clearFBO( gl::FboRef fbo ) 
+{
   gl::ScopedFramebuffer scopedFramebuffer( fbo );
   gl::ScopedViewport scopedViewport( ivec2( 0 ), fbo->getSize() );
   gl::clear();
 }
 
-CINDER_APP( CouleursApp, RendererGl, [&]( App::Settings *settings ) {
+CINDER_APP( CouleursApp, RendererGl, [&]( App::Settings *settings ) 
+{
    settings->setHighDensityDisplayEnabled();
 })

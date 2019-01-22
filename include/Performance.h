@@ -10,6 +10,8 @@ class Performance {
         ~Performance();
 
         Patch& currentPatch();
+        void previous();
+        void next();
 
     private:
         std::vector<Patch> mPatches;
