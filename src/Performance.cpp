@@ -27,16 +27,20 @@ void Performance::goToPatch( int index )
     mCurrentPatchIndex = index;    
 }
 
-void Performance::previous()
+bool Performance::previous()
 {
     if ( mCurrentPatchIndex >= 1 ) {
         mCurrentPatchIndex--;
+        return true;
     } 
+    return false;
 }
 
-void Performance::next()
+bool Performance::next()
 {
     if ( mCurrentPatchIndex < mPatches.size() - 1 ) {
         mCurrentPatchIndex++;
+        return true;
     }
+    return false;
 }

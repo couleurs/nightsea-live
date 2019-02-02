@@ -332,16 +332,18 @@ void CouleursApp::keyDown( KeyEvent event )
     }
   }
   else if ( event.getCode() == KeyEvent::KEY_p ) {
-    mPerformance.previous();
-    dispatchAsync( [this] {
-      loadCurrentPatch();
-		});
+    if (mPerformance.previous()) {
+      dispatchAsync( [this] {
+        loadCurrentPatch();
+		  });
+    }
   }
   else if ( event.getCode() == KeyEvent::KEY_n ) {
-    mPerformance.next();
-    dispatchAsync( [this] {
-      loadCurrentPatch();
-		});
+    if (mPerformance.next()) {
+      dispatchAsync( [this] {
+        loadCurrentPatch();
+		  });
+    }    
   }
 }
 
