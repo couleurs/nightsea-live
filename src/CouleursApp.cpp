@@ -135,17 +135,12 @@ void CouleursApp::setupUI()
 {
   mUIWindow->getRenderer()->makeCurrentContext();
   
-  // UI
-  auto color = ImVec4( .85f, .87f, .92f, .76f );
+  // UI  
   ui::initialize( 
     ui::Options()
     .window( mUIWindow )
     .frameRounding( 0.0f )
-    .color( ImGuiCol_TitleBgActive, ImVec4( color.x, color.y, color.z, .76f ) )
-    .color( ImGuiCol_Header, ImVec4( color.x, color.y, color.z, .76f ) )
-    .color( ImGuiCol_HeaderHovered, ImVec4( color.x, color.y, color.z, .86f ) )
-    .color( ImGuiCol_HeaderActive, ImVec4( color.x, color.y, color.z, 1.f ) )
-    .color( ImGuiCol_ButtonHovered, ImVec4( color.x, color.y, color.z, .86f ) )                 
+    .darkTheme()    
   );
 }
 
