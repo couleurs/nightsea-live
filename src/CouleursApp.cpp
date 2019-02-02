@@ -435,7 +435,20 @@ void CouleursApp::updateUI()
   }
   
   {
-    ui::ScopedWindow win( "Performance" );
+    ui::ScopedWindow win( "Patches" );
+    for ( int i = 0; i < mPerformance.numPatches(); i++ ) {
+      auto patchName = mPerformance.patchNameAtIndex( i );
+      if ( i == mPerformance.currentPatchIndex() ) {
+        ui::TextColored( ImVec4( 0.914, 0.392, 0.588, 1.f ), patchName.c_str(), i );
+      }
+      else {
+        ui::Text( patchName.c_str(), i );
+      }
+    }
+  }
+
+  {
+    ui::ScopedWindow win( "Perf" );
     ui::Text( "FPS: %d", (int)getAverageFps() );
   }
   

@@ -10,6 +10,9 @@ class Performance {
         ~Performance();
 
         Patch& currentPatch();
+        int numPatches() { return mPatches.size(); }
+        int currentPatchIndex() { return mCurrentPatchIndex; }
+        const std::string& patchNameAtIndex( int index ) { return mPatches[index].name(); }
         void previous();
         void next();
         void goToPatch( int index );        
