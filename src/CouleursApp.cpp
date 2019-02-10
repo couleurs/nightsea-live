@@ -49,8 +49,7 @@ private:
   void setupScene();
   void setupMidi();
   void setupMovieWriter();
-  void loadCurrentPatch();
-  void loadTextures();
+  void loadCurrentPatch();  
   
   // Update
   void updateOSC();
@@ -62,8 +61,7 @@ private:
   
   void drawUI();
   void drawScene();
-  void bindUniforms( gl::GlslProgRef shader, int textureIndex );
-  void unbindTextureUniforms();
+  void bindUniforms( gl::GlslProgRef shader );  
   
   void resizeScene();
   
@@ -95,7 +93,6 @@ private:
   float                        mTick; //[0 - 1]      
 
   MultipassShader               mMultipassShader;
-  map<string, gl::Texture2dRef> mTextures;
   
   // Window Management
   ci::app::WindowRef           mUIWindow, mSceneWindow;
@@ -152,8 +149,7 @@ void CouleursApp::setupScene()
   initShaderWatching();
   mMultipassShader.init( toPixels( mSceneWindow->getWidth() ), 
                          toPixels( mSceneWindow->getHeight() ),
-                         [this] ( gl::GlslProgRef shader, int textureIndex ) { bindUniforms( shader, textureIndex ); },
-                         [this] () { unbindTextureUniforms(); } );  
+                         [this] ( gl::GlslProgRef shader ) { bindUniforms( shader ); } );  
   loadCurrentPatch();
   
   // GL State
@@ -247,38 +243,13 @@ void CouleursApp::initShaderWatching()
 
   FileWatcher::instance().watch( shaderPaths, [this]( const WatchEvent &event ) {
     console() << "Shader needs reload" << std::endl;      
-    mMultipassShader.reload();
-    loadTextures();
+    mMultipassShader.reload();    
  	} );
 }
 
 void CouleursApp::loadCurrentPatch()
 {
-  mMultipassShader.load( currentPatch().shaderPath() );
-  loadTextures();
-}
-
-void CouleursApp::loadTextures() 
-{
-  vector<fs::path> imageNames;
-  auto patchPath = currentPatch().path();
-
-  // Iterate through project directory to detect images
-  for ( auto &p: boost::filesystem::directory_iterator( getAssetPath( patchPath ) ) ) {
-    auto extension = p.path().extension();
-    if ( extension == ".jpg" || extension == ".png" ) {
-      imageNames.push_back( p.path().filename() );
-    }
-  }    
-
-  // Create textures
-  mTextures.clear();
-  for ( int i = 0; i < imageNames.size(); i++ ) {
-    auto assetPath = patchPath / imageNames[i];
-    auto nameWithoutExtension = imageNames[i].replace_extension( "" );
-    gl::Texture::Format textureFormat;        
-    mTextures[ nameWithoutExtension.string() ] = gl::Texture2d::create( loadImage( app::loadAsset( assetPath ) ), textureFormat );
-  }
+  mMultipassShader.load( currentPatch().path() );
 }
 
 void CouleursApp::fileDrop( FileDropEvent event )
@@ -523,7 +494,7 @@ void CouleursApp::drawScene()
   gl::printError( "drawScene" );
 }
 
-void CouleursApp::bindUniforms( gl::GlslProgRef shader, int textureIndex )
+void CouleursApp::bindUniforms( gl::GlslProgRef shader )
 {
   // Common Uniforms
   vec2 resolution = toPixels( mSceneWindow->getSize() ); 
@@ -547,20 +518,6 @@ void CouleursApp::bindUniforms( gl::GlslProgRef shader, int textureIndex )
   for ( auto it = colorParams.begin(); it != colorParams.end(); it++ ) {
       Colorf value = (*it)->value;
       shader->uniform( (*it)->name, vec3( value.r, value.g, value.b ) );
-  }
-
-  // Textures  
-  for ( auto it = mTextures.begin(); it != mTextures.end(); it++ ) {    
-    it->second->bind( textureIndex );
-    shader->uniform( "u_" + it->first, textureIndex );
-    textureIndex++;
-  }
-}
-
-void CouleursApp::unbindTextureUniforms()
-{
-  for ( auto it = mTextures.begin(); it != mTextures.end(); it++ ) {    
-    it->second->unbind();    
   }
 }
 

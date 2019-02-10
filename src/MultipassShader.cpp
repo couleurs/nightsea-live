@@ -4,16 +4,16 @@
 #include "Utils.h"
 
 using namespace ci;
+using namespace std;
 
 static fs::path vertPath = "shaders/vertex/passthrough.vert";
 
 MultipassShader::MultipassShader() {}
 MultipassShader::~MultipassShader() {}
 
-void MultipassShader::init( int width, int height, const std::function<void ( gl::GlslProgRef, int )> &setUniforms, const std::function<void ()> &cleanUp ) 
+void MultipassShader::init( int width, int height, const std::function<void ( gl::GlslProgRef )> &setUniforms ) 
 {
-    mSetUniforms = setUniforms;
-    mCleanUp = cleanUp;
+    mSetUniforms = setUniforms;    
     mFinalShader = gl::GlslProg::create( gl::GlslProg::Format().version( 330 )
                                                                .vertex( app::loadAsset( vertPath ) )
                                                                .fragment( app::loadAsset( "shaders/vertex/passthrough.frag" ) ) );
@@ -30,12 +30,17 @@ void MultipassShader::resize( int width, int height )
     }
 }
 
-void MultipassShader::load( const fs::path &fragPath ) 
+const std::string fragFilename = "/shader.frag";
+void MultipassShader::load( const fs::path &path ) 
 {
+    // TODO: MOVE mTextures and texture loading here instead of CouleursApp
+
+    fs::path fragPath = path.string() + fragFilename;
     auto format = gl::GlslProg::Format().version( 330 )
                                         .vertex( app::loadAsset( vertPath ) )
                                         .fragment( app::loadAsset( fragPath ) );        
     try {
+        mPatchPath = path;
         mMainShader = gl::GlslProg::create( format );
         mFragPath = fragPath;
         mMainFragSource = format.getFragment();        
@@ -49,6 +54,8 @@ void MultipassShader::load( const fs::path &fragPath )
     catch ( const std::exception &e ) {
         shaderError( e.what() );
     }
+
+    loadTextures();
 }
 
 void MultipassShader::reload() 
@@ -66,6 +73,8 @@ void MultipassShader::reload()
     catch ( const std::exception &e ) {
         shaderError( e.what() );
     }
+
+    loadTextures();
 }
 
 void MultipassShader::draw( const Rectf &r ) 
@@ -95,6 +104,28 @@ void MultipassShader::shaderError(const char *msg)
 
 /* Privates */
 
+void MultipassShader::loadTextures() 
+{
+  vector<fs::path> imageNames;  
+
+  // Iterate through project directory to detect images
+  for ( auto &p: boost::filesystem::directory_iterator( app::getAssetPath( mPatchPath ) ) ) {
+    auto extension = p.path().extension();
+    if ( extension == ".jpg" || extension == ".png" ) {
+      imageNames.push_back( p.path().filename() );
+    }
+  }    
+
+  // Create textures
+  mTextures.clear();
+  for ( int i = 0; i < imageNames.size(); i++ ) {
+    auto assetPath = mPatchPath / imageNames[i];
+    auto nameWithoutExtension = imageNames[i].replace_extension( "" );
+    gl::Texture::Format textureFormat;        
+    mTextures[ nameWithoutExtension.string() ] = gl::Texture2d::create( loadImage( app::loadAsset( assetPath ) ), textureFormat );
+  }
+}
+
 void MultipassShader::drawShaderInFBO( const Rectf &r, const gl::GlslProgRef &shader, const gl::FboRef &fbo, int index ) 
 {
     if ( fbo != nullptr ) {
@@ -112,20 +143,31 @@ void MultipassShader::drawShaderInFBO( const Rectf &r, const gl::GlslProgRef &sh
         }
     }
 
-    // Set uniforms, including external textures
-    mSetUniforms( shader, textureIndex );    
+    // Set non-texture uniforms
+    mSetUniforms( shader ); 
+
+    // Set texture uniforms
+    for ( auto it = mTextures.begin(); it != mTextures.end(); it++ ) {    
+        it->second->bind( textureIndex );
+        shader->uniform( "u_" + it->first, textureIndex );
+        textureIndex++;
+    }  
 
     // Draw
     gl::drawSolidRect( r );    
     gl::printError( "drawSolidRect" );
 
-    // Unbind textures & FBO
+    // Unbind FBOs & textures
     for (unsigned int j = 0; j < mFbos.size(); j++) {
         if (j != index) {
             mFbos[j]->getColorTexture()->unbind();            
         }
     }
-    mCleanUp();
+    
+    for ( auto it = mTextures.begin(); it != mTextures.end(); it++ ) {    
+        it->second->unbind();    
+    }
+
     if ( fbo != nullptr ) {
         fbo->unbindFramebuffer();        
     }     
