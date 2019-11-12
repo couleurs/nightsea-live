@@ -98,7 +98,7 @@ private:
   ci::app::WindowRef           mUIWindow, mSceneWindow;
 };
 
-CouleursApp::CouleursApp() : mPerformance( { "still_lights", "sure_thing_cover_multipass" } ) 
+CouleursApp::CouleursApp() : mPerformance( { "sure_thing_cover_multipass" } ) 
 {    
   // Window Management
   mUIWindow = getWindow();
@@ -109,7 +109,7 @@ CouleursApp::CouleursApp() : mPerformance( { "still_lights", "sure_thing_cover_m
   console() << "UI Window content scale: " << mUIWindow->getContentScale() << endl;
     
   mSceneWindow = createWindow( Window::Format().size( SCENE_WIDTH, SCENE_HEIGHT ) );
-  mSceneWindow->setTitle( "Couleurs: Render (" + currentPatch().name() + ")" );
+  mSceneWindow->setTitle( "Couleurs: Render" );
   mSceneWindow->getSignalDraw().connect( bind( &CouleursApp::drawScene, this ) );
   mSceneWindow->getSignalResize().connect( bind( &CouleursApp::resizeScene, this ) );
   mSceneWindow->setPos( UI_WIDTH + WINDOW_PADDING, WINDOW_PADDING );
@@ -184,6 +184,7 @@ void CouleursApp::setupMidi()
     cout << "No MIDI ports found" << endl;
   }
   
+  mControllerMidiIn.listPorts();
   if ( mControllerMidiIn.getNumPorts() > MIDI_CONTROLLER_PORT ) {
     mControllerMidiIn.openPort( MIDI_CONTROLLER_PORT );
     mControllerMidiIn.midiSignal.connect( bind( &CouleursApp::controllerMidiListener, this, placeholders::_1 ) );

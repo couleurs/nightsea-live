@@ -1,6 +1,6 @@
 #pragma once
 
-#define PATCH_NAME "still_lights"
+#define PATCH_NAME "ill_lights"
 
 // Recording
 #define RECORD 0

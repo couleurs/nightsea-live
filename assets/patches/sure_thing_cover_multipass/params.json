@@ -1,38 +1,51 @@
 {
+   "colorParams" : "",
    "params" : [
       {
-         "max" : 1,
-         "midi" : 77,
-         "min" : 0,
-         "name" : "u_feedbackAmount",
-         "value" : 0.85799999999999998
+         "name" : "u_globalFade",
+         "value" : 0
+      },
+      {
+         "name" : "u_mask",
+         "value" : 1
+      },
+      {
+         "name" : "u_globalSpeed",
+         "value" : 0
       },
       {
          "max" : 1,
          "midi" : 78,
          "min" : 0,
          "name" : "u_particleBaseTranslateYSpeed",
-         "value" : 1
+         "value" : 0.02
       },
       {
          "max" : 1,
          "midi" : 79,
          "min" : 0,
          "name" : "u_saturation",
-         "value" : 1
+         "value" : 0
       },
       {
          "max" : 1,
          "midi" : 80,
          "min" : 0,
          "name" : "u_particleVisibility",
-         "value" : 1
+         "value" : 0.14000000000000001
       },
       {
          "max" : 0.20000000000000001,
          "min" : 0,
          "name" : "u_grainAmount",
          "value" : 0.103937
+      },
+      {
+         "max" : 1,
+         "midi" : 77,
+         "min" : 0,
+         "name" : "u_feedbackAmount",
+         "value" : 0.96999999999999997
       },
       {
          "max" : 1,
@@ -58,6 +71,5 @@
          "name" : "u_feedbackScale",
          "value" : 0.79800000000000004
       }
-   ],
-   "colorParams" : []
+   ]
 }

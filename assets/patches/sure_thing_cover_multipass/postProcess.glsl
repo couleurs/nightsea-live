@@ -16,9 +16,15 @@
 uniform float u_grainAmount;
 uniform float u_saturation;
 uniform float u_lutMix;
+uniform float u_globalFade;
+uniform float u_mask;
 
-vec4 postProcess(sampler2D texInput, sampler2D texLUT, vec2 uv, vec2 resolution, float t) {
-  vec3 color = texture(texInput, uv).rgb;
+vec4 postProcess(sampler2D texInput, sampler2D texLUT, sampler2D texMask, vec2 uv, vec2 resolution, float t) {
+  float mask = texture(texMask, uv).a * u_mask;
+  vec2 st = rotate(uv, mix(0., 1., mask));
+  st = uv + mix(0., .1, mask);
+  vec3 color = texture(texInput, st).rgb;
+  color = mix(color, vec3(0.), u_globalFade);
   vec3 grain = vec3( grain( uv, resolution / 2.5, t / 2., 2.5 ) );
   color += grain * u_grainAmount;
 
@@ -27,7 +33,7 @@ vec4 postProcess(sampler2D texInput, sampler2D texLUT, vec2 uv, vec2 resolution,
 
   color = contrast(color, 1.15);
   color = desaturate(color, mix(.25, -.75, u_saturation));
-  color += .02;
+  color += .02;    
 
   return vec4(color, 1.);    
 }

@@ -10,7 +10,7 @@
     "tasks": [
         {
             "label": "cmake",
-            "command": "cmake ../proj/cmake",            
+            "command": "cmake ../proj/cmake",
             "type": "shell",
             "problemMatcher": []
         },
@@ -22,13 +22,17 @@
         },
         {
             "label": "Build",
-            "command": "make -j4",            
+            "command": "make -j4",
             "type": "shell",
-            "problemMatcher": []
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         },
         {
             "label": "Build & Run",
-            "command": "make -j4 && make run",            
+            "command": "make -j4 && make run",
             "presentation": {
                 "reveal": "always"
             },

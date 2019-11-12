@@ -76,6 +76,9 @@
         "ratio": "cpp",
         "sstream": "cpp",
         "streambuf": "cpp",
-        "system_error": "cpp"
+        "system_error": "cpp",
+        "__errc": "cpp",
+        "__node_handle": "cpp",
+        "optional": "cpp"
     }
 }
