@@ -3,36 +3,38 @@
    "params" : [
       {
          "name" : "u_globalFade",
-         "value" : 0
+         "value" : 1,
+         "midi" : 28
       },
       {
          "name" : "u_mask",
-         "value" : 1
+         "value" : 0,
+         "midi" : 17
+      },
+      {
+         "max" : 1,
+         "min" : 0,
+         "name" : "u_particleBaseTranslateYSpeed",
+         "value" : 1,
+         "midi" : 8
+      },
+      {
+         "max" : 1,         
+         "min" : 0,
+         "name" : "u_saturation",
+         "value" : 0,
+         "midi" : 9
+      },
+      {
+         "max" : 1,
+         "midi" : 10,
+         "min" : 0,
+         "name" : "u_particleVisibility",
+         "value" : 0.10
       },
       {
          "name" : "u_globalSpeed",
          "value" : 0
-      },
-      {
-         "max" : 1,
-         "midi" : 78,
-         "min" : 0,
-         "name" : "u_particleBaseTranslateYSpeed",
-         "value" : 0.02
-      },
-      {
-         "max" : 1,
-         "midi" : 79,
-         "min" : 0,
-         "name" : "u_saturation",
-         "value" : 0
-      },
-      {
-         "max" : 1,
-         "midi" : 80,
-         "min" : 0,
-         "name" : "u_particleVisibility",
-         "value" : 0.14000000000000001
       },
       {
          "max" : 0.20000000000000001,

@@ -15,6 +15,7 @@
 #include "MidiIn.h"
 #include "MidiMessage.h"
 #include "MidiConstants.h"
+#include "cinderSyphon.h"
 
 // C++
 #include <ctime>
@@ -92,10 +93,13 @@ private:
   int                          mBPM = 100, mSection = 0, mNumSections;
   float                        mTick; //[0 - 1]      
 
-  MultipassShader               mMultipassShader;
+  MultipassShader              mMultipassShader;
   
   // Window Management
   ci::app::WindowRef           mUIWindow, mSceneWindow;
+
+  // Syphon
+  syphonServer mScreenSyphon;
 };
 
 CouleursApp::CouleursApp() : mPerformance( { "sure_thing_cover_multipass" } ) 
@@ -125,7 +129,8 @@ void CouleursApp::setup()
   setupUI();
   setupScene();
   setupMovieWriter();
-  mTimer.start();  
+  mTimer.start();
+  mScreenSyphon.setName("Couleurs");  
 }
 
 void CouleursApp::setupUI() 
@@ -174,8 +179,7 @@ void CouleursApp::setupMovieWriter()
 
 void CouleursApp::setupMidi()
 {
-  if ( mAbletonMidiIn.getNumPorts() > 0 ) {
-    mAbletonMidiIn.listPorts();
+  if ( mAbletonMidiIn.getNumPorts() > 0 ) {    
     mAbletonMidiIn.openPort( 0 );
     cout << "Opening MIDI port 0" << endl;
     mAbletonMidiIn.midiSignal.connect( bind( &CouleursApp::abletonMidiListener, this, placeholders::_1 ) );
@@ -183,10 +187,10 @@ void CouleursApp::setupMidi()
   else {
     cout << "No MIDI ports found" << endl;
   }
-  
-  mControllerMidiIn.listPorts();
+    
   if ( mControllerMidiIn.getNumPorts() > MIDI_CONTROLLER_PORT ) {
     mControllerMidiIn.openPort( MIDI_CONTROLLER_PORT );
+    cout << "Opening MIDI port " << MIDI_CONTROLLER_PORT << endl;
     mControllerMidiIn.midiSignal.connect( bind( &CouleursApp::controllerMidiListener, this, placeholders::_1 ) );
   }
   else {
@@ -199,9 +203,9 @@ void CouleursApp::controllerMidiListener( midi::Message msg )
   auto param = currentParams().getParameterForMidiNumber( msg.control );
   if ( param != nullptr ) {
     console() << "found param: " << param->name << endl;
-    param->baseValue = lmap( (float)msg.value, 0.f, 127.f, param->min, param->max );
+    param->currentValue = lmap( (float)msg.value, 0.f, 127.f, param->min, param->max );
   }
-  console() << "msg value: " << msg.value << "|| msg control: " << msg.control << endl;
+  console() << "msg value: " << msg.value << " || control: " << msg.control << " || channel: " << msg.channel << endl;
 }
 
 void CouleursApp::abletonMidiListener( midi::Message msg )
@@ -484,13 +488,14 @@ void CouleursApp::drawScene()
   // Draw patch
   Rectf rect = Rectf( 0.f, 0.f, mSceneWindow->getWidth(), mSceneWindow->getHeight() );
   mMultipassShader.draw( rect );
+  mScreenSyphon.publishTexture( mMultipassShader.mMainFbo->getColorTexture(), false );
 
   // Draw red rect if error
   if ( mMultipassShader.mShaderCompilationFailed ) {
     gl::ScopedColor red( Color( 1.f, 0.f, 0.f ) );    
     float h = 20.f;
     gl::drawSolidRect( Rectf( 0.f, mSceneWindow->getHeight() - h, mSceneWindow->getWidth(), mSceneWindow->getHeight() ) );
-  }
+  }  
 
   gl::printError( "drawScene" );
 }

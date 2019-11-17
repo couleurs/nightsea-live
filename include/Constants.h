@@ -17,7 +17,7 @@
 #define OSC_PORT 9001
 
 // MIDI
-#define MIDI_CONTROLLER_PORT 2
+#define MIDI_CONTROLLER_PORT 1
 
 // Log
 #define CI_MIN_LOG_LEVEL 0

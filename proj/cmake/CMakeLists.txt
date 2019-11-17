@@ -14,7 +14,14 @@ ci_make_app(
 	CINDER_PATH ${CINDER_PATH}
 	SOURCES     ${APP_PATH}/src/CouleursApp.cpp ${APP_PATH}/src/Parameters.cpp ${APP_PATH}/src/Parameter.cpp ${APP_PATH}/src/MultipassShader.cpp ${APP_PATH}/src/Modulator.cpp ${APP_PATH}/src/Utils.cpp ${APP_PATH}/src/Animation.cpp ${APP_PATH}/src/Performance.cpp ${APP_PATH}/src/Patch.cpp
 	INCLUDES    ${APP_PATH}/include ${CINDER_PATH}/blocks/OSC/src/cinder/osc ${CINDER_PATH}/blocks/Cinder-MIDI2/include ${CINDER_PATH}/blocks/Cinder-MIDI2/lib
-    BLOCKS      Cinder-ImGui Cinder-MIDI2 OSC
+    BLOCKS      Cinder-ImGui Cinder-MIDI2 OSC Cinder-Syphon
+    LIBRARIES   "-framework CoreMIDI"
+)
+
+add_custom_command( TARGET ${APP_NAME} POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+	${CINDER_PATH}/blocks/Cinder-Syphon/lib/Syphon.framework
+	${CMAKE_BUILD_TYPE}/${APP_NAME}/${APP_NAME}.app/Contents/Frameworks/Syphon.framework
 )
 
 set_target_properties( 

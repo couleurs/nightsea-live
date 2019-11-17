@@ -10,7 +10,7 @@ Parameter::~Parameter()
 }
 
 void Parameter::tick( const double t ) 
-{    
+{   
     if ( modulator != nullptr ) {
       currentValue = baseValue + modulator->tick( t );
     }
