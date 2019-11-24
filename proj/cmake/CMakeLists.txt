@@ -36,3 +36,9 @@ add_custom_target( run
     DEPENDS ${OUTPUT_DIR}/${APP_NAME}.app/Contents/MacOS/${APP_NAME}
     WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
 )
+
+add_custom_target( run_headless
+    COMMAND open ${OUTPUT_DIR}/${APP_NAME}.app --args headless
+    DEPENDS ${OUTPUT_DIR}/${APP_NAME}.app/Contents/MacOS/${APP_NAME}
+    WORKING_DIRECTORY ${CMAKE_PROJECT_DIR}
+)

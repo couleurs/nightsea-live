@@ -47,6 +47,15 @@
             },
             "type": "shell",
             "problemMatcher": []
+        },
+        {
+            "label": "Run Headless",
+            "command": "make run_headless",
+            "presentation": {
+                "reveal": "always"
+            },
+            "type": "shell",
+            "problemMatcher": []
         }
     ]
 }

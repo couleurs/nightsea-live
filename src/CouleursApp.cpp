@@ -41,6 +41,7 @@ public:
   void keyDown( KeyEvent event ) override;
   void mouseMove( MouseEvent event ) override;
   void fileDrop( FileDropEvent event ) override;
+  static vector<string>& getArgs() { static vector<string> args; return args; }
   
 private:
   void initShaderWatching();
@@ -82,6 +83,7 @@ private:
     
   qtime::MovieWriterRef        mMovieWriter;
   bool                         mSceneIsSetup = false;
+  bool                         mHeadlessMode = false;
   bool                         mSaveHeadlessScreenshot = false;
   
   // Time
@@ -129,11 +131,18 @@ CouleursApp::CouleursApp() : mPerformance( { PATCH_NAME } )
 
 void CouleursApp::setup() 
 {
+  // Read command-line arguments
+  for( vector<string>::const_iterator argIt = getArgs().begin(); argIt != getArgs().end(); ++argIt ) {
+		if ( *argIt == "headless" ) {
+      mHeadlessMode = true;
+    };
+  }
+
   setupUI();
   setupScene();
   setupMovieWriter();
   mTimer.start();
-  mScreenSyphon.setName("Couleurs");  
+  mScreenSyphon.setName("Couleurs");  	
 }
 
 void CouleursApp::setupUI() 
@@ -155,8 +164,8 @@ void CouleursApp::setupScene()
   
   // Shaders
   initShaderWatching();
-  auto width = HEADLESS ? HEADLESS_WIDTH : toPixels( mSceneWindow->getWidth() );
-  auto height = HEADLESS ? HEADLESS_HEIGHT : toPixels( mSceneWindow->getHeight() );
+  auto width = mHeadlessMode ? HEADLESS_WIDTH : toPixels( mSceneWindow->getWidth() );
+  auto height = mHeadlessMode ? HEADLESS_HEIGHT : toPixels( mSceneWindow->getHeight() );
   mMultipassShader.init( width, 
                          height,
                          [this] ( gl::GlslProgRef shader ) { bindUniforms( shader ); } );  
@@ -233,8 +242,8 @@ void CouleursApp::abletonMidiListener( midi::Message msg )
 
 void CouleursApp::resizeScene() 
 {
-  auto w = HEADLESS ? HEADLESS_WIDTH : toPixels( mSceneWindow->getWidth() );
-  auto h = HEADLESS ? HEADLESS_HEIGHT : toPixels( mSceneWindow->getHeight() );
+  auto w = mHeadlessMode ? HEADLESS_WIDTH : toPixels( mSceneWindow->getWidth() );
+  auto h = mHeadlessMode ? HEADLESS_HEIGHT : toPixels( mSceneWindow->getHeight() );
   mMultipassShader.resize( w, h );
 }
 
@@ -559,4 +568,5 @@ void CouleursApp::clearFBO( gl::FboRef fbo )
 CINDER_APP( CouleursApp, RendererGl, [&]( App::Settings *settings ) 
 {
    settings->setHighDensityDisplayEnabled();
+   CouleursApp::getArgs() = settings->getCommandLineArgs();
 })

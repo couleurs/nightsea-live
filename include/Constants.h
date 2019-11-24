@@ -1,6 +1,6 @@
 #pragma once
 
-#define PATCH_NAME "random_transformed"
+#define PATCH_NAME "heaven_grid"
 
 // Recording
 #define RECORD 0
@@ -23,6 +23,5 @@
 #define CI_MIN_LOG_LEVEL 0
 
 // Headless mode for high resolution exports
-#define HEADLESS 1
 #define HEADLESS_WIDTH 3000
 #define HEADLESS_HEIGHT 3000
