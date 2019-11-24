@@ -1,16 +1,17 @@
 {
+   "colorParams" : "",
    "params" : [
       {
          "max" : 1,
          "min" : 0,
          "name" : "u_randomSeedCircle",
-         "value" : 0.317
+         "value" : 0.475
       },
       {
          "max" : 1,
          "min" : 0,
          "name" : "u_randomSeedSquare",
-         "value" : 0.54800000000000004
+         "value" : 0.91100000000000003
       },
       {
          "max" : 1,
@@ -28,25 +29,25 @@
          "max" : 1,
          "min" : 0,
          "name" : "u_spread",
-         "value" : 0.45600000000000002
+         "value" : 0.10100000000000001
       },
       {
          "max" : 1,
          "min" : 0,
          "name" : "u_circleEdge",
-         "value" : 0.22600000000000001
+         "value" : 0.23499999999999999
       },
       {
          "max" : 1,
          "min" : 0,
          "name" : "u_sizeSpread",
-         "value" : 0.68200000000000005
+         "value" : 0.92500000000000004
       },
       {
          "max" : 1,
          "min" : 0,
          "name" : "u_additive",
-         "value" : 0.20999999999999999
+         "value" : 0.32200000000000001
       }
    ]
 }

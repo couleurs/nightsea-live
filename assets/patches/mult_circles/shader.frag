@@ -24,7 +24,7 @@ uniform float u_sizeSpread;
 uniform float u_additive;
 uniform float u_squareThreshold;
 
-#define NUM_CIRCLES 30
+#define NUM_CIRCLES 5
 
 void main() {
   vec2 uv = vTexCoord0;
@@ -74,7 +74,7 @@ void main() {
 
     // Grain
     float l = luma(color);
-    color += g * mix(.2, .5, l); // .3 instead of .5 usually
+    color += g * mix(.2, .3, l); // .3 instead of .5 usually
 
     // Pink Mix
     l = luma(color);

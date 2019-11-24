@@ -17,7 +17,7 @@ out vec4 oColor;
 
 void main() {
 #ifdef BUFFER_0
-    oColor = pass0(vTexCoord0, u_resolution, u_time);    
+    oColor = pass0(vTexCoord0, u_resolution, u_time);
 #elif defined( BUFFER_1 )
     vec4 source = texture(u_buffer0, vTexCoord0);
     vec4 feedback = texture(u_buffer2, vTexCoord0);

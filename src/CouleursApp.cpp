@@ -67,6 +67,8 @@ private:
   void resizeScene();
   
   void clearFBO( gl::FboRef fbo );
+
+  void saveScreenshot();
   
   void abletonMidiListener( midi::Message msg );
   void controllerMidiListener( midi::Message msg );
@@ -80,6 +82,7 @@ private:
     
   qtime::MovieWriterRef        mMovieWriter;
   bool                         mSceneIsSetup = false;
+  bool                         mSaveHeadlessScreenshot = false;
   
   // Time
   float                        mTime = 0;
@@ -99,10 +102,10 @@ private:
   ci::app::WindowRef           mUIWindow, mSceneWindow;
 
   // Syphon
-  syphonServer mScreenSyphon;
+  syphonServer                 mScreenSyphon;
 };
 
-CouleursApp::CouleursApp() : mPerformance( { "sure_thing_cover_multipass" } ) 
+CouleursApp::CouleursApp() : mPerformance( { PATCH_NAME } ) 
 {    
   // Window Management
   mUIWindow = getWindow();
@@ -152,8 +155,10 @@ void CouleursApp::setupScene()
   
   // Shaders
   initShaderWatching();
-  mMultipassShader.init( toPixels( mSceneWindow->getWidth() ), 
-                         toPixels( mSceneWindow->getHeight() ),
+  auto width = HEADLESS ? HEADLESS_WIDTH : toPixels( mSceneWindow->getWidth() );
+  auto height = HEADLESS ? HEADLESS_HEIGHT : toPixels( mSceneWindow->getHeight() );
+  mMultipassShader.init( width, 
+                         height,
                          [this] ( gl::GlslProgRef shader ) { bindUniforms( shader ); } );  
   loadCurrentPatch();
   
@@ -228,8 +233,8 @@ void CouleursApp::abletonMidiListener( midi::Message msg )
 
 void CouleursApp::resizeScene() 
 {
-  auto w = toPixels( mSceneWindow->getWidth() );
-  auto h = toPixels( mSceneWindow->getHeight() );
+  auto w = HEADLESS ? HEADLESS_WIDTH : toPixels( mSceneWindow->getWidth() );
+  auto h = HEADLESS ? HEADLESS_HEIGHT : toPixels( mSceneWindow->getHeight() );
   mMultipassShader.resize( w, h );
 }
 
@@ -275,13 +280,7 @@ void CouleursApp::keyDown( KeyEvent event )
     currentParams().save();
   }
   else if ( event.getCode() == KeyEvent::KEY_f ) {
-    CI_LOG_I( "Saving screenshot" );
-    const char *homeDir = getenv( "HOME" );
-    auto path = string( homeDir ) + string( "/Desktop/screenshot_" ) + currentPatch().name() + string("_") + to_string( getElapsedSeconds() );
-    auto surface = Surface8u( mMultipassShader.mMainFbo->getColorTexture()->createSource() );
-    console() << "surface color: " << surface.getPixel( ivec2( 500, 500 ) ) << endl;
-    writeImage( path + string( ".png" ), surface );
-    currentParams().writeTo( path + string( ".json" ) );
+    saveScreenshot();
   }
   else if ( event.getCode() == KeyEvent::KEY_r ) {
     CI_LOG_I( "Resetting params" );
@@ -318,6 +317,16 @@ void CouleursApp::keyDown( KeyEvent event )
   }
 }
 
+void CouleursApp::saveScreenshot()
+{
+  CI_LOG_I( "Saving screenshot" );
+  const char *homeDir = getenv( "HOME" );
+  auto path = string( homeDir ) + string( "/Desktop/screenshot_" ) + currentPatch().name() + string("_") + to_string( getElapsedSeconds() );
+  auto surface = Surface8u( mMultipassShader.mMainFbo->getColorTexture()->createSource() );    
+  writeImage( path + string( ".png" ), surface );
+  currentParams().writeTo( path + string( ".json" ) );
+}
+
 void CouleursApp::update()
 {
   updateOSC();
@@ -351,6 +360,9 @@ void CouleursApp::updateUI()
       if ( ui::MenuItem( "Reset" ) ) {
         currentParams().reload();
       }
+      if ( ui::MenuItem( "Export Hi-Res")) {
+        mSaveHeadlessScreenshot = true;
+      }
       if ( ui::MenuItem( "QUIT" ) ) {
         quit();
       }
@@ -365,7 +377,7 @@ void CouleursApp::updateUI()
     for (auto it = params.begin(); it != params.end(); it++ ) {      
       auto param = *it;
       ui::ScopedId scopedId( id );
-      ui::SliderFloat( param->name.c_str(), &param->currentValue, param->min, param->max, "%.2f" );
+      ui::SliderFloat( param->name.c_str(), &param->currentValue, param->min, param->max, "%.3f" );
       ui::SameLine();
  
       if ( ui::Button( "Mod" ) ) {
@@ -484,8 +496,18 @@ void CouleursApp::drawUI()
 void CouleursApp::drawScene()
 {
   if ( !mSceneIsSetup ) return;
+
+  // Headless mode for high resolution exports
+  if ( mSaveHeadlessScreenshot ) {
+    gl::setMatricesWindow( ivec2( HEADLESS_WIDTH, HEADLESS_HEIGHT ), true );
+    gl::pushViewport( ivec2( HEADLESS_WIDTH, HEADLESS_HEIGHT ) );
+    Rectf rect = Rectf( 0.f, 0.f, HEADLESS_WIDTH, HEADLESS_HEIGHT );
+    mMultipassShader.draw( rect );  
+    saveScreenshot();
+    quit();
+  }
   
-  // Draw patch
+  // Draw patch  
   Rectf rect = Rectf( 0.f, 0.f, mSceneWindow->getWidth(), mSceneWindow->getHeight() );
   mMultipassShader.draw( rect );
   mScreenSyphon.publishTexture( mMultipassShader.mMainFbo->getColorTexture(), false );
