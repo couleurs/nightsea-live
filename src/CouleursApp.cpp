@@ -70,6 +70,8 @@ private:
   void clearFBO( gl::FboRef fbo );
 
   void saveScreenshot();
+  void saveParams();
+  void resetParams();
   
   void abletonMidiListener( midi::Message msg );
   void controllerMidiListener( midi::Message msg );
@@ -285,15 +287,13 @@ void CouleursApp::mouseMove( MouseEvent event )
 void CouleursApp::keyDown( KeyEvent event ) 
 {
   if ( event.getCode() == KeyEvent::KEY_s ) {
-    CI_LOG_I( "Saving config file" );
-    currentParams().save();
+    saveParams();
   }
   else if ( event.getCode() == KeyEvent::KEY_f ) {
     saveScreenshot();
   }
   else if ( event.getCode() == KeyEvent::KEY_r ) {
-    CI_LOG_I( "Resetting params" );
-    currentParams().reload();
+    resetParams();
   }
   else if ( event.getCode() == KeyEvent::KEY_t ) {
     mTimeStopped = !mTimeStopped;
@@ -336,6 +336,18 @@ void CouleursApp::saveScreenshot()
   currentParams().writeTo( path + string( ".json" ) );
 }
 
+void CouleursApp::resetParams()
+{
+  CI_LOG_I( "Resetting params" );
+  currentParams().reload();
+}
+
+void CouleursApp::saveParams()
+{
+  CI_LOG_I( "Saving config file" );
+  currentParams().save();
+}
+
 void CouleursApp::update()
 {
   updateOSC();
@@ -365,12 +377,20 @@ void CouleursApp::updateUI()
   {
     ui::ScopedMainMenuBar mainMenu;    
     
-    if ( ui::BeginMenu( "Couleurs" ) ) {
-      if ( ui::MenuItem( "Reset" ) ) {
-        currentParams().reload();
+    if ( ui::BeginMenu( "Couleurs" ) ) {   
+      if ( ui::MenuItem( "Save" ) ) {
+        saveParams();
+      }   
+      if ( ui::MenuItem( "Export Window Res")) {
+        saveScreenshot();
       }
-      if ( ui::MenuItem( "Export Hi-Res")) {
-        mSaveHeadlessScreenshot = true;
+      if ( ui::MenuItem( "Export Headless Res")) {
+        if (mHeadlessMode) {
+          mSaveHeadlessScreenshot = true;
+        }        
+      }
+      if ( ui::MenuItem( "Reset" ) ) {
+        resetParams();
       }
       if ( ui::MenuItem( "QUIT" ) ) {
         quit();
