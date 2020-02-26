@@ -2,6 +2,18 @@
    "colorParams" : "",
    "params" : [
       {
+         "name" : "u_thickness",
+         "value" : 0.51900000000000002
+      },
+      {
+         "name" : "u_speed",
+         "value" : 0.26100000000000001
+      },
+      {
+         "name" : "u_lutMix",
+         "value" : 0.435
+      },
+      {
          "name" : "u_contrast",
          "value" : 0.501
       },

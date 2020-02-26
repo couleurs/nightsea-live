@@ -56,6 +56,15 @@
             },
             "type": "shell",
             "problemMatcher": []
+        },
+        {
+            "label": "Run Loop Export",
+            "command": "make run_loop_export",
+            "presentation": {
+                "reveal": "always"
+            },
+            "type": "shell",
+            "problemMatcher": []
         }
     ]
 }

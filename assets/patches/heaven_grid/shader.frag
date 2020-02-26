@@ -23,6 +23,9 @@ out vec4 oColor;
 // Textures
 
 // Parameters
+uniform float u_thickness;
+uniform float u_speed;
+uniform float u_lutMix;
 
 // Colors
 
@@ -48,18 +51,18 @@ void main() {
   float s = random(uv) * size / 2.;
   vec2 st_r = floor((uv + .5) * s);
   float r = random(st_r);  
-  float f = fill(sdf, mix(mix(.52, .515, thresh), .53, r));
+  float f = fill(sdf, mix(mix(u_thickness, .515, thresh), .53, r));
   color += vec3(1. - f) * vec3(0.914, 0.945, 0.976);
 
   // Partial fading
   float r_2 = random(floor(uv * size / 2.));
   float r_3 = random(floor(uv * size * 1.));
-  float n_2 = gnoise(u_time * .2 + r_2 * 25.);
-  n_2 *= sin(fract(uv * size / 2.).y + u_time * .3 + r_2 * 9.) * .5 + .5;
-  float n_3 = gnoise(u_time * .3 + r_3 * 10.);
-  n_3 *= sin(fract(uv * size).x + u_time * .2 + r_3 * 10.) * .5 + .5;
-  color = mix(color, bg, clamp(2. * smoothstep(.0, .2, n_2) * smoothstep(.0, .3, n_3), 0., 1.));
-  color = mix(color, lut(color, u_lookup_couleurs_bw), .3);
+  float n_2 = gnoise(u_time * u_speed + r_2 * 25.);
+  n_2 *= sin(fract(uv * size / 2.).y + u_time * u_speed + r_2 * 9.) * .5 + .5;
+  float n_3 = gnoise(u_time * u_speed + r_3 * 10.);
+  n_3 *= sin(fract(uv * size).x + u_time * u_speed + r_3 * 10.) * .5 + .5;
+  color = mix(color, bg, clamp(10. * smoothstep(.0, .2, n_2) * smoothstep(.0, .3, n_3), 0., 1.));
+  color = mix(color, lut(color, u_lookup_couleurs_bw), u_lutMix);
 
   vec2 uvt = floor((uv * size));
   float r_4 = random(uvt);

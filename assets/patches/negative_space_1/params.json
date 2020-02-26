@@ -1,0 +1,53 @@
+{
+   "colorParams" : "",
+   "params" : [
+      {
+         "name" : "u_contrast",
+         "value" : 0.5
+      },
+      {
+         "max" : 1,
+         "min" : -1,
+         "name" : "u_saturation",
+         "value" : 0
+      },
+      {
+         "name" : "u_whiteMix",
+         "value" : 0
+      },
+      {
+         "max" : 50,
+         "min" : 0,
+         "name" : "u_blurRadius",
+         "value" : 23.501999999999999
+      },
+      {
+         "name" : "u_xOffset",
+         "value" : 0.503
+      },
+      {
+         "name" : "u_xScale",
+         "value" : 0.85499999999999998
+      },
+      {
+         "name" : "u_yScale",
+         "value" : 0.86299999999999999
+      },
+      {
+         "name" : "u_grainAmount",
+         "value" : 0.249
+      },
+      {
+         "name" : "u_noiseAmount",
+         "value" : 0.012
+      },
+      {
+         "name" : "u_noiseScale",
+         "value" : 1
+      },
+      {
+         "name" : "u_noiseSeed",
+         "value" : 0.96599999999999997
+      }
+   ]
+}

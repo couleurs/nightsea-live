@@ -1,14 +1,13 @@
 #pragma once
 
-#define PATCH_NAME "heaven_grid"
+#define PATCH_NAME "negative_space_1"
 
-// Recording
-#define RECORD 0
-#define NUM_FRAMES 300 // 10 sec, 30fps
+// GIF
+#define GIF_LENGTH 10 // # of frames
 
 // Dimensions
-#define SCENE_WIDTH 960
-#define SCENE_HEIGHT 960
+#define SCENE_WIDTH 480
+#define SCENE_HEIGHT 270
 #define UI_WIDTH 700
 #define UI_HEIGHT 700
 #define WINDOW_PADDING 15

@@ -74,7 +74,7 @@ void main() {
 
     // Grain
     float l = luma(color);
-    color += g * mix(.2, .3, l); // .3 instead of .5 usually
+    color += g * mix(.1, .2, l); // .3 instead of .5 usually
 
     // Pink Mix
     l = luma(color);

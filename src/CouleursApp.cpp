@@ -50,14 +50,13 @@ private:
   void setupUI();
   void setupScene();
   void setupMidi();
-  void setupMovieWriter();
   void loadCurrentPatch();  
   
   // Update
   void updateOSC();
   void updateUI();
   void updateShaders();
-  void updateMovieWriter();
+  void exportGIFFrames();
   void updateTimer();
   void updateParams();
   
@@ -69,7 +68,7 @@ private:
   
   void clearFBO( gl::FboRef fbo );
 
-  void saveScreenshot();
+  void exportFrame( string suffix, bool exportParams );
   void saveParams();
   void resetParams();
   
@@ -82,11 +81,11 @@ private:
   Performance                  mPerformance;
   Patch&                       currentPatch() { return mPerformance.currentPatch(); };
   Parameters&                  currentParams() { return currentPatch().params(); };
-    
-  qtime::MovieWriterRef        mMovieWriter;
+      
   bool                         mSceneIsSetup = false;
   bool                         mHeadlessMode = false;
   bool                         mSaveHeadlessScreenshot = false;
+  bool                         mLoopExportMode = false;
   
   // Time
   float                        mTime = 0;
@@ -138,11 +137,14 @@ void CouleursApp::setup()
 		if ( *argIt == "headless" ) {
       mHeadlessMode = true;
     };
+
+    if ( *argIt == "loop_export" ) {
+      mLoopExportMode = true;
+    };
   }
 
   setupUI();
   setupScene();
-  setupMovieWriter();
   mTimer.start();
   mScreenSyphon.setName("Couleurs");  	
 }
@@ -180,18 +182,6 @@ void CouleursApp::setupScene()
   
   mSceneIsSetup = true;
 }
-
-void CouleursApp::setupMovieWriter() 
-{	
-   if (RECORD) {	
-     fs::path path = getSaveFilePath();	
-     if ( !path.empty() ) {	
-       //    auto format = qtime::MovieWriter::Format().codec( qtime::MovieWriter::H264 ).fileType( qtime::MovieWriter::QUICK_TIME_MOVIE )	
-       //    .jpegQuality( 0.09f ).averageBitsPerSecond( 10000000 );	
-       mMovieWriter = qtime::MovieWriter::create( path, mSceneWindow->toPixels( mSceneWindow->getWidth() ), mSceneWindow->toPixels( mSceneWindow->getHeight() ) );	
-     }	
-   }	
- }
 
 void CouleursApp::setupMidi()
 {
@@ -290,7 +280,7 @@ void CouleursApp::keyDown( KeyEvent event )
     saveParams();
   }
   else if ( event.getCode() == KeyEvent::KEY_f ) {
-    saveScreenshot();
+    exportFrame( to_string( getElapsedSeconds() ), true );
   }
   else if ( event.getCode() == KeyEvent::KEY_r ) {
     resetParams();
@@ -326,14 +316,17 @@ void CouleursApp::keyDown( KeyEvent event )
   }
 }
 
-void CouleursApp::saveScreenshot()
+void CouleursApp::exportFrame( string suffix, bool exportParams )
 {
   CI_LOG_I( "Saving screenshot" );
   const char *homeDir = getenv( "HOME" );
-  auto path = string( homeDir ) + string( "/Desktop/screenshot_" ) + currentPatch().name() + string("_") + to_string( getElapsedSeconds() );
+  auto path = string( homeDir ) + string( "/Desktop/screenshot_" ) + currentPatch().name() + string("_") + suffix;
   auto surface = Surface8u( mMultipassShader.mMainFbo->getColorTexture()->createSource() );    
   writeImage( path + string( ".png" ), surface );
-  currentParams().writeTo( path + string( ".json" ) );
+
+  if ( exportParams ) {
+    currentParams().writeTo( path + string( ".json" ) );
+  }
 }
 
 void CouleursApp::resetParams()
@@ -353,7 +346,6 @@ void CouleursApp::update()
   updateOSC();
   updateUI();
   updateTimer();
-  updateMovieWriter();
   updateParams();
 }
 
@@ -382,7 +374,7 @@ void CouleursApp::updateUI()
         saveParams();
       }   
       if ( ui::MenuItem( "Export Window Res")) {
-        saveScreenshot();
+        exportFrame( to_string( getElapsedSeconds() ), true );
       }
       if ( ui::MenuItem( "Export Headless Res")) {
         if (mHeadlessMode) {
@@ -503,16 +495,18 @@ void CouleursApp::updateParams()
   }
 }
 
-void CouleursApp::updateMovieWriter()	
+void CouleursApp::exportGIFFrames()	
 {	
-   if ( mMovieWriter && RECORD && getElapsedFrames() > 1 && getElapsedFrames() < NUM_FRAMES ) {
-     auto surface = Surface8u( mMultipassShader.mMainFbo->getColorTexture()->createSource() );
-     mMovieWriter->addFrame( surface );	
-   }
-   else if ( mMovieWriter && getElapsedFrames() >= NUM_FRAMES ) {	
-     mMovieWriter->finish();	
-     quit();
-   }	
+  if ( !mLoopExportMode ) return;
+
+  if ( getElapsedFrames() <= GIF_LENGTH ) {
+    std::stringstream ss;
+    ss << std::setw(3) << std::setfill('0') << getElapsedFrames();    
+    exportFrame( ss.str(), false );
+  }
+  else {
+    quit();
+  }
  }
 
 void CouleursApp::drawUI()
@@ -526,13 +520,13 @@ void CouleursApp::drawScene()
 {
   if ( !mSceneIsSetup ) return;
 
-  // Headless mode for high resolution exports
+  // Headless mode for high-resolution exports
   if ( mSaveHeadlessScreenshot ) {
     gl::setMatricesWindow( ivec2( HEADLESS_WIDTH, HEADLESS_HEIGHT ), true );
     gl::pushViewport( ivec2( HEADLESS_WIDTH, HEADLESS_HEIGHT ) );
     Rectf rect = Rectf( 0.f, 0.f, HEADLESS_WIDTH, HEADLESS_HEIGHT );
     mMultipassShader.draw( rect );  
-    saveScreenshot();
+    exportFrame( to_string( getElapsedSeconds() ), true );
     quit();
   }
   
@@ -548,6 +542,8 @@ void CouleursApp::drawScene()
     gl::drawSolidRect( Rectf( 0.f, mSceneWindow->getHeight() - h, mSceneWindow->getWidth(), mSceneWindow->getHeight() ) );
   }  
 
+  exportGIFFrames();
+
   gl::printError( "drawScene" );
 }
 
@@ -559,6 +555,7 @@ void CouleursApp::bindUniforms( gl::GlslProgRef shader )
   if (!mTimeStopped) {
     mTime = (float)getElapsedSeconds();
   }
+  shader->uniform( "u_frameNumber", (float)getElapsedFrames() );
   shader->uniform( "u_time", mTime );
   shader->uniform( "u_tick", mTick );
   shader->uniform( "u_section", mSection );

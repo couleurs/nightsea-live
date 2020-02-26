@@ -76,10 +76,12 @@ void main() {
   // c2 = vec3(0.459, 0.592, 0.714);
 
   vec3 color = mix(u_c1, u_c2, c * 1.);  
-  float g = grain(uv, u_resolution / 2.5, 0., 10.);
+  float g = grain(uv, u_resolution, 0., 10.);
   color += g * mix(.1, .3, 1. - r);
+  // color += mix(.1, .3, 1. - r);
   // color = vec3(c);
   color = mix(color, vec3(1.), u_whiteMix);
+  // color = vec3(g);
   oColor = vec4(color, 1.);
   // oColor = vec4(vec3(c), 1.);
 
