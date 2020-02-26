@@ -172,7 +172,8 @@ void CouleursApp::setupScene()
   auto height = mHeadlessMode ? HEADLESS_HEIGHT : toPixels( mSceneWindow->getHeight() );
   mMultipassShader.init( width, 
                          height,
-                         [this] ( gl::GlslProgRef shader ) { bindUniforms( shader ); } );  
+                         [this] ( gl::GlslProgRef shader ) { bindUniforms( shader ); },
+                         mLoopExportMode );  
   loadCurrentPatch();
   
   // GL State

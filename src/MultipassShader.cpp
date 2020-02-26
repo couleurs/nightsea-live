@@ -11,8 +11,9 @@ static fs::path vertPath = "shaders/vertex/passthrough.vert";
 MultipassShader::MultipassShader() {}
 MultipassShader::~MultipassShader() {}
 
-void MultipassShader::init( int width, int height, const std::function<void ( gl::GlslProgRef )> &setUniforms ) 
+void MultipassShader::init( int width, int height, const std::function<void ( gl::GlslProgRef )> &setUniforms, bool loopMode ) 
 {
+    mLoopMode = loopMode;
     mSetUniforms = setUniforms;    
     mFinalShader = gl::GlslProg::create( gl::GlslProg::Format().version( 330 )
                                                                .vertex( app::loadAsset( vertPath ) )
@@ -38,7 +39,11 @@ void MultipassShader::load( const fs::path &path )
     fs::path fragPath = path.string() + fragFilename;
     auto format = gl::GlslProg::Format().version( 330 )
                                         .vertex( app::loadAsset( vertPath ) )
-                                        .fragment( app::loadAsset( fragPath ) );        
+                                        .fragment( app::loadAsset( fragPath ) );   
+    if ( mLoopMode ) {
+        format = format.define( "LOOP" );
+    }     
+
     try {
         mPatchPath = path;
         mMainShader = gl::GlslProg::create( format );
@@ -62,7 +67,11 @@ void MultipassShader::reload()
 {
     auto format = gl::GlslProg::Format().version( 330 )
                                         .vertex( app::loadAsset( vertPath ) )
-                                        .fragment( app::loadAsset( mFragPath ) );    
+                                        .fragment( app::loadAsset( mFragPath ) );
+    if ( mLoopMode ) {
+        format = format.define( "LOOP" );
+    }    
+ 
     try {
         mMainShader = gl::GlslProg::create( format );
         mMainFragSource = format.getFragment(); 
@@ -187,19 +196,29 @@ void MultipassShader::updateBuffers()
             mFbos.push_back( fbo );
 
             // New SHADER
-            auto shader = gl::GlslProg::create( gl::GlslProg::Format().version( 330 )
-                                                                      .vertex( app::loadAsset( vertPath ) )
-                                                                      .fragment( app::loadAsset( mFragPath ) )
-                                                                      .define( "BUFFER_" + std::to_string( i ) ) );
+            auto format = gl::GlslProg::Format().version( 330 )
+                                                .vertex( app::loadAsset( vertPath ) )
+                                                .fragment( app::loadAsset( mFragPath ) )
+                                                .define( "BUFFER_" + std::to_string( i ) );
+            if ( mLoopMode ) {
+                format = format.define( "LOOP" );
+            }
+
+            auto shader = gl::GlslProg::create( format );
             mShaders.push_back( shader );
         }
     }
     else {
         for (unsigned int i = 0; i < mShaders.size(); i++) {
-            mShaders[i] = gl::GlslProg::create( gl::GlslProg::Format().version( 330 )
-                                                                                .vertex( app::loadAsset( vertPath ) )
-                                                                                .fragment( app::loadAsset( mFragPath ) )
-                                                                                .define( "BUFFER_" + std::to_string( i ) ) );
+            auto format = gl::GlslProg::Format().version( 330 )
+                                                .vertex( app::loadAsset( vertPath ) )
+                                                .fragment( app::loadAsset( mFragPath ) )
+                                                .define( "BUFFER_" + std::to_string( i ) );
+            if ( mLoopMode ) {
+                format = format.define( "LOOP" );
+            }
+
+            mShaders[i] = gl::GlslProg::create( format );
         }
     }
 

@@ -9,7 +9,7 @@ class MultipassShader {
     public:
         MultipassShader();
         ~MultipassShader();
-        void init( int width, int height, const std::function<void ( gl::GlslProgRef )> &setUniforms );
+        void init( int width, int height, const std::function<void ( gl::GlslProgRef )> &setUniforms, bool loopMode );
         void resize( int width, int height );
         void load( const fs::path &fragPath );
         void reload();
@@ -34,5 +34,6 @@ class MultipassShader {
         std::string mMainFragSource;
         fs::path mPatchPath, mFragPath;
         int mWidth, mHeight;
+        bool mLoopMode;
 };
 

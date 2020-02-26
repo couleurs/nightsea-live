@@ -67,8 +67,11 @@ void main() {
   vec3 fg2 = vec3(0.698, 0.161, 0.051);
   color = bg;
   
-  float noise = mix(ns1_noise(st, time), ns1_noise(st, time - gif_length), time / gif_length);
-  // float noise = snoise(st * u_noiseScale * 10. + u_noiseSeed * 100. + t);
+  #ifdef LOOP
+    float noise = mix(ns1_noise(st, time), ns1_noise(st, time - gif_length), time / gif_length);
+  #else 
+    float noise = snoise(st * u_noiseScale * 100. + u_noiseSeed * 100. + t);
+  #endif    
   
   float sdf = length(st + noise * u_noiseAmount);
   sdf = smoothstep(.2, .21, sdf);
