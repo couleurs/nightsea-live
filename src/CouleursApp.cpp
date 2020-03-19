@@ -108,7 +108,7 @@ private:
   syphonServer                 mScreenSyphon;
 };
 
-CouleursApp::CouleursApp() : mPerformance( { PATCH_NAME } ) 
+CouleursApp::CouleursApp() : mPerformance( { PATCH_NAME, "heaven_grid", "mult_circles" } ) 
 {    
   // Window Management
   mUIWindow = getWindow();

@@ -28,6 +28,8 @@ in vec2  vTexCoord0;
 out vec4 oColor;
 
 // Textures
+uniform sampler2D u_ns_1_text;
+uniform sampler2D u_ns_2_text;
 
 // Parameters
 uniform float u_blurRadius;
@@ -40,6 +42,8 @@ uniform float u_noiseSeed;
 uniform float u_noiseAmount;
 
 // Colors
+
+//
 
 float ns1_noise(vec2 uv, float t) {
   return snoise(uv * u_noiseScale * 10. + u_noiseSeed * 100. + t);
@@ -70,7 +74,7 @@ void main() {
   #ifdef LOOP
     float noise = mix(ns1_noise(st, time), ns1_noise(st, time - gif_length), time / gif_length);
   #else 
-    float noise = snoise(st * u_noiseScale * 100. + u_noiseSeed * 100. + t);
+    float noise = snoise(st * u_noiseScale * 10. + u_noiseSeed * 100. + t * 0.);
   #endif    
   
   float sdf = length(st + noise * u_noiseAmount);
@@ -93,7 +97,11 @@ void main() {
   vec3 c_2 = vec3(0.710, 0.663, 0.965);
   vec3 c_3 = vec3(0.996, 0.878, 0.769);
 
-  float rect_n = mix(snoise(uv + u_noiseSeed * 120. + time), snoise(uv + u_noiseSeed * 120. + time - gif_length), time / gif_length);
+  #ifdef LOOP
+    float rect_n = mix(snoise(uv + u_noiseSeed * 120. + time), snoise(uv + u_noiseSeed * 120. + time - gif_length), time / gif_length);
+  #else 
+    float rect_n = snoise(uv + u_noiseSeed * 120.);
+  #endif  
   float rect_sdf = rectSDF(uv + .03 * rect_n, vec2(1.2, 1.22));
   rect_sdf = smoothstep(.7, 1., rect_sdf);
   // color = vec3(rect_sdf);
@@ -110,8 +118,14 @@ void main() {
   float debug = mix(smoothstep(-.15, .5, st.x), smoothstep(-.15, .5, -st_2.x), step(.5, uv.x));
   // color = vec3(debug);
 
-  vec3 grain = vec3(grain(uv, u_resolution / 2.8, 0., 2.5)) * c_3;
+  vec3 grain = vec3(grain(uv, u_resolution / 1.5, 0., 2.5)) * c_3;
   color = color + grain * mix(u_grainAmount, 0., 1. - shape_mask); 
+
+  vec4 text_1 = texture(u_ns_1_text, uv);
+  vec4 text_2 = texture(u_ns_2_text, uv);
+  color = mix(color, vec3(0.886, 0.863, 1.000), text_1.a * .9);
+  color = mix(color, vec3(0.710, 0.663, 0.965), text_2.a * 1.);
+  // color = vec3(text_2.a);
 
 #endif  
   

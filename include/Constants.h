@@ -1,13 +1,13 @@
 #pragma once
 
-#define PATCH_NAME "negative_space_1"
+#define PATCH_NAME "still_loop"
 
 // GIF
-#define GIF_LENGTH 10 // # of frames
+#define GIF_LENGTH 600 // # of frames
 
 // Dimensions
-#define SCENE_WIDTH 480
-#define SCENE_HEIGHT 270
+#define SCENE_WIDTH 800
+#define SCENE_HEIGHT 800
 #define UI_WIDTH 700
 #define UI_HEIGHT 700
 #define WINDOW_PADDING 15

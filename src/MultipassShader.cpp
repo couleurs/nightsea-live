@@ -235,11 +235,6 @@ int MultipassShader::getBufferCount()
 
     for (int l = 0; l < lines.size(); l++) {
         if (std::regex_search(lines[l], match, re)) {
-
-            // for (int i = 0; i < match.size(); i++) {
-            //     cout << i << " -> " << std::ssub_match(match[i]).str() << endl;
-            // }
-
             std::string number = std::ssub_match(match[2]).str();
             if (number.size() == 0) {
                 number = std::ssub_match(match[3]).str();
