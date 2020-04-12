@@ -19,6 +19,7 @@ out vec4 oColor;
 
 // Textures
 uniform sampler2D u_cover;
+uniform sampler2D u_syphonTex;
 
 // Parameters
 

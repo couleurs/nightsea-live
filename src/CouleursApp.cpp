@@ -106,9 +106,11 @@ private:
 
   // Syphon
   syphonServer                 mScreenSyphon;
+  syphonClient                 mClientSyphon;
+  ci::gl::FboRef               mSyphonFBO;
 };
 
-CouleursApp::CouleursApp() : mPerformance( { PATCH_NAME, "heaven_grid", "mult_circles" } ) 
+CouleursApp::CouleursApp() : mPerformance( { PATCH_NAME } ) 
 {    
   // Window Management
   mUIWindow = getWindow();
@@ -146,7 +148,9 @@ void CouleursApp::setup()
   setupUI();
   setupScene();
   mTimer.start();
-  mScreenSyphon.setName("Couleurs");  	
+  mScreenSyphon.setName( "Couleurs" );  
+  mClientSyphon.setServerName( "Processing Syphon" );	
+  mSyphonFBO = gl::Fbo::create( toPixels( mSceneWindow->getWidth() ), toPixels( mSceneWindow->getHeight() ) );
 }
 
 void CouleursApp::setupUI() 
@@ -521,19 +525,24 @@ void CouleursApp::drawScene()
 {
   if ( !mSceneIsSetup ) return;
 
+  // Draw Syphon texture
+  mSyphonFBO->bindFramebuffer();
+  gl::draw( mClientSyphon.getTexture() );
+  mSyphonFBO->unbindFramebuffer();
+
   // Headless mode for high-resolution exports
   if ( mSaveHeadlessScreenshot ) {
     gl::setMatricesWindow( ivec2( HEADLESS_WIDTH, HEADLESS_HEIGHT ), true );
     gl::pushViewport( ivec2( HEADLESS_WIDTH, HEADLESS_HEIGHT ) );
     Rectf rect = Rectf( 0.f, 0.f, HEADLESS_WIDTH, HEADLESS_HEIGHT );
-    mMultipassShader.draw( rect );  
+    mMultipassShader.draw( rect, mSyphonFBO->getColorTexture() );  
     exportFrame( to_string( getElapsedSeconds() ), true );
     quit();
   }
   
   // Draw patch  
   Rectf rect = Rectf( 0.f, 0.f, mSceneWindow->getWidth(), mSceneWindow->getHeight() );
-  mMultipassShader.draw( rect );
+  mMultipassShader.draw( rect, mSyphonFBO->getColorTexture() );
   mScreenSyphon.publishTexture( mMultipassShader.mMainFbo->getColorTexture(), false );
 
   // Draw red rect if error

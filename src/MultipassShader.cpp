@@ -34,8 +34,6 @@ void MultipassShader::resize( int width, int height )
 const std::string fragFilename = "/shader.frag";
 void MultipassShader::load( const fs::path &path ) 
 {
-    // TODO: MOVE mTextures and texture loading here instead of CouleursApp
-
     fs::path fragPath = path.string() + fragFilename;
     auto format = gl::GlslProg::Format().version( 330 )
                                         .vertex( app::loadAsset( vertPath ) )
@@ -86,15 +84,15 @@ void MultipassShader::reload()
     loadTextures();
 }
 
-void MultipassShader::draw( const Rectf &r ) 
+void MultipassShader::draw( const Rectf &r, const gl::Texture2dRef &syphonTexture ) 
 {
     // Intermediary passes
     for (unsigned int i = 0; i < mFbos.size(); i++) {
-        drawShaderInFBO( r, mShaders[i], mFbos[i], i );
+        drawShaderInFBO( r, mShaders[i], mFbos[i], syphonTexture, i );
     }
 
     // Final pass
-    drawShaderInFBO( r, mMainShader, mMainFbo, -1 );
+    drawShaderInFBO( r, mMainShader, mMainFbo, syphonTexture, -1 );
 
     // Draw on screen
     {
@@ -135,7 +133,7 @@ void MultipassShader::loadTextures()
   }
 }
 
-void MultipassShader::drawShaderInFBO( const Rectf &r, const gl::GlslProgRef &shader, const gl::FboRef &fbo, int index ) 
+void MultipassShader::drawShaderInFBO( const Rectf &r, const gl::GlslProgRef &shader, const gl::FboRef &fbo, const gl::TextureRef &syphonTexture, int index ) 
 {
     if ( fbo != nullptr ) {
         fbo->bindFramebuffer();        
@@ -162,6 +160,10 @@ void MultipassShader::drawShaderInFBO( const Rectf &r, const gl::GlslProgRef &sh
         textureIndex++;
     }  
 
+    // Set Syphon texture
+    syphonTexture->bind( textureIndex );
+    shader->uniform( "u_syphonTex", textureIndex );
+
     // Draw
     gl::drawSolidRect( r );    
     gl::printError( "drawSolidRect" );
@@ -176,6 +178,8 @@ void MultipassShader::drawShaderInFBO( const Rectf &r, const gl::GlslProgRef &sh
     for ( auto it = mTextures.begin(); it != mTextures.end(); it++ ) {    
         it->second->unbind();    
     }
+
+    syphonTexture->unbind();
 
     if ( fbo != nullptr ) {
         fbo->unbindFramebuffer();        

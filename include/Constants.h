@@ -1,6 +1,6 @@
 #pragma once
 
-#define PATCH_NAME "still_loop"
+#define PATCH_NAME "syphon_test"
 
 // GIF
 #define GIF_LENGTH 600 // # of frames
