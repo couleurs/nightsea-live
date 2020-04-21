@@ -28,7 +28,7 @@ void main() {
 
   // Code here :)
   color = vec3(1.);
-  color = texture2D(u_syphonTex, uv / .).rgb;
+  color = texture2D(u_syphonTex, uv).rgb;
 
 #else
 

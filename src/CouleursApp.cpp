@@ -527,7 +527,7 @@ void CouleursApp::drawScene()
 
   // Draw Syphon texture
   mSyphonFBO->bindFramebuffer();
-  gl::draw( mClientSyphon.getTexture() );
+  gl::draw( mClientSyphon.getTexture(), mSceneWindow->getBounds() );
   mSyphonFBO->unbindFramebuffer();
 
   // Headless mode for high-resolution exports
