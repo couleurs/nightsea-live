@@ -2,6 +2,7 @@
 
 #include "../../shaders/glslLib/color/contrast.glsl"
 #include "../../shaders/glslLib/color/desaturate.glsl"
+#include "../../shaders/glslLib/space/ratio.glsl"
 #include "../../shaders/glslLib/draw/rectSDF.glsl"
 #include "../../shaders/glslLib/draw/fill.glsl"
 #include "../../shaders/glslLib/generative/snoise.glsl"
@@ -42,7 +43,8 @@ void main() {
   color = bg;
   
   // Base grid
-  float size = 20.;
+  float size = 10.;
+  uv = ratio(uv, u_resolution);
   float r_1 = random(floor(uv * size / 2.) + vec2(11., 22.));
   vec2 st = fract(uv * size);
   vec2 st_small = fract(uv * size * 2.);

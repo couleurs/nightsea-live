@@ -1,20 +1,63 @@
 {
-    "params" : [       
-        {
-             "name": "u_contrast",
-             "value": 0.5
-        },
-        {
-             "name": "u_saturation",
-             "value": 0,
-             "min": -1,
-             "max": 1
-        },
-        {
-            "name": "u_whiteMix",
-            "value": 0
-        }
-    ],
-    "colorParams" : []
- }
- 
+   "colorParams" : null,
+   "params" : [
+      {
+         "max" : 500,
+         "min" : 0,
+         "name" : "u_speed",
+         "value" : 4
+      },
+      {
+         "max" : 0.10000000000000001,
+         "min" : 0,
+         "name" : "u_intensity",
+         "value" : 0.01
+      },
+      {
+         "max" : 200,
+         "min" : 0,
+         "name" : "u_size",
+         "value" : 100
+      },
+      {
+         "max" : 50,
+         "min" : 0,
+         "name" : "u_count",
+         "value" : 5.1159999999999997
+      },
+      {
+         "max" : 50,
+         "min" : 0,
+         "name" : "u_hueShift",
+         "value" : 0.20000000000000001
+      },
+      {
+         "name" : "u_diffPattern",
+         "value" : 0
+      },
+      {
+         "max" : 100,
+         "min" : 1,
+         "name" : "u_numLines",
+         "value" : 5
+      },
+      {
+         "name" : "u_lutMix",
+         "value" : 0.78100000000000003
+      },
+      {
+         "name" : "u_contrast",
+         "value" : 0.5
+      },
+      {
+         "max" : 1,
+         "min" : -1,
+         "name" : "u_saturation",
+         "value" : 0
+      },
+      {
+         "name" : "u_whiteMix",
+         "value" : 0
+      }
+   ]
+}

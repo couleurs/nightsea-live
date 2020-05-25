@@ -1,6 +1,6 @@
 #pragma once
 
-#define PATCH_NAME "circles"
+#define PATCH_NAME "mountains"
 
 // GIF
 #define GIF_LENGTH 600 // # of frames
@@ -9,11 +9,11 @@
 #define SCENE_WIDTH 960
 #define SCENE_HEIGHT 540
 #define UI_WIDTH 700
-#define UI_HEIGHT 700
+#define UI_HEIGHT 500
 #define WINDOW_PADDING 15
 
 // OSC
-#define OSC_PORT 9001
+#define OSC_PORT 7000
 
 // MIDI
 #define MIDI_CONTROLLER_PORT 1

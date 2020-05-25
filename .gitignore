@@ -7,4 +7,5 @@ xcode/Couleurs.xcodeproj/project.xcworkspace/xcuserdata/
 assets/sounds/*
 assets/images/*
 assets/shaders/fb_lib
+assets/patches/gradient/
 build/

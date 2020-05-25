@@ -23,6 +23,7 @@ public:
   std::vector<std::shared_ptr<Parameter>>& get() { return mParameters; }
   std::vector<std::shared_ptr<ColorParameter>>& getColors() { return mColorParameters; }
   std::shared_ptr<Parameter> getParameterForMidiNumber( int number );
+  std::vector<std::shared_ptr<Parameter>> getParametersForOSCChannel( int channel );
   std::vector<std::shared_ptr<Animation>> getAnimationsForMidiNumber( int number );
     
 private:

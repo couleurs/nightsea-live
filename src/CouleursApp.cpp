@@ -50,6 +50,7 @@ private:
   void setupUI();
   void setupScene();
   void setupMidi();
+  void setupOSC();
   void loadCurrentPatch();  
   
   // Update
@@ -75,7 +76,7 @@ private:
   void abletonMidiListener( midi::Message msg );
   void controllerMidiListener( midi::Message msg );
   
-//  osc::Listener                mOSCIn;
+  osc::ReceiverUdp             mOSCIn;
   midi::Input                  mAbletonMidiIn, mControllerMidiIn;
   
   Performance                  mPerformance;
@@ -110,13 +111,13 @@ private:
   ci::gl::FboRef               mSyphonFBO;
 };
 
-CouleursApp::CouleursApp() : mPerformance( { PATCH_NAME } ) 
+CouleursApp::CouleursApp() : mPerformance( { PATCH_NAME } ), mOSCIn( OSC_PORT ) 
 {    
   // Window Management
   mUIWindow = getWindow();
   mUIWindow->setTitle( "Couleurs: Parameters" );
   mUIWindow->getSignalDraw().connect( bind( &CouleursApp::drawUI, this ) );
-  mUIWindow->setPos( WINDOW_PADDING, WINDOW_PADDING );
+  mUIWindow->setPos( 0, WINDOW_PADDING );
   mUIWindow->setSize( UI_WIDTH, UI_HEIGHT );
   console() << "UI Window content scale: " << mUIWindow->getContentScale() << endl;
     
@@ -124,11 +125,10 @@ CouleursApp::CouleursApp() : mPerformance( { PATCH_NAME } )
   mSceneWindow->setTitle( "Couleurs: Render" );
   mSceneWindow->getSignalDraw().connect( bind( &CouleursApp::drawScene, this ) );
   mSceneWindow->getSignalResize().connect( bind( &CouleursApp::resizeScene, this ) );
-  mSceneWindow->setPos( UI_WIDTH + WINDOW_PADDING, WINDOW_PADDING );
+  mSceneWindow->setPos( 0, UI_HEIGHT + 2 * WINDOW_PADDING );
   console() << "Scene Window content scale: " << mSceneWindow->getContentScale() << endl;  
-  
-  // OSC
-//  mOSCIn.setup( OSC_PORT );
+
+  // Midi
   setupMidi();
 }
 
@@ -151,6 +151,9 @@ void CouleursApp::setup()
   mScreenSyphon.setName( "Couleurs" );  
   mClientSyphon.setServerName( "Processing Syphon" );	
   mSyphonFBO = gl::Fbo::create( toPixels( mSceneWindow->getWidth() ), toPixels( mSceneWindow->getHeight() ) );
+
+  // OSC
+  setupOSC();
 }
 
 void CouleursApp::setupUI() 
@@ -186,6 +189,42 @@ void CouleursApp::setupScene()
   gl::disableBlending();  
   
   mSceneIsSetup = true;
+}
+
+void CouleursApp::setupOSC()
+{
+  int numOSCChannels = 8;
+  for ( size_t i = 0; i < numOSCChannels; i++ ) {
+    mOSCIn.setListener( "/jo_ann/" + std::to_string( i ),
+    [&, i]( const osc::Message &msg ){
+      float value = msg[0].flt();
+      console() << "OSC Value is: " << value << endl;
+      auto params = currentParams().getParametersForOSCChannel( i );      
+      for ( size_t j = 0; j < params.size(); j++ ) {        
+        auto param = params[j];
+        console() << "Updating param: " << param->name << endl;
+        param->currentValue = lerp( param->min, param->max, value );  
+      }
+    });    
+  }  
+
+  try {
+		// Bind the receiver to the endpoint. This function may throw.
+		mOSCIn.bind();
+	}
+	catch( const osc::Exception &ex ) {
+		CI_LOG_E( "Error binding: " << ex.what() << " val: " << ex.value() );		
+	}
+
+  mOSCIn.listen(
+	[]( asio::error_code error, asio::ip::udp::endpoint endpoint ) -> bool {
+		if( error ) {
+			CI_LOG_E( "Error Listening: " << error.message() << " val: " << error.value() << " endpoint: " << endpoint );
+			return false;
+		}
+		else
+			return true;
+	});
 }
 
 void CouleursApp::setupMidi()
@@ -348,25 +387,22 @@ void CouleursApp::saveParams()
 
 void CouleursApp::update()
 {
-  updateOSC();
+  // updateOSC();
   updateUI();
   updateTimer();
   updateParams();
 }
 
-void CouleursApp::updateOSC()
-{
-//  while ( mOSCIn.hasWaitingMessages() ) {
-//    osc::Message message;
-//    mOSCIn.getNextMessage( &message );
-//    string address = message.getAddress();
-//    float value = message.getArgAsFloat( 0 );
-//    
-//    if ( address == "/1/Size" ) {
-//      mSmooth = value;
-//    }
-//  }
-}
+// void CouleursApp::updateOSC()
+// {
+//   while ( mOSCIn.hasWaitingMessages() ) {
+//     osc::Message message;
+//     mOSCIn.getNextMessage( &message );
+//     string address = message.getAddress();
+//     float value = message.getArgAsFloat( 0 );
+//     console() << "OSC address: " << address << " -- value: " << value << std::endl;   
+//   }
+// }
 
 void CouleursApp::updateUI()
 {

@@ -1,0 +1,53 @@
+{
+   "colorParams" : "",
+   "params" : [
+      {
+         "max" : 1,
+         "min" : 0,
+         "name" : "u_randomSeedCircle",
+         "value" : 0.47499999999999998
+      },
+      {
+         "max" : 1,
+         "min" : 0,
+         "name" : "u_randomSeedSquare",
+         "value" : 0.91100000000000003
+      },
+      {
+         "max" : 1,
+         "min" : 0,
+         "name" : "u_squareSize",
+         "value" : 0.025999999999999999
+      },
+      {
+         "max" : 1,
+         "min" : 0,
+         "name" : "u_squareThreshold",
+         "value" : 0.90900000000000003
+      },
+      {
+         "max" : 1,
+         "min" : 0,
+         "name" : "u_spread",
+         "value" : 0.10100000000000001
+      },
+      {
+         "max" : 1,
+         "min" : 0,
+         "name" : "u_circleEdge",
+         "value" : 0.23499999999999999
+      },
+      {
+         "max" : 1,
+         "min" : 0,
+         "name" : "u_sizeSpread",
+         "value" : 1
+      },
+      {
+         "max" : 1,
+         "min" : 0,
+         "name" : "u_additive",
+         "value" : 0.26000000000000001
+      }
+   ]
+}

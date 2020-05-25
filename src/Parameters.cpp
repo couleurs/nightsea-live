@@ -40,11 +40,19 @@ void Parameters::init()
       param->max = 1;
     }
 
+    // MIDI
     try {
       param->midiNumber = (*it)["midi"].getValue<int>();
     }
     catch ( const std::exception &e ) {
       // cinder::app::console() << "No midi for param " << param->name << std::endl;
+    }
+
+    // OSC
+    try {
+      param->oscChannel = (*it)["osc"].getValue<int>();
+      cinder::app::console() << "Found channel " << param->oscChannel << " for param " << param->name << std::endl;
+    } catch ( const JsonTree::ExcChildNotFound &e ) {      
     }
 
     // MODULATORS
@@ -185,6 +193,18 @@ std::shared_ptr<Parameter> Parameters::getParameterForMidiNumber( int number )
     }
   }
   return nullptr;
+}
+
+std::vector<std::shared_ptr<Parameter>> Parameters::getParametersForOSCChannel( int channel )
+{
+  std::vector<std::shared_ptr<Parameter>> parameters;
+  for ( size_t i = 0; i < mParameters.size(); i++ ) {
+    auto param = mParameters[ i ];
+    if ( param->oscChannel == channel ) {
+      parameters.push_back( param );
+    }
+  }
+  return parameters;
 }
 
 std::vector<std::shared_ptr<Animation>> Parameters::getAnimationsForMidiNumber( int number )

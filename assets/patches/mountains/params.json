@@ -1,0 +1,31 @@
+{
+   "colorParams" : null,
+   "params" : [
+      {
+         "max" : 2,
+         "min" : 0,
+         "name" : "u_offset",
+         "value" : 0.33000000000000002,
+         "osc": 1
+      },
+      {
+         "name" : "u_blur",
+         "value" : 0.112
+      },
+      {
+         "name" : "u_contrast",
+         "value" : 0.5
+      },
+      {
+         "max" : 1,
+         "min" : -1,
+         "name" : "u_saturation",
+         "value" : 0
+      },
+      {
+         "name" : "u_whiteMix",
+         "value" : 0,
+         "osc" : 0
+      }
+   ]
+}

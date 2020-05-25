@@ -79,6 +79,11 @@
         "system_error": "cpp",
         "__errc": "cpp",
         "__node_handle": "cpp",
-        "optional": "cpp"
+        "optional": "cpp",
+        "clocale": "cpp",
+        "*.tcc": "cpp",
+        "cinttypes": "cpp",
+        "hashtable": "cpp",
+        "__functional_03": "cpp"
     }
 }

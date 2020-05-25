@@ -16,6 +16,7 @@ class Parameter {
         float min, max, baseValue, currentValue;
         std::string name;
         int midiNumber = -1;
+        int oscChannel = -1;
         std::unique_ptr<Modulator> modulator = nullptr;
         std::vector<std::shared_ptr<Animation>> animations;
 
