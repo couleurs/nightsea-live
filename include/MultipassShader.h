@@ -13,7 +13,7 @@ class MultipassShader {
         void resize( int width, int height );
         void load( const fs::path &fragPath );
         void reload();
-        void draw( const Rectf &r, const gl::TextureRef &syphonTexture );
+        void draw( const Rectf &r, const gl::TextureRef &syphonTexture, const gl::TextureRef &cameraTexture );
 
         bool                     mShaderCompilationFailed = false;
         std::string              mShaderCompileErrorMessage;
@@ -23,7 +23,7 @@ class MultipassShader {
         int getBufferCount();
         void updateBuffers();
         void loadTextures();
-        void drawShaderInFBO( const Rectf &r, const gl::GlslProgRef &shader, const gl::FboRef &fbo, const gl::Texture2dRef &syphonTexture, int index );
+        void drawShaderInFBO( const Rectf &r, const gl::GlslProgRef &shader, const gl::FboRef &fbo, const gl::Texture2dRef &syphonTexture, const gl::TextureRef &cameraTexture, int index );
         void shaderError( const char *msg );
 
         std::function<void ( gl::GlslProgRef )> mSetUniforms;        

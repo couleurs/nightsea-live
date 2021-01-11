@@ -84,15 +84,15 @@ void MultipassShader::reload()
     loadTextures();
 }
 
-void MultipassShader::draw( const Rectf &r, const gl::Texture2dRef &syphonTexture ) 
+void MultipassShader::draw( const Rectf &r, const gl::Texture2dRef &syphonTexture, const gl::TextureRef &cameraTexture ) 
 {
     // Intermediary passes
     for (unsigned int i = 0; i < mFbos.size(); i++) {
-        drawShaderInFBO( r, mShaders[i], mFbos[i], syphonTexture, i );
+        drawShaderInFBO( r, mShaders[i], mFbos[i], syphonTexture, cameraTexture, i );
     }
 
     // Final pass
-    drawShaderInFBO( r, mMainShader, mMainFbo, syphonTexture, -1 );
+    drawShaderInFBO( r, mMainShader, mMainFbo, syphonTexture, cameraTexture, -1 );
 
     // Draw on screen
     {
@@ -133,7 +133,7 @@ void MultipassShader::loadTextures()
   }
 }
 
-void MultipassShader::drawShaderInFBO( const Rectf &r, const gl::GlslProgRef &shader, const gl::FboRef &fbo, const gl::TextureRef &syphonTexture, int index ) 
+void MultipassShader::drawShaderInFBO( const Rectf &r, const gl::GlslProgRef &shader, const gl::FboRef &fbo, const gl::TextureRef &syphonTexture, const gl::TextureRef &cameraTexture, int index ) 
 {
     if ( fbo != nullptr ) {
         fbo->bindFramebuffer();        
@@ -161,8 +161,17 @@ void MultipassShader::drawShaderInFBO( const Rectf &r, const gl::GlslProgRef &sh
     }  
 
     // Set Syphon texture
-    syphonTexture->bind( textureIndex );
-    shader->uniform( "u_syphonTex", textureIndex );
+    if ( syphonTexture ) {
+        syphonTexture->bind( textureIndex );
+        shader->uniform( "u_syphonTex", textureIndex );
+        textureIndex++;
+    }    
+
+    // Set Camera texture
+    if ( cameraTexture ) {
+        cameraTexture->bind( textureIndex );
+        shader->uniform( "u_cameraTex", textureIndex );
+    }    
 
     // Draw
     gl::drawSolidRect( r );    

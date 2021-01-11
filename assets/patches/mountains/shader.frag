@@ -13,12 +13,16 @@
 #include "../../shaders/glslLib/math/within.glsl"
 #include "../../shaders/glslLib/math/map.glsl"
 
+#include "../../shaders/couleurs_lib/steppedRandom.glsl"
+#include "../../shaders/couleurs_lib/expImpulse.glsl"
+
 uniform float u_time;
 uniform float u_contrast;
 uniform float u_saturation;
 uniform float u_whiteMix;
 uniform vec2 u_resolution;
 uniform sampler2D u_buffer0;
+uniform sampler2D u_cameraTex;
 
 in vec2  vTexCoord0;
 out vec4 oColor;
@@ -73,7 +77,7 @@ void main() {
 
   // Post-Processing
   color = texture(u_buffer0, uv).rgb;
-  color = contrast(color, u_contrast * 2.);
+  color = contrast(color, u_contrast * 2. + steppedRandom(u_time, .1) * .05 + expImpulse(fract(u_time * .1), 200.) * .1);
   color = desaturate(color, u_saturation);
   color = mix(color, vec3(1.), u_whiteMix);
 

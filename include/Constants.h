@@ -6,8 +6,8 @@
 #define GIF_LENGTH 600 // # of frames
 
 // Dimensions
-#define SCENE_WIDTH 960
-#define SCENE_HEIGHT 540
+#define SCENE_WIDTH 1280
+#define SCENE_HEIGHT 720
 #define UI_WIDTH 700
 #define UI_HEIGHT 500
 #define WINDOW_PADDING 15

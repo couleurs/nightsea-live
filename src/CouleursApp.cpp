@@ -8,6 +8,7 @@
 #include "cinder/CinderMath.h"
 #include "cinder/qtime/AvfWriter.h"
 #include "cinder/FileWatcher.h"
+#include "cinder/Capture.h"
 
 // Blocks
 #include "Osc.h"
@@ -60,6 +61,7 @@ private:
   void exportGIFFrames();
   void updateTimer();
   void updateParams();
+  void updateCamera();
   
   void drawUI();
   void drawScene();
@@ -94,6 +96,10 @@ private:
   
   // Mouse
   ivec2                        mMousePosition;
+
+  // Camera
+  CaptureRef                   mCapture;
+  gl::Texture2dRef             mCaptureTex;
 
   // AV Sync
   ci::Timer                    mTimer;
@@ -148,9 +154,15 @@ void CouleursApp::setup()
   setupUI();
   setupScene();
   mTimer.start();
+
+  // Syphon
   mScreenSyphon.setName( "Couleurs" );  
   mClientSyphon.setServerName( "Processing Syphon" );	
   mSyphonFBO = gl::Fbo::create( toPixels( mSceneWindow->getWidth() ), toPixels( mSceneWindow->getHeight() ) );
+
+  // Camera
+  mCapture = Capture::create( toPixels( mSceneWindow->getWidth() ), toPixels( mSceneWindow->getHeight() ) );
+  mCapture->start();
 
   // OSC
   setupOSC();
@@ -391,6 +403,7 @@ void CouleursApp::update()
   updateUI();
   updateTimer();
   updateParams();
+  updateCamera();
 }
 
 // void CouleursApp::updateOSC()
@@ -536,6 +549,20 @@ void CouleursApp::updateParams()
   }
 }
 
+void CouleursApp::updateCamera()
+{
+  if ( mCapture && mCapture->checkNewFrame() ) {    
+    auto surface = mCapture->getSurface();
+
+    if ( !mCaptureTex ) {
+      mCaptureTex = gl::Texture::create( *surface, gl::Texture::Format() );      
+    }
+    else {
+      mCaptureTex->update( *surface );
+    }
+  }
+}
+
 void CouleursApp::exportGIFFrames()	
 {	
   if ( !mLoopExportMode ) return;
@@ -571,14 +598,14 @@ void CouleursApp::drawScene()
     gl::setMatricesWindow( ivec2( HEADLESS_WIDTH, HEADLESS_HEIGHT ), true );
     gl::pushViewport( ivec2( HEADLESS_WIDTH, HEADLESS_HEIGHT ) );
     Rectf rect = Rectf( 0.f, 0.f, HEADLESS_WIDTH, HEADLESS_HEIGHT );
-    mMultipassShader.draw( rect, mSyphonFBO->getColorTexture() );  
+    mMultipassShader.draw( rect, mSyphonFBO->getColorTexture(), mCaptureTex );  
     exportFrame( to_string( getElapsedSeconds() ), true );
     quit();
   }
   
   // Draw patch  
   Rectf rect = Rectf( 0.f, 0.f, mSceneWindow->getWidth(), mSceneWindow->getHeight() );
-  mMultipassShader.draw( rect, mSyphonFBO->getColorTexture() );
+  mMultipassShader.draw( rect, mSyphonFBO->getColorTexture(), mCaptureTex );
   mScreenSyphon.publishTexture( mMultipassShader.mMainFbo->getColorTexture(), false );
 
   // Draw red rect if error
